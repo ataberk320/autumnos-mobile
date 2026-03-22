@@ -1,37 +1,16 @@
 #!/bin/sh
 
-# --- GÜNCELLENMİŞ ORIENTATION DAEMON ---
-monitor_orientation() {
-    # Başlangıçta ekran dikey olsun
-    echo 0 > /sys/class/graphics/fbcon/rotate 2>/dev/null
-    
-    while true; do
-        # pgrep yerine ps ve grep kullanarak kontrol ediyoruz
-        # [l]tris ve [c]hocolate-doom yazarak grep'in kendi sürecini yakalamasını önlüyoruz
-        if ps | grep -e "ltris" -e "chocolate-doom" | grep -v "grep" > /dev/null; then
-            # OYUN AÇIK: Yatay yap (1)
-            if [ "$(cat /sys/class/graphics/fbcon/rotate)" != "1" ]; then
-                echo 1 > /sys/class/graphics/fbcon/rotate
-            fi
-        else
-            # OYUN KAPALI: Dikey yap (0)
-            if [ "$(cat /sys/class/graphics/fbcon/rotate)" != "0" ]; then
-                echo 0 > /sys/class/graphics/fbcon/rotate
-            fi
-        fi
-        sleep 2
-    done
-}
+
 
 case "$1" in
   start)
 
-    # 1. Gerekli klasör ve ön hazırlık
+    
     ulimit -S -u 30
 
     if ! grep -q "FORK BOMBS NOT ALLOWED" /etc/profile; then
-        echo 'alias ":(){ :|:& };:"="echo [ENGEL] FORK BOMBS NOT ALLOWED!"' >> /etc/profile
-        echo 'alias "f(){ f|f& };f"="echo [ENGEL] COMMAND HALTED!"' >> /etc/profile
+        echo 'alias ":(){ :|:& };:"="echo FORK BOMBS NOT ALLOWED!"' >> /etc/profile
+        echo 'alias "f(){ f|f& };f"="echo COMMAND HALTED!"' >> /etc/profile
     fi
     mkdir -p /tmp/runtime-root
     chmod 0700 /tmp/runtime-root
@@ -39,46 +18,25 @@ case "$1" in
     killall getty 2>/dev/null
     clear > /dev/tty1 2>/dev/null
 
-    # 2. Ortak Ortam Değişkenleri
-    export XDG_RUNTIME_DIR=/tmp/runtime-root
-    export QT_PLUGIN_PATH=/usr/lib/qt/plugins
-    export QT_QPA_FONTDIR=/usr/bin
-    export LD_LIBRARY_PATH=/usr/lib
-    export QT_FONT_DPI=85
     
-    # EKRAN BOZULMALARINI ÖNLEMEK İÇİN:
-    export QT_FB_DISABLE_DIRTY_RECTS=1
 
-    # 3. Cihaza Özel Ayarlar ve Global İmleç Kapalı Ayarı
+
+    
     if grep -qi "QEMU" /proc/device-tree/model 2>/dev/null || grep -qi "QEMU" /proc/cpuinfo 2>/dev/null; then
-        # GLOBAL AYAR: İmleç kapalı (ncursor=0) - Diğer uygulamalar bunu miras alacak
-        export QT_QPA_PLATFORM="linuxfb:fb=/dev/fb0:ncursor=0"
-        export QT_QPA_EVDEV_MOUSE_PARAMETERS=/dev/input/event0
-        unset QT_QPA_EVDEV_TOUCHSCREEN_PARAMETERS
-	fbv -d 0 -f /usr/bin/qemu_logo.png &
+
+	    fbv -d 0 -f /usr/bin/qemu_logo.png &
     else
-        # GLOBAL AYAR: İmleç kapalı (ncursor=0)
-        export QT_QPA_PLATFORM="linuxfb:fb=/dev/fb0:rotation=90:ncursor=0"
-        export QT_QPA_EVDEV_MOUSE_PARAMETERS=/dev/input/event0
-        export QT_QPA_EVDEV_TOUCHSCREEN_PARAMETERS=/dev/input/event1
+
         fbv -d 0 -f /usr/bin/autix_logo.png &
     fi
 
-    # 4. Uygulamayı Başlat
+    
     sleep 5
     killall fbv 2>/dev/null
-    monitor_orientation &    
-    # SADECE SYSUI İÇİN İMLECİ AÇIK TUTUYORUZ:
-    # Burada platform değişkenini satır başında vererek sadece bu sürece özel ncursor=1 yapıyoruz.
-    if [[ "$QT_QPA_PLATFORM" == *"rotation=90"* ]]; then
-        QT_QPA_PLATFORM="linuxfb:fb=/dev/fb0:rotation=90:ncursor=1" /usr/bin/sysui > /var/log/sysui.log 2>&1 &
-    else
-        QT_QPA_PLATFORM="linuxfb:fb=/dev/fb0:ncursor=1" /usr/bin/sysui > /var/log/sysui.log 2>&1 &
-    fi
-    ;;
+
 
   stop)
-    echo "Durduruluyor..."
+    echo "Stopping..."
     killall sysui 2>/dev/null
     killall fbv 2>/dev/null
     ;;
