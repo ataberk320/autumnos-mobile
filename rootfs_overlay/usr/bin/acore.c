@@ -1,13 +1,13 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <unistd.h>
-#include <stdio.h>   // Saf C için eklendi
-#include <string.h>  // Saf C için eklendi
+#include <stdio.h>
+#include <string.h>
 #include "acore.h"
 float cpu_temperature = 0.0f;
-char current_operator[64] = "SIM Kart Yok"; // Boyut 64 ve tip char[]
-bool is_connected = false;                  // Tip bool
-bool sim_present = false;                    // Tip bool
+char current_operator[64] = "SIM Kart Yok"; 
+bool is_connected = false;
+bool sim_present = false;
 int sim800_signal_level = 0;
 int uart_fd = -1;
 void uart_init() {
@@ -25,7 +25,7 @@ void uart_init() {
     tcsetattr(uart_fd, TCSANOW, &options);
 }
 
-// Fonksiyon ismini send_at_command olarak düzelttim (read_sim800_data içinde öyle çağırmışsın)
+
 int send_at_command(const char* cmd, char* buffer, int buf_size) {
     write(uart_fd, cmd, strlen(cmd));
     write(uart_fd, "\r\n", 2);
@@ -66,7 +66,7 @@ void read_sim800_data() {
     }
 }
 
-// SAF C VERSİYONU: Batarya Okuma
+
 int read_battery_capacity() {
     FILE *file = fopen("/sys/class/power_supply/bat0/capacity", "r");
     int cap = 0;
@@ -80,7 +80,7 @@ int read_battery_capacity() {
     return -1;
 }
 
-// SAF C VERSİYONU: Sıcaklık Okuma
+
 float read_cpu_temperature() {
     FILE *file = fopen("/sys/class/thermal/thermal_zone0/temp", "r");
     int temp = 0;
