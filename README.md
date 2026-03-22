@@ -3,24 +3,44 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 Technical information:
 RISC-V Allwinner D1s and QEMU(Virtio) support
+
 Doom and LTris support
+
 SDL and SDL2 support
+
 links support
+
 ffmpeg and ffplay video player and sound support
+
 LVGL graphics library
+
 http support
+
 Virtio support
+
 Reading battery percent from BAT0
+
 Reading temperature
+
 Autumn Core and HAL
 RTC support
+
 sudo (root password)
+
 SIP support (maybe)
+
 dropbear sshd and IP protections
+
 Camera support(USB/V4L2/UVC)
+
 g2d 2D accelerator
+
 libjpg, libpng support
+
 fbv, fbtest etc. support
+
 nano for buildroot terminal
 
+
 To compile all image: make -j3
+
