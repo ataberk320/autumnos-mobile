@@ -2,6 +2,10 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 ​By transitioning from a custom microkernel approach to a highly optimized Linux kernel, AutumnOS now leverages advanced process management, robust networking stacks, and extensive driver support. Targeting powerful ARM and RISC-V mobile platforms, AutumnOS aims to provide a seamless, open-source mobile experience that bridges the gap between desktop-class multitasking and handheld efficiency.
 
 Technical information:
+
+
+evdev/indev
+
 RISC-V Allwinner D1s and QEMU(Virtio) support
 
 Doom and LTris support
@@ -49,9 +53,7 @@ live weather clock widget (NEW)
 Goldfish support
 
 Theme manager (Coming soon)
-
-
-
-
+.
+___________________________
 To compile all image: make -j3
 
