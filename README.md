@@ -12,6 +12,8 @@ links support
 
 ffmpeg and ffplay video player and sound support
 
+GPIO reader
+
 LVGL graphics library
 
 http support
@@ -22,24 +24,33 @@ Reading battery percent from BAT0
 
 Reading temperature
 
-Autumn Core and HAL
-RTC support
+Autumn Core, HAL, API(updated)
 
 sudo (root password)
 
-SIP support (maybe)
+RTC support
 
 dropbear sshd and IP protections
 
-Camera support(USB/V4L2/UVC)
+Camera support(USB/V4L2/UVC etc.)
 
-g2d 2D accelerator
+g2d 2D or DRM (NEW) accelerator
 
 libjpg, libpng support
 
 fbv, fbtest etc. support
 
 nano for buildroot terminal
+
+wget and curl support (NEW)
+
+live weather clock widget (NEW)
+
+Goldfish support
+
+Theme manager (Coming soon)
+
+
 
 
 To compile all image: make -j3
