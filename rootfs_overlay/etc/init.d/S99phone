@@ -4,39 +4,41 @@
 
 case "$1" in
   start)
-
-    
+    echo "[AUTUMNOS] Setting DNS nameserver."
+    echo "nameserver 8.8.8.8" > /etc/resolv.conf
     ulimit -S -u 30
 
-    if ! grep -q "FORK BOMBS NOT ALLOWED" /etc/profile; then
-        echo 'alias ":(){ :|:& };:"="echo FORK BOMBS NOT ALLOWED!"' >> /etc/profile
-        echo 'alias "f(){ f|f& };f"="echo COMMAND HALTED!"' >> /etc/profile
-    fi
     mkdir -p /tmp/runtime-root
     chmod 0700 /tmp/runtime-root
     echo 0 > /sys/class/graphics/fbcon/cursor_blink 2>/dev/null
-    killall getty 2>/dev/null
-    clear > /dev/tty1 2>/dev/null
 
     
-
-
     
-    if grep -qi "QEMU" /proc/device-tree/model 2>/dev/null || grep -qi "QEMU" /proc/cpuinfo 2>/dev/null; then
+    echo "[AUTUMNOS] Starting hardware watchdog"
+    /usr/bin/AutixHardwareWatchdog &
 
-	    fbv -d 0 -f /usr/bin/qemu_logo.png &
-    else
-
-        fbv -d 0 -f /usr/bin/autix_logo.png &
-    fi
-
+    echo "[AUTUMNOS] Starting DRM/FBDEV surface detecting."
+    /usr/bin/AutixSurfDetector &
+    
+    echo "[AUTUMNOS] Starting AutumnCore."
+    /usr/bin/AutumnCore &
     
     sleep 5
-    killall fbv 2>/dev/null
+    killall fbv 2>/dev/null 
+    echo "[AUTUMNOS] Starting GUI."
+    /usr/bin/sysui &
 
+    echo "[AUTUMNOS] Starting watchdog."
+    (
+            while true; do
+                /usr/bin/watchdog.sh
+                sleep 1
+            done
+        ) &
+	;;
 
   stop)
-    echo "Stopping..."
+    echo "[AUTUMNOS] Stopping system."
     killall sysui 2>/dev/null
     killall fbv 2>/dev/null
     ;;
@@ -48,7 +50,7 @@ case "$1" in
     ;;
 
   *)
-    echo "Kullanim: $0 {start|stop|restart}"
+    echo "Using: $0 {start|stop|restart}"
 esac
 
 exit 0
