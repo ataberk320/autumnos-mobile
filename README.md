@@ -38,7 +38,7 @@ dropbear sshd and IP protections
 
 Camera support(USB/V4L2/UVC etc.)
 
-g2d 2D or DRM (NEW) accelerator
+g2d 2D/DRM (NEW) accelerator
 
 libjpg, libpng support
 
@@ -59,6 +59,10 @@ Watchdog script
 AutixSurf(SurfaceFlinger alternative, DRM/fbdev)
 
 fbdev/drm/sdl/sdl2
+
+DNS setup on boot (nameserver 8.8.8.8)
+
+Kivy and Python support(cython, pip, python3)
 .
 ___________________________
 To compile all image: make -j3
