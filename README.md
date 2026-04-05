@@ -53,6 +53,12 @@ live weather clock widget (NEW)
 Goldfish support
 
 Theme manager (Coming soon)
+
+Watchdog script
+
+AutixSurf(SurfaceFlinger alternative, DRM/fbdev)
+
+fbdev/drm/sdl/sdl2
 .
 ___________________________
 To compile all image: make -j3
