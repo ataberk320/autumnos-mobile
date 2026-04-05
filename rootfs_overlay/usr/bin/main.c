@@ -6,19 +6,11 @@
 #include <pthread.h>
 #include <stdio.h>
 #include "acore.h"
-
-extern float cpu_temperature;
-extern const lv_img_dsc_t img_cloudy_dock;
-extern const lv_img_dsc_t img_sunny_dock;
+//extern const lv_img_dsc_t img_cloudy_dock;
+//extern const lv_img_dsc_t img_sunny_dock;
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include "lvgl.h"
 
 
 void update_autumn_weather(void) {
@@ -34,18 +26,18 @@ void update_autumn_weather(void) {
     }
 
     if (fgets(buffer, sizeof(buffer), fp) != NULL) {
-        buffer[strcspn(buffer, "\n")] = 0; // Satır sonunu temizle
+        buffer[strcspn(buffer, "\n")] = 0;
         
         
-        char *sehir = strtok(buffer, ",");
-        char *sehir_tekrar = strtok(NULL, ","); 
-        char *ulke = strtok(NULL, ",");
-        char *derece = strtok(NULL, ",");
-        char *durum = strtok(NULL, ",");
+        char *city = strtok(buffer, ",");
+        char *unnecessary_city_buffer = strtok(NULL, ","); 
+        char *unnecessary_country_buffer = strtok(NULL, ",");
+        char *degree = strtok(NULL, ",");
+        char *status = strtok(NULL, ",");
 
         // ŞEHİR
         if (sehir) {
-            lv_label_set_text(objects.weathercity, sehir);
+            lv_label_set_text(objects.weathercity, city);
         }
 
         
@@ -55,21 +47,19 @@ void update_autumn_weather(void) {
             char *c_pos = strstr(derece, "°C");
             if (c_pos) *c_pos = '\0'; 
             
-            lv_label_set_text_fmt(objects.weatherdegree, "%s°C", derece);
+            lv_label_set_text_fmt(objects.weatherdegree, "%s°C", degree;
         }
 
         
-        if (durum) {
-            if (strstr(durum, "Clear") || strstr(durum, "Sunny")) {
+        if (status) {
+            if (strstr(status, "Clear") || strstr(status, "Sunny")) {
                 lv_label_set_text(objects.weatherstatus, LV_SYMBOL_IMAGE " Güneşli");
-		lv_img_set_src(objects.clockground, &img_sunny_dock);
-            } else if (strstr(durum, "Cloud") || strstr(durum, "Overcast") || strstr(durum, "cloudy")) {
+            } else if (strstr(status, "Cloud") || strstr(status, "Overcast") || strstr(status, "cloudy")) {
                 lv_label_set_text(objects.weatherstatus, LV_SYMBOL_IMAGE " Bulutlu");
-		lv_img_set_src(objects.clockground, &img_cloudy_dock);
-            } else if (strstr(durum, "Rain") || strstr(durum, "Drizzle")) {
+            } else if (strstr(status, "Rain") || strstr(status, "Drizzle")) {
                 lv_label_set_text(objects.weatherstatus, LV_SYMBOL_IMAGE " Yağmurlu");
             } else {
-                lv_label_set_text_fmt(objects.weatherstatus, LV_SYMBOL_IMAGE " %s", durum);
+                lv_label_set_text_fmt(objects.weatherstatus, LV_SYMBOL_IMAGE " %s", status;
             }
         }
     } else {
@@ -105,11 +95,9 @@ void update_widget_clock(void) {
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
 	snprintf(hh_buffer, sizeof(hh_buffer), "%02d", timeinfo->tm_hour);
-        snprintf(mm_buffer, sizeof(mm_buffer), "%02d", timeinfo->tm_min);
-
-    
-    	lv_label_set_text(objects.hh, hh_buffer);
-        lv_label_set_text(objects.mm, mm_buffer);
+    snprintf(mm_buffer, sizeof(mm_buffer), "%02d", timeinfo->tm_min);
+    lv_label_set_text(objects.hh, hh_buffer);
+    lv_label_set_text(objects.mm, mm_buffer);
 }
 
 
@@ -123,11 +111,7 @@ void weather_timer_callback(lv_timer_t * timer) {
 }
 
 int main(void) {
-
-
     lv_init();
-
-
     fbdev_init();
 	//drm_init();
     static lv_disp_draw_buf_t draw_buf;
