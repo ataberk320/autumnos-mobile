@@ -63,6 +63,8 @@ fbdev/drm/sdl/sdl2
 DNS setup on boot (nameserver 8.8.8.8)
 
 Kivy and Python support(cython, pip, python3)
+
+udhcpc
 .
 ___________________________
 To compile all image: make -j3
