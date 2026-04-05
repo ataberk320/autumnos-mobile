@@ -68,4 +68,5 @@ udhcpc
 .
 ___________________________
 To compile all image: make -j3
+Buildroot version: Buildroot 2026.02-84-g088c3602fd-dirty
 
