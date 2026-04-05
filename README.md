@@ -54,7 +54,7 @@ Goldfish support
 
 Theme manager (Coming soon)
 
-Watchdog script
+Watchdog script(Software and hardware watchdog)
 
 AutixSurf(SurfaceFlinger alternative, DRM/fbdev)
 
