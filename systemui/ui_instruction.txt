@@ -1,0 +1,1 @@
+Move all ui_image, .c and .h files to buildroot/board/***/overlay/rootfs_overlay/usr/bin!
