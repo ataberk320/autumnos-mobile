@@ -80,7 +80,7 @@ int atmsys_battery_perc(void)  {
 	if (fgets(buffer, sizeof(buffer), fp) != NULL) {
        		battery_percent = atoi(buffer);
         
-        // Güvenlik sınırları
+        
         	if (battery_percent > 100) battery_percent = 100;
         	if (battery_percent < 0) battery_percent = 0;
         }
