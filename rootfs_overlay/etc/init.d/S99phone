@@ -22,7 +22,13 @@ case "$1" in
     
     echo "[AUTUMNOS] Starting AutumnCore."
     /usr/bin/AutumnCore &
-    fbv -f /usr/share/qemu.png
+
+	if grep -q "QEMU" /proc/device-tree/model 2>/dev/null || grep -q "QEMU" /proc/cpuinfo; then
+        fbv -f -u /usr/share/qemu.png > /dev/null 2>&1 &
+    else
+        fbv -f -u /usr/share/default.png > /dev/null 2>&1 &
+    fi
+
     sleep 5
     killall fbv 2>/dev/null 
     echo "[AUTUMNOS] Starting GUI."
