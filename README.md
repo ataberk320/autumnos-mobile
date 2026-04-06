@@ -78,3 +78,5 @@ To compile lvgl, create a folder name lvgl on buildroot/package and move "Config
 LVGL Designer: EEZ Studio
 
 WSL version: must be Ubuntu 22.04 LTS
+
+LVGL version must be 8.4.*!
