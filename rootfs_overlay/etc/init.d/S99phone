@@ -22,7 +22,7 @@ case "$1" in
     
     echo "[AUTUMNOS] Starting AutumnCore."
     /usr/bin/AutumnCore &
-    
+    fbv -f /usr/share/qemu.png
     sleep 5
     killall fbv 2>/dev/null 
     echo "[AUTUMNOS] Starting GUI."
