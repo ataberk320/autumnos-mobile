@@ -69,7 +69,7 @@ udhcpc
 ___________________________
 To compile all image: make -j$(nproc)
 
-To compile SystemUI: ./build_sysui.sh (don't forget to move lvgl files on overlay! and the current directory have to be /buildroot/board/***/overlay/rootfs_overlay/usr/bin!)
+Carefully read the instructions in format .txt!
 
 Buildroot version: Buildroot 2026.02-84-g088c3602fd-dirty
 
