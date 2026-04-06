@@ -72,7 +72,6 @@ Kivy and Python support(cython, pip, python3)
 udhcpc
 
 Timezone data
-.
 ___________________________
 To compile all image: make -j$(nproc)
 
