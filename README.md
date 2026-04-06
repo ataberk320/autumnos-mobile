@@ -67,7 +67,9 @@ Kivy and Python support(cython, pip, python3)
 udhcpc
 .
 ___________________________
-To compile all image: make -j3
+To compile all image: make -j$(nproc)
+
+To compile SystemUI: ./build_sysui.sh (don't forget to move lvgl files on overlay!)
 
 Buildroot version: Buildroot 2026.02-84-g088c3602fd-dirty
 
