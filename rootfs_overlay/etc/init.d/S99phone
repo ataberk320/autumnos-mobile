@@ -26,6 +26,7 @@ case "$1" in
 	if grep -q "QEMU" /proc/device-tree/model 2>/dev/null || grep -q "QEMU" /proc/cpuinfo; then
         fbv -f -u /usr/share/qemu.png > /dev/null 2>&1 &
     else
+//You can customize default.png with your logo
         fbv -f -u /usr/share/default.png > /dev/null 2>&1 &
     fi
 
