@@ -65,6 +65,8 @@ DNS setup on boot (nameserver 8.8.8.8)
 Kivy and Python support(cython, pip, python3)
 
 udhcpc
+
+Timezone data
 .
 ___________________________
 To compile all image: make -j$(nproc)
