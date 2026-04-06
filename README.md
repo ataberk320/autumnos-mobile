@@ -76,3 +76,5 @@ Buildroot version: Buildroot 2026.02-84-g088c3602fd-dirty
 To compile lvgl, create a folder name lvgl on buildroot/package and move "Config.in" and lvgl.mk files on /buildroot directory on this repository
 
 LVGL Designer: EEZ Studio
+
+WSL version: must be Ubuntu 22.04 LTS
