@@ -69,7 +69,7 @@ udhcpc
 ___________________________
 To compile all image: make -j$(nproc)
 
-Carefully read the instructions in format .txt!: /rootfs_overlay/etc/init.d/S99_instruction.txt, /rootfs_overlay/usr/bin/lvgl_instruction.txt
+Carefully read the instructions in format .txt!: /rootfs_overlay/etc/init.d/S99_instruction.txt, /rootfs_overlay/usr/bin/sysui_instruction.txt, /buildroot/logos/logo_instruction.txt
 
 Buildroot version: Buildroot 2026.02-84-g088c3602fd-dirty
 
