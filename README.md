@@ -8,7 +8,7 @@ evdev/indev
 
 RISC-V Allwinner D1s and QEMU(Virtio) support
 
-DongshanPi/Lichee RV or RV Dock/Mango Pi/Nezha multi platform support
+DongshanPi/Lichee RV or RV Dock/Mango Pi/Nezha/ClockworkPi/Devterm, multi platform support
 
 Doom and LTris support
 
