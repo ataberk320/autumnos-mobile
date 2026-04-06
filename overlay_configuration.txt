@@ -1,0 +1,4 @@
+Move rootfs_overlay folder to ~/buildroot/board/***/overlay/
+Run command make menuconfig
+Select System configuration->Root filesystem overlay directories
+Type path
