@@ -79,4 +79,6 @@ LVGL Designer: EEZ Studio 0.26.2
 
 WSL version: must be Ubuntu 22.04 LTS
 
+systemui will be updated soon when it's completed!
+
 LVGL version must be 8.4.*!
