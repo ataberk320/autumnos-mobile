@@ -1,1 +1,1 @@
-To compile SystemUI: ./build_sysui.sh (don't forget to move lvgl files on overlay! and the current directory have to be /buildroot/board/***/overlay/rootfs_overlay/usr/bin!)
+To compile SystemUI: ./build_sysui.sh (don't forget to move lvgl files on overlay (bin/ui)! and the current directory have to be /buildroot/board/***/overlay/rootfs_overlay/usr/bin!)
