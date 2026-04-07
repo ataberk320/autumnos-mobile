@@ -27,3 +27,11 @@ int AutumnAPI_Read_Battery_Level(void) {
     }
     return bat;
 }
+//FIXME: Added read uptime function - 7.04.2026
+long AutumnAPI_Read_Uptime(void) {
+        long up = 0;
+        FILE *fp = fopen("/tmp/autumnuptime0", "r");
+        if (fp == NULL) return 0;
+        fclose(fp);
+        return up;
+}
