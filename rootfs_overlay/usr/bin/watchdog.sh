@@ -2,20 +2,33 @@
 
 sudo echo 1 > /proc/sys/kernel/sysrq
 
-dangerous_symbol_detector() {
-	trap '
-        case "$BASH_COMMAND" in
-            *":(){"*|*";()"*|*"(){"*|*"yeh_paagal"*|*":|:"*)
-                echo "FORK BOMBS IS NOT ALLOWED!!! Access denied :)" > /dev/kmsg
-                sleep 0.1
-                echo c > /proc/sysrq-trigger
-                ;;
-        esac
-    ' DEBUG
+uptime_format_detector() {
+    UPTIME_FILE="/tmp/autumnsys/uptime/autumnuptime0"
+    
+    while [ ! -f "$UPTIME_FILE" ]; do
+        sleep 1
+    done
+
+    while true; do
+        if [ -f "$UPTIME_FILE" ]; then
+            CONTENT=$(cat "$UPTIME_FILE" | tr -d '[:space:]')
+            
+            if [ -n "$CONTENT" ]; then
+                case "$CONTENT" in
+                    *[!0-9]*)
+                        echo "Invalid uptime format, system is confused: '$CONTENT'" > /dev/kmsg
+                        
+                             sleep 0.1
+                             echo c > /proc/sysrq-trigger
+                        
+                        ;;
+                esac
+            fi
+        fi
+        usleep 500000 
+    done
+
 }
-
-dangerous_symbol_detector 2>/dev/null
-
 critical_process_detector()  {
 while true; do
 	#If critical process dies
@@ -42,4 +55,6 @@ while true; do
 	usleep 100000
 done
 }
+uptime_format_detector &
 critical_process_detector &
+wait
