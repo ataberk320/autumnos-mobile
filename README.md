@@ -7,71 +7,71 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 Technical information:
 
 
-evdev/indev
+- evdev/indev
 
-RISC-V Allwinner D1s and QEMU(Virtio) support
+- RISC-V Allwinner D1s and QEMU(Virtio) support
 
-DongshanPi/Lichee RV or RV Dock/Mango Pi/Nezha/ClockworkPi/Devterm, multi platform support
+- DongshanPi/Lichee RV or RV Dock/Mango Pi/Nezha/ClockworkPi/Devterm, multi platform support
 
-Doom and LTris support
+- Doom and LTris support
 
-SDL and SDL2 support
+- SDL and SDL2 support
 
-links support
+- links support
 
-ffmpeg and ffplay video player and sound support
+- ffmpeg and ffplay video player and sound support
 
-GPIO reader
+- GPIO reader
 
-LVGL graphics library
+- LVGL graphics library
 
-http support
+- http support
 
-Virtio support
+- Virtio support
 
-Reading battery percent from BAT0
+- Reading battery percent from BAT0
 
-Reading temperature
+- Reading temperature
 
-Autumn Core, HAL, API(updated)
+- Autumn Core, HAL, API(updated)
 
-sudo (root password)
+- sudo (root password)
 
-RTC support
+- RTC support
 
-dropbear sshd and IP protections
+- dropbear sshd and IP protections
 
-Camera support(USB/V4L2/UVC etc.)
+- Camera support(USB/V4L2/UVC etc.)
 
-g2d 2D/DRM (NEW) accelerator
+- g2d 2D/DRM (NEW) accelerator
 
-libjpg, libpng support
+- libjpg, libpng support
 
-fbv, fbtest etc. support
+- fbv, fbtest etc. support
 
-nano for buildroot terminal
+- nano for buildroot terminal
 
-wget and curl support (NEW)
+- wget and curl support (NEW)
 
-live weather clock widget (NEW)
+- live weather clock widget (NEW)
 
-Goldfish support
+- Goldfish support
 
-Theme manager (Coming soon)
+- Theme manager (Coming soon)
 
-Watchdog script(Software and hardware watchdog)
+- Watchdog script(Software and hardware watchdog)
 
-AutixSurf(SurfaceFlinger alternative, DRM/fbdev)
+- AutixSurf(SurfaceFlinger alternative, DRM/fbdev)
 
-fbdev/drm/sdl/sdl2
+- fbdev/drm/sdl/sdl2
 
-DNS setup on boot (nameserver 8.8.8.8)
+- DNS setup on boot (nameserver 8.8.8.8)
 
-Kivy and Python support(cython, pip, python3)
+- Kivy and Python support(cython, pip, python3)
 
-udhcpc
+- udhcpc
 
-Timezone data
+- Timezone data
 ___________________________
 To compile all image: make -j$(nproc)
 
@@ -97,4 +97,5 @@ LVGL version must be 8.4.*!
 
 ---------------------------
 Update notes:
-  systemui will be updated soon when it's completed!
+*systemui will be updated soon when it's completed!
+* Added API source code
