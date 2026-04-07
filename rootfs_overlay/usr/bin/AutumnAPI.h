@@ -1,0 +1,12 @@
+#ifndef API_H
+#define API_H
+
+void AutumnAPI_Request_PowerOff(void);
+
+void AutumnAPI_Request_Reboot(void);
+
+int AutumnAPI_Read_Battery_Level(void);
+
+long AutumnAPI_Read_Uptime(void);
+
+#endif
