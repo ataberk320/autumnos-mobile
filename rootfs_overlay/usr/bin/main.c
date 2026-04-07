@@ -136,7 +136,8 @@ int ui_main(void) {
     static lv_disp_drv_t disp_drv;
     lv_disp_drv_init(&disp_drv);
     disp_drv.flush_cb = fbdev_flush;
-	//disp_drv.flush_cb = fbdev_flush;
+	//For DRM (optional)
+	//disp_drv.flush_cb = drm_flush;
     disp_drv.draw_buf = &draw_buf;
     disp_drv.hor_res = 480;
 	disp_drv.ver_res = 800;
