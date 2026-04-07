@@ -71,6 +71,7 @@ void update_system_status(void) {
 }
 
 int main(void) {
+	mkdir_data();
 	atmsys_safe_volume(65);
 	atmsys_modemhdinit();
 	while (1) {
