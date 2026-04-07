@@ -4,7 +4,7 @@
 
 case "$1" in
   start)
-    echo "[AUTUMNOS] Setting DNS nameserver."
+    echo "[AUTUMNOS] Setting DNS nameserver." > /dev/kmsg
     echo "nameserver 8.8.8.8" > /etc/resolv.conf
     ulimit -S -u 30
 
@@ -14,13 +14,13 @@ case "$1" in
 
     
     
-    echo "[AUTUMNOS] Starting hardware watchdog"
+    echo "[AUTUMNOS] Starting hardware watchdog" > /dev/kmsg
     /usr/bin/AutixHardwareWatchdog &
 
     echo "[AUTUMNOS] Starting DRM/FBDEV surface detecting."
     /usr/bin/AutixSurfDetector &
     
-    echo "[AUTUMNOS] Starting AutumnCore."
+    echo "[AUTUMNOS] Starting AutumnCore." > /dev/kmsg
     /usr/bin/AutumnCore &
 
 	if grep -q "QEMU" /proc/device-tree/model 2>/dev/null || grep -q "QEMU" /proc/cpuinfo; then
@@ -32,10 +32,10 @@ case "$1" in
 
     sleep 5
     killall fbv 2>/dev/null 
-    echo "[AUTUMNOS] Starting GUI."
+    echo "[AUTUMNOS] Starting GUI." > /dev/kmsg
     /usr/bin/sysui &
 
-    echo "[AUTUMNOS] Starting watchdog."
+    echo "[AUTUMNOS] Starting watchdog." > /dev/kmsg
     (
             while true; do
                 /usr/bin/watchdog.sh
@@ -45,7 +45,7 @@ case "$1" in
 	;;
 
   stop)
-    echo "[AUTUMNOS] Stopping system."
+    echo "[AUTUMNOS] Stopping system." > /dev/kmsg
     killall sysui 2>/dev/null
     killall fbv 2>/dev/null
     ;;
