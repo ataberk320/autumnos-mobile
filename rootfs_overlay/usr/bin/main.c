@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <stdio.h>
+//UI connected with API
 #include "AutumnAPI.h"
 extern const lv_img_dsc_t img_cloudy_dock;
 extern const lv_img_dsc_t img_sunny_dock;
@@ -99,7 +100,7 @@ void update_widget_clock(void) {
     lv_label_set_text(objects.hh, hh_buffer);
     lv_label_set_text(objects.mm, mm_buffer);
 }
-
+//Added battery level monitor
 void system_monitor_task(lv_timer_t * timer) {
 	int bat = AutumnAPI_Read_Battery_Level();
 
