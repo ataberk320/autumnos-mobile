@@ -17,7 +17,7 @@ case "$1" in
     echo "[AUTUMNOS] Starting hardware watchdog" > /dev/kmsg
     /usr/bin/AutixHardwareWatchdog &
 
-    echo "[AUTUMNOS] Starting DRM/FBDEV surface detecting."
+    echo "[AUTUMNOS] Starting DRM/FBDEV surface detecting." > /dev/kmsg
     /usr/bin/AutixSurfDetector &
     
     echo "[AUTUMNOS] Starting AutumnCore." > /dev/kmsg
