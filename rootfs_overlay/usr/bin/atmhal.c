@@ -160,3 +160,22 @@ long atmsys_get_free_RAM(void) {
 	return (s_info.freeram * s_info.mem_unit) / (1024 * 1024);
 }
 
+long atmsys_get_used_RAM(void) {
+	struct sysinfo s_info;
+	if (sysinfo(&s_info) != 0) {
+        	return -1; 
+   	}
+	unsigned long total_mb = (s_info.totalram * s_info.mem_unit) / (1024 * 1024);
+   	unsigned long free_mb = (s_info.freeram * s_info.mem_unit) / (1024 * 1024);
+    	unsigned long used_mb = total_mb - free_mb;
+	return (long)used_mb;
+}
+
+long atmsys_get_free_disk_space(const char *path) {
+	struct statvfs vfs;
+	if(statvfs(path, &vfs) != 0) return -1;
+	unsigned long free_bytes = vfs.f_bavail * vfs.f_frsize;
+	return free_bytes/(1024*1024);
+}
+
+
