@@ -10,7 +10,8 @@ LV_DRV_SRC="$BR_PATH/output/build/lv_drivers-v8.3.0"
 STAGING="$BR_PATH/output/staging"
 
 
-$CC -o sysui *.c \
+$CC -o sysui \ 
+ui/*.c \
 $(find $LVGL_SRC/src -name "*.c") \
 $(find $LV_DRV_SRC -name "*.c" ! -name "lv_drv_conf_template.c") \
 -I. \
