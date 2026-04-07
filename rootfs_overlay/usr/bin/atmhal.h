@@ -35,4 +35,8 @@ long atmsys_uptime(void);
 
 long atmsys_get_free_RAM(void);
 
+long atmsys_get_used_RAM(void);
+
+long atmsys_get_free_disk_space(const char *path);
+
 #endif
