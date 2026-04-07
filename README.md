@@ -97,5 +97,5 @@ LVGL version must be 8.4.*!
 
 ---------------------------
 Update notes:
-*systemui will be updated soon when it's completed!
+* systemui will be updated soon when it's completed!
 * Added API source code
