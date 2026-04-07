@@ -13,3 +13,4 @@ console::respawn:/bin/su - autumnuser0 -c "/bin/sh"
 ::shutdown:/sbin/swapoff -a
 ::shutdown:/bin/umount -a -r
 ::restart:/sbin/init
+::respawn:/usr/bin/watchdog.sh
