@@ -8,7 +8,7 @@
 #include "atmhal.h"
 
 void mkdir_data(void) {
-	mkdir("/tmp/autumnsys", 0777);
+		mkdir("/tmp/autumnsys", 0777);
     	mkdir("/tmp/autumnsys/battery", 0777);
     	mkdir("/tmp/autumnsys/uptime", 0777);
     	mkdir("/tmp/autumnsys/power", 0777);
