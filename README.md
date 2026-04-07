@@ -33,7 +33,7 @@ Technical information:
 
 - Reading temperature
 
-- Autumn Core, HAL, API(updated)
+- Autumn Core, HAL, API
 
 - sudo (root password)
 
@@ -43,7 +43,7 @@ Technical information:
 
 - Camera support(USB/V4L2/UVC etc.)
 
-- g2d 2D/DRM (NEW) accelerator
+- g2d 2D/DRM accelerator
 
 - libjpg, libpng support
 
@@ -51,9 +51,9 @@ Technical information:
 
 - nano for buildroot terminal
 
-- wget and curl support (NEW)
+- wget and curl support
 
-- live weather clock widget (NEW)
+- live weather clock widget
 
 - Goldfish support
 
