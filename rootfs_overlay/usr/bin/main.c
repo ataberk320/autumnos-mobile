@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <stdio.h>
-#include "acore.h"
+#include "AutumnAPI.h"
 //extern const lv_img_dsc_t img_cloudy_dock;
 //extern const lv_img_dsc_t img_sunny_dock;
 #include <stdio.h>
@@ -100,6 +100,18 @@ void update_widget_clock(void) {
     lv_label_set_text(objects.mm, mm_buffer);
 }
 
+void system_monitor_task(lv_timer_t * timer) {
+	int bat = AutumnAPI_Read_Battery_Level();
+
+	if (bat < 0 || bat > 100) {
+		lv_bar_set_value(objects.batterybar, 0, LV_ANIM_ON);
+		lv_label_set_text(objects.batterylevellabel, "%N/A");
+	}
+	else {
+		lv_bar_set_value(objects.batterybar, bat, LV_ANIM_ON);
+		lv_label_set_text_fmt(objects.batterylevellabel, "%d%%", bat);
+	}
+}
 
 void clock_timer(lv_timer_t * timer) {
         update_clock();
@@ -146,7 +158,8 @@ int main(void) {
     lv_timer_create(clock_timer, 5000, NULL);
     update_autumn_weather();
     lv_timer_create(weather_timer_callback, 300000, NULL);
-    
+    lv_timer_create(system_monitor_task, 500, NULL);
+	
     while(1) {
         lv_timer_handler();
         usleep(15000);
