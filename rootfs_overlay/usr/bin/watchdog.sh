@@ -29,6 +29,32 @@ uptime_format_detector() {
     done
 
 }
+ram_format_detector() {
+	    UPTIME_FILE="/tmp/autumnsys/memory/autumnram0"
+
+    while [ ! -f "$UPTIME_FILE" ]; do
+        sleep 1
+    done
+
+    while true; do
+        if [ -f "$UPTIME_FILE" ]; then
+            CONTENT=$(cat "$UPTIME_FILE" | tr -d '[:space:]')
+
+            if [ -n "$CONTENT" ]; then
+                case "$CONTENT" in
+                    *[!0-9]*)
+                        echo "RAM is crashed fatally: invalid RAM format '$CONTENT'" > /dev/kmsg
+
+                             sleep 0.1
+                             echo c > /proc/sysrq-trigger
+
+                        ;;
+                esac
+            fi
+        fi
+        usleep 500000
+    done
+}
 critical_process_detector()  {
 while true; do
 	#If critical process dies
@@ -57,4 +83,5 @@ done
 }
 uptime_format_detector &
 critical_process_detector &
+ram_format_detector &
 wait
