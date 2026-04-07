@@ -6,8 +6,8 @@
 #include <pthread.h>
 #include <stdio.h>
 #include "AutumnAPI.h"
-//extern const lv_img_dsc_t img_cloudy_dock;
-//extern const lv_img_dsc_t img_sunny_dock;
+extern const lv_img_dsc_t img_cloudy_dock;
+extern const lv_img_dsc_t img_sunny_dock;
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
