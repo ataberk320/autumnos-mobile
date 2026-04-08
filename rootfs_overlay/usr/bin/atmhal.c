@@ -94,7 +94,7 @@ void atmsys_convert_videofrm(AVFrame *pFrame, AVCodecContext *pCodecCtx, unsigne
               0, pCodecCtx->height, 
               dest, dest_linesize);
 }
-
+//It will be improved(it's a schematic currently :))
 void atmsys_play_video(const char *source, unsigned char *final_out_buffer, int start_second) {
     char cmd[1024];
     
