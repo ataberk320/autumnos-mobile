@@ -102,7 +102,39 @@ void update_widget_clock(void) {
     lv_label_set_text(objects.hh, hh_buffer);
     lv_label_set_text(objects.mm, mm_buffer);
 }
-//Added battery level monitor
+
+void update_date_label(lv_obj_t * date_label, lv_obj_t * day_label) {
+	time_t t = time(NULL);
+	struct tm tm = *localtime(&t);
+	
+	const char *aylar[] = {
+		"Ocak",
+		"Şubat",
+		"Mart",
+		"Nisan",
+		"Mayıs",
+		"Haziran"
+		"Temmuz",
+		"Ağustos",
+		"Eylül",
+		"Ekim",
+		"Kasım",
+		"Aralık"
+	};
+
+	const char *gunler[] = {
+		"Pazar",
+		"Pazartesi",
+		"Salı",
+		"Çarşamba",
+		"Perşembe",
+		"Cuma",
+		"Cumartesi"
+	};
+	lv_label_set_text_fmt(date_label, "%d %s %d", tm.tm_mday, aylar[tm.tm_mon], tm.tm_year + 1900);
+	lv_label_set_text(day_label, gunler[tm.tm_wday]);
+}
+
 void system_monitor_task(lv_timer_t * timer) {
 	int bat = AutumnAPI_Read_Battery_Level();
 
@@ -123,6 +155,10 @@ void clock_timer(lv_timer_t * timer) {
 
 void weather_timer_callback(lv_timer_t * timer) {
     update_autumn_weather();
+}
+
+void ui_date_timer(lv_timer_t * timer) {
+	update_date_label(objects.datelabel, objects.daylabel);
 }
 
 int main(void) {
@@ -163,7 +199,7 @@ int main(void) {
     update_autumn_weather();
     lv_timer_create(weather_timer_callback, 300000, NULL);
     lv_timer_create(system_monitor_task, 500, NULL);
-	
+	lv_timer_t * date_timer = lv_timer_create(ui_date_timer, 1000, NULL);
     while(1) {
         lv_timer_handler();
         usleep(15000);
