@@ -25,7 +25,7 @@ int atmsys_camera_init(void);
 
 void atmsys_convert_videofrm(AVFrame *pFrame, AVCodecContext *pCodecCtx, unsigned char *out_buffer, int target_width, int target_height);
 
-void atmsys_play_video(const char *source, unsigned char *final_out_buffer, int start_second);
+void *atmsys_play_video(void *arg);
 
 //Power options
 void atmsys_reboot(void);
