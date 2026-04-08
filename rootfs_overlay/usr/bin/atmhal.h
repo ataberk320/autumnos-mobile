@@ -12,6 +12,8 @@ void atmsys_safe_volume(uint8_t volume);
 
 void playaudio(const char *path);
 
+int atmsys_camera_init(void);
+
 //Power options
 void atmsys_reboot(void);
 
