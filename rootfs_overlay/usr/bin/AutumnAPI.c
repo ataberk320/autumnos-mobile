@@ -63,7 +63,7 @@ void AutumnAPI_Play_Video(const char* source) {
 		video_raw_pixels = (unsigned char *)malloc(320 * 240 * 3);
 	}
 	pthread_t tid;
-	pthread_create(&tid, NULL, (void *(*)(void *))atmsys_video_play, (void *)source);
+	pthread_create(&tid, NULL, (void *(*)(void *))atmsys_play_video, (void *)source);
     
         pthread_detach(tid);
 }
