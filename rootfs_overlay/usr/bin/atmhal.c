@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <linux/videodev2.h>
+#include <sys/ioctl.h>
 
 #define PWRBT_GPIO "21"
 #define MODEM_RST_PIN "118"
@@ -63,6 +64,7 @@ int  atmsys_camera_init(void) {
         if (ioctl(cam_fd, VIDIOC_S_FMT, &fmt) < 0) {
                  return -3;
         }
+		return 0;
 }
 
 //Power options
