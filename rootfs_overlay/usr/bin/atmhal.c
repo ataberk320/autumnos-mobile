@@ -46,7 +46,7 @@ void playaudio(const char *path) {
 	if (status == -1) printf("ALSA not initialized!");
 }
 
-int  atmhal_camera_init(void) {
+int  atmsys_camera_init(void) {
         cam_fd = open("/dev/video0", O_RDWR | O_NONBLOCK);
         if (cam_fd < 0) return -1;
 
