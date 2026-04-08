@@ -83,12 +83,6 @@ int main(void) {
 	while (1) {
 		update_system_status();
 		check_power_status();
-		if (atmsys_check_motion() == 1) {
-
-		}
-        else {
-
-		}
 		usleep(500000);
 	}
 	return 0;
