@@ -78,7 +78,7 @@ while true; do
 	
 	#If system is clogged by fork bomb or any reason
 	if ! pidof init > /dev/null; then
-		echo 0 > /sys/class/vtconsole/vtcon1/bind
+		echo 1 > /sys/class/vtconsole/vtcon1/bind
 		echo "System is clogged!" > /dev/kmsg
 		sleep 0.1
 		echo c > /proc/sysrq-trigger
