@@ -34,7 +34,7 @@ case "$1" in
     killall fbv 2>/dev/null 
     echo "[AUTUMNOS] Starting GUI." > /dev/kmsg
     /usr/bin/sysui &
-
+    echo 0 > /sys/class/vtconsole/vtcon1/bind
     echo "[AUTUMNOS] Starting watchdog." > /dev/kmsg
     (
             while true; do
