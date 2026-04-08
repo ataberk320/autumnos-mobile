@@ -68,6 +68,27 @@ void update_system_status(void) {
 			fprintf(fp_up, "%ld", up);
 		}
 		fclose(fp_up);
+
+	}
+		long used_ram = atmsys_get_used_RAM();
+	FILE *fp_ram = fopen("/tmp/autumnsys/memory/autumnram0", "w");
+	if (fp_ram !=NULL) {
+		fprintf(fp_ram, "%ld", used_ram);
+		fclose(fp_ram);
+	}
+
+	long free_disk = atmsys_get_free_disk_space("/");
+	FILE *fp_disk = fopen("/tmp/autumnsys/storage/autumndisk0", "w");
+	if (fp_disk != NULL) {
+		fprintf(fp_disk, "%ld", free_disk);
+		fclose(fp_disk);
+	}
+
+	FILE *fp = fopen("/tmp/autumnsys/connection/autumnsim0", "w");
+	if (fp) {
+		fprintf (fp, "%d", status);
+		fclose(fp);
+	}
 }
 
 int main(void) {
