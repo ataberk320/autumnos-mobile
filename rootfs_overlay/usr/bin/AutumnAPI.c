@@ -37,6 +37,27 @@ long AutumnAPI_Read_Uptime(void) {
 	return up;
 }
 
+
+long AutumnAPI_Read_Used_RAM(void) {
+    long ram = 0;
+    FILE *fp = fopen("/tmp/autumnsys/mem/autumnram0", "r");
+    if (fp) {
+        fscanf(fp, "%ld", &ram);
+        fclose(fp);
+    }
+    return ram;
+}
+
+long AutumnAPI_Read_Free_Disk(void) {
+    long disk = 0;
+    FILE *fp = fopen("/tmp/autumnsys/storage/autumndisk0", "r");
+    if (fp) {
+        fscanf(fp, "%ld", &disk);
+        fclose(fp);
+    }
+    return disk;
+}
+
 void AutumnAPI_Play_Video(const char* source) {
 	if (!video_raw_pixels) {
 		video_raw_pixels = (unsigned char *)malloc(320 * 240 * 3);
