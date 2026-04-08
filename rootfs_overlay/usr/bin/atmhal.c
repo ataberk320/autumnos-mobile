@@ -67,6 +67,68 @@ int  atmsys_camera_init(void) {
 		return 0;
 }
 
+void atmsys_convert_videofrm(AVFrame *pFrame, AVCodecContext *pCodecCtx, unsigned char *out_buffer, int target_width, int target_height) {
+    static struct SwsContext *sws_ctx = NULL;
+    static int last_w = 0, last_h = 0;
+
+    if (sws_ctx == NULL || last_w != pCodecCtx->width || last_h != pCodecCtx->height) {
+        if (sws_ctx) sws_freeContext(sws_ctx);
+        
+        sws_ctx = sws_getContext(
+            pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt,
+            target_width, target_height, AV_PIX_FMT_RGB24,
+            SWS_BILINEAR, NULL, NULL, NULL
+        );
+        
+        last_w = pCodecCtx->width;
+        last_h = pCodecCtx->height;
+    }
+
+    uint8_t *dest[4] = { (uint8_t *)out_buffer, NULL, NULL, NULL };
+    int dest_linesize[4] = { target_width * 3, 0, 0, 0 };
+
+    sws_scale(sws_ctx, 
+              (const uint8_t * const *)pFrame->data, pFrame->linesize, 
+              0, pCodecCtx->height, 
+              dest, dest_linesize);
+}
+
+void atmsys_play_video(const char *source, unsigned char *final_out_buffer, int start_second) {
+    char cmd[1024];
+    
+    snprintf(cmd, sizeof(cmd), 
+             "ffmpeg -ss %d -re -i \"%s\" -f rawvideo -pix_fmt yuv420p -s 320x240 pipe:1 2>/dev/null", 
+             start_second, source);
+
+    FILE *pipein = popen(cmd, "r");
+    if (!pipein) {
+        return;
+    }
+
+    AVFrame *pFrame = av_frame_alloc();
+    AVCodecContext *pCodecCtx = avcodec_alloc_context3(NULL);
+    pCodecCtx->width = 320;
+    pCodecCtx->height = 240;
+    pCodecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
+
+    size_t yuv_size = (320 * 240 * 3) / 2;
+    unsigned char *raw_yuv = (unsigned char *)malloc(yuv_size);
+
+    while (fread(raw_yuv, 1, yuv_size, pipein) == yuv_size) {
+        
+        av_image_fill_arrays(pFrame->data, pFrame->linesize, raw_yuv, 
+                             AV_PIX_FMT_YUV420P, 320, 240, 1);
+
+        atmsys_convert_videofrm(pFrame, pCodecCtx, final_out_buffer, 320, 240);
+
+        usleep(33000); 
+    }
+
+    free(raw_yuv);
+    av_frame_free(&pFrame);
+    pclose(pipein);
+}
+
 //Power options
 void atmsys_reboot(void) {
 	sync();
