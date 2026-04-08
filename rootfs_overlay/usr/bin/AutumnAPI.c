@@ -59,13 +59,22 @@ long AutumnAPI_Read_Free_Disk(void) {
     return disk;
 }
 
-void AutumnAPI_Play_Video(const char* source) {
-	if (!video_raw_pixels) {
-		video_raw_pixels = (unsigned char *)malloc(320 * 240 * 3);
-	}
-	char *thread_source = strdup(source);
-	pthread_t tid;
-	pthread_create(&tid, NULL, (void *(*)(void *))atmsys_play_video, (void *)thread_source);
+void AutumnAPI_Play_Video(const char* source, int start_sec) {
+    if (!video_raw_pixels) {
+        video_raw_pixels = (unsigned char *)malloc(320 * 240 * 3);
+    }
+
     
+    VideoThreadArgs *args = (VideoThreadArgs *)malloc(sizeof(VideoThreadArgs));
+    args->source = strdup(source);
+    args->final_out_buffer = video_raw_pixels;
+    args->start_second = start_sec;
+
+    pthread_t tid;
+    if (pthread_create(&tid, NULL, atmsys_play_video, (void *)args) == 0) {
         pthread_detach(tid);
+    } else {
+        free(args->source);
+        free(args);
+    }
 }
