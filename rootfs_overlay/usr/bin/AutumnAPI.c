@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "AutumnAPI.h"
+#include "atmhal.h"
 
 void AutumnAPI_Request_PowerOff(void) {
 	FILE *fp = fopen("/tmp/autumnsys/power/itstimetopoweroff", "w");
@@ -36,3 +37,12 @@ long AutumnAPI_Read_Uptime(void) {
 	return up;
 }
 
+void AutumnAPI_Play_Video(const char* source) {
+	if (!video_raw_pixels) {
+		video_raw_pixels = (unsigned char *)malloc(320 * 240 * 3);
+	}
+	pthread_t tid;
+	pthread_create(&tid, NULL, (void *(*)(void *))atmsys_video_play, (void *)source);
+    
+        pthread_detach(tid);
+}
