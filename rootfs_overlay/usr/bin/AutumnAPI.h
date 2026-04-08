@@ -9,4 +9,10 @@ int AutumnAPI_Read_Battery_Level(void);
 
 long AutumnAPI_Read_Uptime(void);
 
+long AutumnAPI_Read_Used_RAM(void);
+
+long AutumnAPI_Read_Free_Disk(void);
+
+void AutumnAPI_Play_Video(const char* source);
+
 #endif
