@@ -276,7 +276,8 @@ void atmsys_get_sim_operator_name(int fd, char *provider_name, size_t max_len) {
 	char buffer[128];
 	memset(buffer, 0, sizeof(buffer));
 	write(fd, "AT+COPS?\r\n", 10);
-	usleep(fd, buffer, sizeof(buffer));
+    usleep(100000);
+    read(fd, buffer, sizeof(buffer));
 	char *start = strchr(buffer, '\"');
    	if (start) {
         	start++;
