@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <linux/videodev2.h>
 
 #define PWRBT_GPIO "21"
 #define MODEM_RST_PIN "118"
@@ -43,6 +44,25 @@ void playaudio(const char *path) {
 	snprintf(cmd, sizeof(cmd), "aplay -q -N %s &", path);
 	int status = system(cmd);
 	if (status == -1) printf("ALSA not initialized!");
+}
+
+int  atmhal_camera_init(void) {
+        cam_fd = open("/dev/video0", O_RDWR | O_NONBLOCK);
+        if (cam_fd < 0) return -1;
+
+        struct v4l2_capability cap;
+        if (ioctl(cam_fd, VIDIOC_QUERYCAP, &cap) < 0) return -2;
+
+        struct v4l2_format fmt = {0};
+        fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        fmt.fmt.pix.width = 320;
+        fmt.fmt.pix.height = 240;
+        fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_MJPEG;
+        fmt.fmt.pix.field = V4L2_FIELD_NONE;
+
+        if (ioctl(cam_fd, VIDIOC_S_FMT, &fmt) < 0) {
+                 return -3;
+        }
 }
 
 //Power options
