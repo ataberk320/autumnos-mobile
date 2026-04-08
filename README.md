@@ -76,7 +76,7 @@ ___________________________
 
 # **Easter eggs**
 
-*Glitch panic (console will open when an a kernel panic occurs and the UI glitchs!)
+* Glitch panic (console will open when an a kernel panic occurs and it makes UI glitch!)
 --------------------------
 To compile all image: make -j$(nproc)
 
