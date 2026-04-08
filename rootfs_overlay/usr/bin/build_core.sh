@@ -10,4 +10,4 @@ $COMPILER \
     -o $BIN_PATH/AutumnCore \
     -I$BIN_PATH/ \
     --sysroot=$SYSROOT \
-    -lpthread -lrt
+    -lpthread -lrt -lavformat -lavcodec -lswscale -lavutil -lm -lz
