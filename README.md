@@ -73,6 +73,11 @@ Technical information:
 
 - Timezone data
 ___________________________
+
+# **Easter eggs**
+
+*Glitch panic (console will open when an a kernel panic occurs and the UI glitchs!)
+--------------------------
 To compile all image: make -j$(nproc)
 
 Carefully read the instructions: 
