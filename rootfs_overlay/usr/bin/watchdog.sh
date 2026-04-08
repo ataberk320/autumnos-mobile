@@ -16,9 +16,11 @@ uptime_format_detector() {
             if [ -n "$CONTENT" ]; then
                 case "$CONTENT" in
                     *[!0-9]*)
+						echo 1 > /sys/class/vtconsole/vtcon1/bind
                         echo "Invalid uptime format, system is confused: '$CONTENT'" > /dev/kmsg
-                        
+                        	 
                              sleep 0.1
+							 
                              echo c > /proc/sysrq-trigger
                         
                         ;;
@@ -31,7 +33,7 @@ uptime_format_detector() {
 }
 ram_format_detector() {
 	    UPTIME_FILE="/tmp/autumnsys/memory/autumnram0"
-
+	
     while [ ! -f "$UPTIME_FILE" ]; do
         sleep 1
     done
@@ -43,6 +45,7 @@ ram_format_detector() {
             if [ -n "$CONTENT" ]; then
                 case "$CONTENT" in
                     *[!0-9]*)
+					    echo 1 > /sys/class/vtconsole/vtcon1/bind
                         echo "RAM is crashed fatally: invalid RAM format '$CONTENT'" > /dev/kmsg
 
                              sleep 0.1
@@ -59,6 +62,7 @@ critical_process_detector()  {
 while true; do
 	#If critical process dies
 	if ! pidof AutixSurfDetector > /dev/null; then
+		echo 1 > /sys/class/vtconsole/vtcon1/bind
 		echo "Critical system process died!" > /dev/kmsg
 		sleep 0.1
 		echo c > /proc/sysrq-trigger
@@ -66,6 +70,7 @@ while true; do
 
 	#If core crashes
 	if ! pidof AutumnCore > /dev/null; then
+		echo 1 > /sys/class/vtconsole/vtcon1/bind
 		echo "Core crashed. System is unstable." > /dev/kmsg
 		sleep 0.1
 		echo c > /proc/sysrq-trigger
@@ -73,6 +78,7 @@ while true; do
 	
 	#If system is clogged by fork bomb or any reason
 	if ! pidof init > /dev/null; then
+		echo 0 > /sys/class/vtconsole/vtcon1/bind
 		echo "System is clogged!" > /dev/kmsg
 		sleep 0.1
 		echo c > /proc/sysrq-trigger
