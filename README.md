@@ -93,7 +93,7 @@ WSL version: must be Ubuntu 22.04 LTS
 
 Run chmod +x for watchdog.sh and S99phone!
 
-LVGL version must be 8.4.*!
+LVGL version must be 8.4.0!
 
 ---------------------------
 Update notes:
