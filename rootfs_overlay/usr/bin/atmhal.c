@@ -9,6 +9,11 @@
 #include <stdbool.h>
 #include <linux/videodev2.h>
 #include <sys/ioctl.h>
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libswscale/swscale.h>
+#include <libavutil/imgutils.h>
+
 
 #define PWRBT_GPIO "21"
 #define MODEM_RST_PIN "118"
