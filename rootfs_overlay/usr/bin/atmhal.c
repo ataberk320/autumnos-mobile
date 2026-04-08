@@ -15,6 +15,12 @@
 #define PWRBT_GPIO "21"
 #define MODEM_RST_PIN "118"
 
+typedef struct {
+    char *source;
+    unsigned char *final_out_buffer;
+    int start_second;
+} VideoThreadArgs;
+
 //System configuration functions
 void atmsys_set_brightness(uint8_t level) {
 	FILE *fp = fopen("/sys/class/backlight/backlight/brightness", "w");
@@ -95,41 +101,59 @@ void atmsys_convert_videofrm(AVFrame *pFrame, AVCodecContext *pCodecCtx, unsigne
               dest, dest_linesize);
 }
 //It will be improved(it's a schematic currently :))
-void atmsys_play_video(const char *source, unsigned char *final_out_buffer, int start_second) {
+
+void *atmsys_play_video(void *arg) {
+    VideoThreadArgs *args = (VideoThreadArgs *)arg;
     char cmd[1024];
     
+    
     snprintf(cmd, sizeof(cmd), 
-             "ffmpeg -ss %d -re -i \"%s\" -f rawvideo -pix_fmt yuv420p -s 320x240 pipe:1 2>/dev/null", 
-             start_second, source);
+             "ffmpeg -ss %d -i \"%s\" -f rawvideo -pix_fmt yuv420p -s 320x240 pipe:1 2>/dev/null", 
+             args->start_second, args->source);
 
     FILE *pipein = popen(cmd, "r");
     if (!pipein) {
-        return;
+        free(args->source);
+        free(args);
+        return NULL;
     }
 
     AVFrame *pFrame = av_frame_alloc();
     AVCodecContext *pCodecCtx = avcodec_alloc_context3(NULL);
-    pCodecCtx->width = 320;
-    pCodecCtx->height = 240;
-    pCodecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
+    if (pCodecCtx) {
+        pCodecCtx->width = 320;
+        pCodecCtx->height = 240;
+        pCodecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
+    }
 
     size_t yuv_size = (320 * 240 * 3) / 2;
     unsigned char *raw_yuv = (unsigned char *)malloc(yuv_size);
 
+    
     while (fread(raw_yuv, 1, yuv_size, pipein) == yuv_size) {
+        
         
         av_image_fill_arrays(pFrame->data, pFrame->linesize, raw_yuv, 
                              AV_PIX_FMT_YUV420P, 320, 240, 1);
 
-        atmsys_convert_videofrm(pFrame, pCodecCtx, final_out_buffer, 320, 240);
+         atmsys_convert_videofrm(pFrame, pCodecCtx, args->final_out_buffer, 320, 240);
 
-        usleep(33000); 
+        usleep(33000);
     }
 
+   
     free(raw_yuv);
-    av_frame_free(&pFrame);
+    if (pFrame) av_frame_free(&pFrame);
+    if (pCodecCtx) avcodec_free_context(&pCodecCtx); 
     pclose(pipein);
+    
+    free(args->source);
+    free(args);
+    return NULL;
 }
+
+
+    
 
 //Power options
 void atmsys_reboot(void) {
