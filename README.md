@@ -76,7 +76,7 @@ ___________________________
 
 # **Easter eggs**
 
-* Glitch panic (console will open when an a kernel panic occurs and it makes UI glitch!)
+* Glitch panic (console will open when an a kernel panic occurs and it makes UI glitch!/only watchdog.sh panics!)
 --------------------------
 To compile all image: make -j$(nproc)
 
