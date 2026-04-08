@@ -74,9 +74,21 @@ int main(void) {
 	mkdir_data();
 	atmsys_safe_volume(65);
 	atmsys_modemhdinit();
+	if (atmsys_camera_init() == 0) {
+            
+    }
+    else {
+                
+    }
 	while (1) {
 		update_system_status();
 		check_power_status();
+		if (atmhal_check_motion() == 1) {
+
+		}
+        else {
+
+		}
 		usleep(500000);
 	}
 	return 0;
