@@ -12,6 +12,9 @@ void mkdir_data(void) {
     	mkdir("/tmp/autumnsys/battery", 0777);
     	mkdir("/tmp/autumnsys/uptime", 0777);
     	mkdir("/tmp/autumnsys/power", 0777);
+		mkdir("/tmp/autumnsys/memory", 0777);
+		mkdir("/tmp/autumnsys/storage", 0777);
+		mkdir("/tmp/autumnsys/connection", 0777);
 }
 
 void check_power_status(void) {
