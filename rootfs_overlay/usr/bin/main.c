@@ -124,8 +124,8 @@ void clock_timer(lv_timer_t * timer) {
 void weather_timer_callback(lv_timer_t * timer) {
     update_autumn_weather();
 }
-//FIXME: Changed main to ui_main for "main.c:(.text+0x868): multiple definition of `main'; /tmp/cc0T9iVr.o:acore.c:(.text+0x430): first defined here" error
-int ui_main(void) {
+
+int main(void) {
     lv_init();
     fbdev_init();
 	//drm_init();
