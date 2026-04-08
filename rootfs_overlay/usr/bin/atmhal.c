@@ -255,6 +255,44 @@ void atmsys_modem_software_init(int fd) {
         usleep(300000); 
     }
 }
+int atmsys_is_sim_inserted(int fd) {
+	char buffer[64];
+	write (fd, "AT+CPIN?\r\n", 10);
+	usleep(100000);
+	read(fd, buffer, sizeof(buffer));
+	if (strstr(buffer, "READY")) {
+		return 1;
+	}
+	else if (strstr(buffer, "SIM PIN")) {
+		return 2;
+	}
+	else {
+		return 0;
+	}
+}
+
+
+void atmsys_get_sim_operator_name(int fd, char *provider_name, size_t max_len) {
+	char buffer[128];
+	memset(buffer, 0, sizeof(buffer));
+	write(fd, "AT+COPS?\r\n", 10);
+	usleep(fd, buffer, sizeof(buffer));
+	char *start = strchr(buffer, '\"');
+   	if (start) {
+        	start++;
+        	char *end = strchr(start, '\"');
+        if (end) {
+            size_t len = end - start;
+            if (len >= max_len) len = max_len - 1;
+            strncpy(provider_name, start, len);
+            provider_name[len] = '\0';
+            return;
+        }
+    }
+    
+    
+    strncpy(provider_name, "Servis yok - Yalnızca acil aramalar.", max_len);
+}
 
 //Performance and storage status (Memory stat)
 long atmsys_uptime(void) {
