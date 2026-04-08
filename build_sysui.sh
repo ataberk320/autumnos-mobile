@@ -12,6 +12,7 @@ STAGING="$BR_PATH/output/staging"
 
 $CC -o sysui \ 
 ui/*.c \
+atmhal.c \
 $(find $LVGL_SRC/src -name "*.c") \
 $(find $LV_DRV_SRC -name "*.c" ! -name "lv_drv_conf_template.c") \
 -I. \
@@ -22,13 +23,14 @@ $(find $LV_DRV_SRC -name "*.c" ! -name "lv_drv_conf_template.c") \
 -I$STAGING/usr/include/freetype2/freetype \
 -L$STAGING/usr/lib \
 -lfreetype -lpthread -lm \
+-lavcodec -lavformat -lavutil -lswscale \
 -D LV_CONF_INCLUDE_SIMPLE \
 -D LV_LVGL_H_INCLUDE_SIMPLE \
 -D LV_DRV_CONF_INCLUDE_SIMPLE \
 -D USE_FBDEV=1 \
 -D USE_EVDEV=1 \
 -D LV_USE_FREETYPE=1 \
--D LV_CONF_PATH=lv_conf.h
+-D LV_CONF_PATH=ui/lv_conf.h
 
 if [ $? -eq 0 ]; then
     echo "Successfully compiled!"
