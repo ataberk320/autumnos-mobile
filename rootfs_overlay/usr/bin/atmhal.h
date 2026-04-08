@@ -2,15 +2,15 @@
 #define ATMHAL_H
 #include <stdint.h>
 #include <stdbool.h>
-#include <libswscale/swscale.h>
-#include <libavutil/imgutils.h>
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+#include <libswscale/swscale.h>
+#include <libavutil/imgutils.h>
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
 void atmsys_set_brightness(uint8_t level);
 
 void atmsys_volume_up(void) ;
