@@ -45,6 +45,10 @@ int atmsys_modeminit(const char* port);
 
 void atmsys_modem_software_init(int fd);
 
+int atmsys_is_sim_inserted(int fd);
+
+void atmsys_get_sim_operator_name(int fd, char *provider_name, size_t max_len);
+
 //Performance and storage status (Memory stat)
 long atmsys_uptime(void);
 
