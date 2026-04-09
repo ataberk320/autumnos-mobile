@@ -11,8 +11,8 @@
       "extensions": [],
       "imports": [],
       "flowSupport": false,
-      "displayWidth": 800,
-      "displayHeight": 480,
+      "displayWidth": 480,
+      "displayHeight": 800,
       "displayBorderRadius": 0,
       "colorFormat": "BGR",
       "resourceFiles": [],
@@ -119,6 +119,15 @@
       "componentGroups": [],
       "userProperties": [],
       "name": "Unlock only"
+    },
+    {
+      "objID": "a9e44a10-9611-49c1-905a-42968e9a720a",
+      "components": [],
+      "connectionLines": [],
+      "localVariables": [],
+      "componentGroups": [],
+      "userProperties": [],
+      "name": "Start process"
     }
   ],
   "userPages": [
@@ -212,7 +221,16 @@
                 "childStyles": []
               },
               "timeline": [],
-              "eventHandlers": [],
+              "eventHandlers": [
+                {
+                  "objID": "20251641-87da-4b11-8b0a-af230d6bb9f3",
+                  "eventName": "CLICKED",
+                  "handlerType": "action",
+                  "action": "Start process",
+                  "userData": 0
+                }
+              ],
+              "identifier": "phone_icon",
               "leftUnit": "px",
               "topUnit": "px",
               "widthUnit": "content",
@@ -262,6 +280,7 @@
               },
               "timeline": [],
               "eventHandlers": [],
+              "identifier": "messages_icon",
               "leftUnit": "px",
               "topUnit": "px",
               "widthUnit": "content",
@@ -311,6 +330,7 @@
               },
               "timeline": [],
               "eventHandlers": [],
+              "identifier": "camera_icon",
               "leftUnit": "px",
               "topUnit": "px",
               "widthUnit": "content",
@@ -360,6 +380,7 @@
               },
               "timeline": [],
               "eventHandlers": [],
+              "identifier": "calendar_icon",
               "leftUnit": "px",
               "topUnit": "px",
               "widthUnit": "content",
@@ -1973,6 +1994,7 @@
                 }
               ],
               "widgetFlags": "CLICK_FOCUSABLE|GESTURE_BUBBLE|PRESS_LOCK|SCROLL_CHAIN_HOR|SCROLL_CHAIN_VER|SCROLL_ELASTIC|SCROLL_MOMENTUM|SCROLL_WITH_ARROW|SNAPPABLE",
+              "hiddenFlag": true,
               "hiddenFlagType": "literal",
               "clickableFlag": true,
               "clickableFlagType": "literal",
