@@ -86,7 +86,8 @@ void update_system_status(void) {
 		fprintf(fp_disk, "%ld", free_disk);
 		fclose(fp_disk);
 	}
-
+	
+	int status = atmsys_get_sim_status(serial_fd);
 	FILE *fp = fopen("/tmp/autumnsys/connection/autumnsim0", "w");
 	if (fp) {
 		fprintf (fp, "%d", status);
