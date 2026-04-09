@@ -28,6 +28,8 @@ case "$1" in
     else
 //You can customize default.png with your logo
         fbv -f -u /usr/share/default.png > /dev/null 2>&1 &
+# if you want play an boot animation
+# ffmpeg -re -i /usr/share/autumn/assets/boot_animation.mp4 -f fbdev /dev/fb0 &
     fi
 
     sleep 5
