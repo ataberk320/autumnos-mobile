@@ -5,4 +5,4 @@ config BR2_PACKAGE_SUNXI_G2D
 	  This enables hardware-accelerated bitblt, stretching, 
 	  and color space conversion for Allwinner D1/D1s.
 
-	  https://github.com/HX2003/sunxi_g2d
+	https://github.com/cheofusi/sunxi-g2d
