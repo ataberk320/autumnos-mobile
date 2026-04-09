@@ -1,7 +1,21 @@
+################################################################################
+#
+# sunxi-g2d
+#
+################################################################################
+
 SUNXI_G2D_VERSION = main
 SUNXI_G2D_SITE = https://github.com/HX2003/sunxi_g2d.git
 SUNXI_G2D_SITE_METHOD = git
 SUNXI_G2D_INSTALL_STAGING = YES
+
+
+define SUNXI_G2D_PRE_BUILD_FIX
+	sed -i 's|/g2d_rcq|./g2d_rcq|g' $(@D)/Makefile
+	sed -i 's|/g2d_bsp|./g2d_bsp|g' $(@D)/Makefile
+endef
+
+SUNXI_G2D_PRE_CONFIGURE_HOOKS += SUNXI_G2D_PRE_BUILD_FIX
 
 define SUNXI_G2D_BUILD_CMDS
 	$(TARGET_MAKE_ENV) $(MAKE) $(TARGET_CONFIGURE_OPTS) -C $(@D)
