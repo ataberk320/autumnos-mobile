@@ -256,8 +256,9 @@ void atmsys_modem_software_init(int fd) {
     }
 }
 int atmsys_is_sim_inserted(int fd) {
-	char buffer[64];
+	char buffer[128];
 	write (fd, "AT+CPIN?\r\n", 10);
+	tcdrain(fd);
 	usleep(100000);
 	read(fd, buffer, sizeof(buffer));
 	if (strstr(buffer, "READY")) {
