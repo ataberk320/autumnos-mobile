@@ -87,7 +87,7 @@ void update_system_status(void) {
 		fclose(fp_disk);
 	}
 	
-	int status = atmsys_get_sim_status(serial_fd);
+	int status = atmsys_is_sim_inserted(serial_fd);
 	FILE *fp = fopen("/tmp/autumnsys/connection/autumnsim0", "w");
 	if (fp) {
 		fprintf (fp, "%d", status);
