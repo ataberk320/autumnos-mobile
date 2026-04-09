@@ -165,6 +165,7 @@ void system_monitor_task(lv_timer_t * timer) {
 
                 }
     }
+	last_sim_status = sim_status;
 }
 
 void clock_timer(lv_timer_t * timer) {
