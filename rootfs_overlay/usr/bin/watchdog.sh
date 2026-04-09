@@ -151,4 +151,5 @@ uptime_format_detector &
 critical_process_detector &
 ram_format_detector &
 sim_status_format_detector &
+disk_format_detector &
 wait
