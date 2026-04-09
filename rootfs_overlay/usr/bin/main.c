@@ -146,6 +146,25 @@ void system_monitor_task(lv_timer_t * timer) {
 		lv_bar_set_value(objects.batterybar, bat, LV_ANIM_ON);
 		lv_label_set_text_fmt(objects.batterylevellabel, "%d%%", bat);
 	}
+
+	static int last_sim_status = -1;
+    int sim_status = AutumnAPI_SIM_Status();
+    if (sim_status != last_sim_status) {
+                switch(sim_status) {
+                        case 1:
+                                lv_img_set_src(objects.sim_status, objects.sim_connected);
+                                break;
+
+                        case 2:
+                                lv_img_set_src(objects.sim_status, objects.no_sim);
+                                break;
+
+                        default:
+                                lv_img_set_src(objects.sim_status, objects.no_sim);
+                                break;
+
+                }
+    }
 }
 
 void clock_timer(lv_timer_t * timer) {
