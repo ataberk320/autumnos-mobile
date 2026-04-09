@@ -74,7 +74,7 @@ sim_status_format_detector() {
                 case "$CONTENT" in
                     *[!0-9]*)
 						echo 1 > /sys/class/vtconsole/vtcon1/bind  # for enable Glitch panic
-                        echo "Invalid uptime format, system is confused: '$CONTENT'" > /dev/kmsg
+                        echo "Invalid SIM card status, system is confused: '$CONTENT'" > /dev/kmsg
                         	 
                              sleep 0.1
 							 
