@@ -1,3 +1,4 @@
+//AutumnUI graphical user interface manager
 #include "lvgl.h"
 #include "lv_drivers-v8.3.0/display/fbdev.h"
 #include "lv_drivers-v8.3.0/indev/evdev.h"
