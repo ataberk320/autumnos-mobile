@@ -2,6 +2,7 @@
 #include "ui.h"
 #include "lvgl.h"
 #include <math.h>
+#include <stdlib.h>
 
 static lv_point_t start_point;
 
@@ -16,7 +17,7 @@ void action_unlock_only(lv_event_t * e) {
 	else if(code == LV_EVENT_PRESSING) {
         long int dx = curr_point.x - start_point.x;
         long int dy = curr_point.y - start_point.y;
-	uint32_t dist =	sqrt(dx*dx + dy*dy);
+        uint32_t dist = sqrt(dx*dx + dy*dy);
         int opacity = 255 - (dist / 2); 
         if(opacity < 0) opacity = 0;
         lv_obj_set_style_opa(screen, opacity, 0);
@@ -24,7 +25,7 @@ void action_unlock_only(lv_event_t * e) {
 	else if(code == LV_EVENT_RELEASED) {
         long int dx = curr_point.x - start_point.x;
         long int dy = curr_point.y - start_point.y;
-	uint32_t dist = (uint32_t)sqrt((double)(dx*dx + dy*dy));
+        uint32_t dist = sqrt(dx*dx + dy*dy);
         if(dist > 200) {
             lv_obj_add_flag(screen, LV_OBJ_FLAG_HIDDEN);
             lv_obj_set_style_opa(screen, 255, 0);
@@ -32,5 +33,24 @@ void action_unlock_only(lv_event_t * e) {
         else {
             lv_obj_set_style_opa(screen, 255, 0);
         }
+	}
+}
+
+void action_start_process(lv_event_t * e){
+	lv_event_code_t code = lv_event_get_code(e);
+	lv_obj_t * obj = lv_event_get_target(e);
+	if(code == LV_EVENT_CLICKED) {
+		if (obj == objects.phone_icon) {
+			system("echo 'phone process test!' > /dev/kmsg");
+		}
+		else if(obj == objects.messages_icon) {
+			system("echo 'messages process test!' > /dev/kmsg");
+		}
+		else if(obj == objects.camera_icon) {
+			system("echo 'camera process test!' > /dev/kmsg");
+		}
+		else if(obj == objects.calendar_icon) {
+			system("echo 'calendar process test!' > /dev/kmsg");
+		}
 	}
 }
