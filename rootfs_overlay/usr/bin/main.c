@@ -46,9 +46,9 @@ void update_autumn_weather(void) {
 
         
         if (degree) {
-            if (degree[0] == '+') derece++;
+            if (degree[0] == '+') degree++;
             
-            char *c_pos = strstr(derece, "°C");
+            char *c_pos = strstr(degree, "°C");
             if (c_pos) *c_pos = '\0'; 
             
             lv_label_set_text_fmt(objects.weatherdegree, "%s°C", degree;
