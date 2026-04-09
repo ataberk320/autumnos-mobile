@@ -1,5 +1,5 @@
 #!/bin/sh
-
+        
 sudo echo 1 > /proc/sys/kernel/sysrq
 
 uptime_format_detector() {
@@ -89,6 +89,35 @@ sim_status_format_detector() {
 
 }
 
+disk_format_detector() {
+    UPTIME_FILE="/tmp/autumnsys/storage/autumndisk0"
+    
+    while [ ! -f "$UPTIME_FILE" ]; do
+        sleep 1
+    done
+
+    while true; do
+        if [ -f "$UPTIME_FILE" ]; then
+            CONTENT=$(cat "$UPTIME_FILE" | tr -d '[:space:]')
+            
+            if [ -n "$CONTENT" ]; then
+                case "$CONTENT" in
+                    *[!0-9]*)
+						echo 1 > /sys/class/vtconsole/vtcon1/bind  # for enable Glitch panic
+                        echo "Invalid uptime format, system is confused: '$CONTENT'" > /dev/kmsg
+                        	 
+                             sleep 0.1
+							 
+                             echo c > /proc/sysrq-trigger
+                        
+                        ;;
+                esac
+            fi
+        fi
+        usleep 500000 
+    done
+
+}
 critical_process_detector()  {
 while true; do
 	#If critical process dies
