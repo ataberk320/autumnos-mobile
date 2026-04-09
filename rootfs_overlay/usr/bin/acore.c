@@ -100,7 +100,7 @@ int main(void) {
 	mkdir_data();
 	atmsys_safe_volume(65);
 	atmsys_modemhdinit();
-	int serial_fd = open("/dev/ttyS0", O_RDWR);
+	int serial_fd = open("/dev/ttyS1", O_RDWR | O_NOCTTY);
 	if (atmsys_camera_init() == 0) {
             
     }
