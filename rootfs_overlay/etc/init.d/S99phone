@@ -23,6 +23,7 @@ case "$1" in
     echo "[AUTUMNOS] Starting AutumnCore." > /dev/kmsg
     /usr/bin/AutumnCore &
 
+	    echo 0 > /sys/class/vtconsole/vtcon1/bind
 	if grep -q "QEMU" /proc/device-tree/model 2>/dev/null || grep -q "QEMU" /proc/cpuinfo; then
         fbv -f -u /usr/share/qemu.png > /dev/null 2>&1 &
     else
@@ -36,7 +37,6 @@ case "$1" in
     killall fbv 2>/dev/null 
     echo "[AUTUMNOS] Starting GUI." > /dev/kmsg
     /usr/bin/sysui &
-    echo 0 > /sys/class/vtconsole/vtcon1/bind
     echo "[AUTUMNOS] Starting watchdog." > /dev/kmsg
     (
             while true; do
