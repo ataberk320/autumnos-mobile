@@ -38,14 +38,14 @@ void update_autumn_weather(void) {
         char *degree = strtok(NULL, ",");
         char *status = strtok(NULL, ",");
 
-        // ŞEHİR
-        if (sehir) {
+        
+        if (city) {
             lv_label_set_text(objects.weathercity, city);
         }
 
         
-        if (derece) {
-            if (derece[0] == '+') derece++;
+        if (degree) {
+            if (degree[0] == '+') derece++;
             
             char *c_pos = strstr(derece, "°C");
             if (c_pos) *c_pos = '\0'; 
