@@ -16,7 +16,7 @@ uptime_format_detector() {
             if [ -n "$CONTENT" ]; then
                 case "$CONTENT" in
                     *[!0-9]*)
-						echo 1 > /sys/class/vtconsole/vtcon1/bind #for enable Glitch panic
+						echo 1 > /sys/class/vtconsole/vtcon1/bind  # for enable Glitch panic
                         echo "Invalid uptime format, system is confused: '$CONTENT'" > /dev/kmsg
                         	 
                              sleep 0.1
