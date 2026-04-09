@@ -99,6 +99,7 @@ int main(void) {
 	mkdir_data();
 	atmsys_safe_volume(65);
 	atmsys_modemhdinit();
+	int serial_fd = open("/dev/ttyS0", O_RDWR);
 	if (atmsys_camera_init() == 0) {
             
     }
@@ -107,7 +108,7 @@ int main(void) {
     }
 	while (1) {
 		update_system_status();
-		check_power_status();
+		check_power_status(serial_fd);
 		usleep(500000);
 	}
 	return 0;
