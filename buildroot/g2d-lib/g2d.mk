@@ -15,7 +15,7 @@ endef
 
 define SUNXI_G2D_INSTALL_STAGING_CMDS
 	$(INSTALL) -D -m 0755 $(@D)/libg2d.so $(STAGING_DIR)/usr/lib/libg2d.so
-	$(INSTALL) -D -m 0644 $(@D)/g2d_driver.h $(STAGING_DIR)/usr/include/g2d_driver.h
+	$(INSTALL) -D -m 0644 $(@D)/module/g2d_driver.h $(STAGING_DIR)/usr/include/g2d_driver.h
 endef
 
 define SUNXI_G2D_INSTALL_TARGET_CMDS
