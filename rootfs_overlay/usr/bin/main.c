@@ -15,7 +15,7 @@ extern const lv_img_dsc_t img_sunny_dock;
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <time.h>
 
 void update_autumn_weather(void) {
     FILE *fp;
