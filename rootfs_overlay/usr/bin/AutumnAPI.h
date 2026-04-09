@@ -15,4 +15,7 @@ long AutumnAPI_Read_Free_Disk(void);
 
 void AutumnAPI_Play_Video(const char* source);
 
+int AutumnAPI_SIM_Status(void);
+
+
 #endif
