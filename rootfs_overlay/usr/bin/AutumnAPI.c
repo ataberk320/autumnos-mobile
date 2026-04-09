@@ -78,3 +78,15 @@ void AutumnAPI_Play_Video(const char* source, int start_sec) {
         free(args);
     }
 }
+
+int AutumnAPI_SIM_Status(void) {
+        int status = 0;
+        FILE *fp = fopen("/tmp/autumnsys/connection/autumnsim0", "r");
+        if (fp) {
+                if (fscanf(fp, "%d", &status) != 1) {
+                        status = 0;
+                }
+                fclose(fp);
+        }
+        return status;
+}
