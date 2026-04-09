@@ -53,7 +53,7 @@ void check_power_status(void) {
     }
 }
 
-void update_system_status(int fd) {
+void update_system_status(int serial_fd) {
 	int bat = atmsys_battery_perc();
 	FILE *fp_bat = fopen("/tmp/autumnsys/battery/autumnbat0", "w");
 	if (fp_bat != NULL)  {
