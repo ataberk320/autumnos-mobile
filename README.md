@@ -114,10 +114,11 @@ LVGL version must be 8.4.0!
 * Android 2.x
 ![froyo11 (1)](https://github.com/user-attachments/assets/16cb6603-21af-469f-bc49-26765f03a671)
 
-* Windows - BSOD(Glitch panic)
+* Windows - BSOD (Glitch panic)
 ![OIP (2)](https://github.com/user-attachments/assets/8efba672-0282-4c0e-bc69-326372699d2e)
 
-
+* Android Honeycomb (Autumn_HoloUI)
+![Android-Honeycomb](https://github.com/user-attachments/assets/f866e342-5ac2-4a80-b982-8e064b0cb06b)
 
 
 Update notes:
