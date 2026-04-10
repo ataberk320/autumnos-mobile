@@ -73,28 +73,7 @@
 		compatible = "mmc-pwrseq-simple";
 		reset-gpios = <&pio 6 17 GPIO_ACTIVE_LOW>; /* PG17 */
 	};
-	reg_vcc_audio: vcc-audio {
-		compatible = "regulator-fixed";
-		regulator-name = "vcc-audio";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		vin-supply = <&reg_vcc_3v3>;
-	};
 
-	sound {
-		compatible = "simple-audio-card";
-		simple-audio-card,name = "AutumnPhone-Audio";
-		simple-audio-card,format = "i2s";
-		simple-audio-card,mclk-fs = <256>;
-
-		simple-audio-card,cpu {
-			sound-dai = <&codec>;
-		};
-
-		simple-audio-card,codec {
-			sound-dai = <&codec>;
-		};
-	};
 };
 
 &cpu0 {
@@ -190,10 +169,6 @@
 	status = "okay";
 };
 
-&codec {
-	allwinner,audio-routing =
-		"Line Out", "LINEOUT",
-		"MIC1", "Mic",
-		"Mic", "MBIAS";
+&g2d {
 	status = "okay";
 };
