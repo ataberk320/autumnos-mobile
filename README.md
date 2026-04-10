@@ -133,7 +133,7 @@ LVGL version must be 8.4.0!
 ------------------------------------------------------------------------------
 
 System screenshots:
-[**Screenshots Directory**](https://github.com/ataberk/autumnos-mobile/tree/main/screenshots)
+[**Screenshots Directory**](https://github.com/ataberk/autumnos-mobile/screenshots)
 
 
 
