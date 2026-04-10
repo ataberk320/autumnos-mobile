@@ -95,6 +95,8 @@ Carefully read the instructions:
 - /boot_logo/boot_anim_instructions.txt
 - /buildroot/config_instruction.txt
 - /buildroot/g2d-lib/src/g2d_instruction.txt
+
+
 Buildroot version: Buildroot 2026.02-84-g088c3602fd-dirty
 
 To compile lvgl, create a folder name lvgl on buildroot/package and move "Config.in" and lvgl.mk files on /buildroot directory on this repository
