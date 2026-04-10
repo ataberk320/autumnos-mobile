@@ -1,0 +1,1 @@
+Create a folder named "sunxi-g2d" in  buildroot/package! and move source codes in /src and Config files.
