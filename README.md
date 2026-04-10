@@ -79,6 +79,7 @@ ___________________________
 
 * Glitch panic (console will open when an a kernel panic occurs and it makes UI glitch!/only watchdog.sh panics!)
 * Michael Scott on weather clock widget
+
   <img width="220" height="225" alt="image-00025-removebg-preview" src="https://github.com/user-attachments/assets/cb29f0fe-2072-4da0-9d36-08c14f316dd6" />
 
 --------------------------
@@ -109,18 +110,23 @@ LVGL version must be 8.4.0!
 # **Interfaces and projects inspired me
 
 * LG Optimus VU - early Optimus UI 3.0 (AutumnUI)
+
 ![120222-lg-optimus-Vu-01](https://github.com/user-attachments/assets/ed09edf8-8530-4ec0-a455-d0528a0f8f7e)
 
 * Samsung Galaxy S1 swipe lockscreen
+
 ![Samsung_Galaxy_S_(Android_2 2 1)_-_Lock_Screen](https://github.com/user-attachments/assets/c6879258-f497-41da-ac5d-0b52cea6d31a)
 
 * Android 2.x
+
 ![froyo11 (1)](https://github.com/user-attachments/assets/16cb6603-21af-469f-bc49-26765f03a671)
 
 * Windows - BSOD (Glitch panic)
+
 ![OIP (2)](https://github.com/user-attachments/assets/8efba672-0282-4c0e-bc69-326372699d2e)
 
 * Android Honeycomb (Autumn_HoloUI)
+
 ![Android-Honeycomb](https://github.com/user-attachments/assets/f866e342-5ac2-4a80-b982-8e064b0cb06b)
 
 
