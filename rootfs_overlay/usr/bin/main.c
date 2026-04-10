@@ -260,6 +260,11 @@ int main(void) {
     //lv_obj_clear_flag(invisible_cursor, LV_OBJ_FLAG_CLICKABLE);
     //lv_obj_set_style_bg_color(invisible_cursor, lv_color_make(255, 0, 0), 0);
     //lv_indev_set_cursor(mouse_indev, invisible_cursor);
+	lv_obj_set_scrollbar_mode(lv_scr_act(), LV_SCROLLBAR_MODE_OFF);
+    lv_obj_set_align(objects.lockscreenclocklabel, LV_ALIGN_TOP_LEFT);
+    lv_obj_set_x(objects.lockscreenclocklabel, 183);
+    lv_obj_set_y(objects.lockscreenclocklabel, 631);
+    lv_obj_set_style_text_align(objects.lockscreenclocklabel, LV_TEXT_ALIGN_CENTER, LV_STATE_DEFAULT);
     lv_timer_create(system_monitor_task, 1000, NULL);
     lv_timer_create(clock_timer, 5000, NULL);
     update_autumn_weather();
