@@ -130,6 +130,14 @@ LVGL version must be 8.4.0!
 
 ![Android-Honeycomb](https://github.com/user-attachments/assets/f866e342-5ac2-4a80-b982-8e064b0cb06b)
 
+------------------------------------------------------------------------------
+
+System screenshots:
+| Boot screen | GlitchPanic
+![bandicam 2026-04-06 23-23-30-278](https://github.com/user-attachments/assets/0d347611-75e1-4788-a6e8-7db5cb2aca5c) | https://github.com/user-attachments/assets/18170ac2-d14b-4aa6-9387-1abb46873d89
+
+
+
 
 Update notes:
 * systemui will be updated soon when it's completed!
