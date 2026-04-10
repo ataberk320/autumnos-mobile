@@ -23,14 +23,17 @@ case "$1" in
     echo "[AUTUMNOS] Starting AutumnCore." > /dev/kmsg
     /usr/bin/AutumnCore &
 
-	    echo 0 > /sys/class/vtconsole/vtcon1/bind
+	echo "[AUTUMNOS] Starting NameserverDefiner."
+    /usr/bin/AutixNameserverDefiner &
+
+	echo 0 > /sys/class/vtconsole/vtcon1/bind
 	if grep -q "QEMU" /proc/device-tree/model 2>/dev/null || grep -q "QEMU" /proc/cpuinfo; then
         fbv -f -u /usr/share/qemu.png > /dev/null 2>&1 &
     else
-#You can customize default.png with your logo
+		#You can customize default.png with your logo
         fbv -f -u /usr/share/default.png > /dev/null 2>&1 &
-# if you want play an boot animation
-# ffmpeg -re -i /usr/share/autumn/assets/boot_animation.mp4 -f fbdev /dev/fb0 &
+		# if you want play an boot animation
+		# ffmpeg -re -i /usr/share/autumn/assets/boot_animation.mp4 -f fbdev /dev/fb0 &
     fi
 
     sleep 5
