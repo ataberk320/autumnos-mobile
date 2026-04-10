@@ -133,8 +133,7 @@ LVGL version must be 8.4.0!
 ------------------------------------------------------------------------------
 
 System screenshots:
-| Boot screen | GlitchPanic
-![bandicam 2026-04-06 23-23-30-278](https://github.com/user-attachments/assets/0d347611-75e1-4788-a6e8-7db5cb2aca5c) | https://github.com/user-attachments/assets/18170ac2-d14b-4aa6-9387-1abb46873d89
+[**Screenshots Directory**](https://github.com/ataberk/autumnos-mobile/tree/main/screenshots)
 
 
 
