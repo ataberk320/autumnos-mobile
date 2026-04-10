@@ -87,9 +87,10 @@ ___________________________
 To compile all image: make -j$(nproc)
 
 Carefully read the instructions: 
-- /rootfs_overlay/etc/init.d/S99_instruction.txt
-- /rootfs_overlay/usr/bin/sysui_instruction.txt
-- /buildroot/logos/logo_instruction.txt
+- [**S99 Instruction**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/rootfs_overlay/etc/init.d/S99_instruction.txt)
+- [**SystemUI Instruction**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/rootfs_overlay/usr/bin/sysui_instruction.txt)
+- [**PPM Logo Instruction**](https://www.github
+com/ataberk320/tree/main/buildroot/logos/logo_instruction.txt)
 - /package_config/config_instruction.txt
 - /systemui/ui_instruction.txt
 - /boot_logo/boot_anim_instructions.txt
