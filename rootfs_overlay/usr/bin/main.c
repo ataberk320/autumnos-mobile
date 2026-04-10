@@ -56,13 +56,38 @@ void update_autumn_weather(void) {
 
         
         if (status) {
-            if (strstr(status, "Clear") || strstr(status, "Sunny")) {
-                lv_label_set_text(objects.weatherstatus, LV_SYMBOL_IMAGE " Güneşli");
-            } else if (strstr(status, "Cloud") || strstr(status, "Overcast") || strstr(status, "cloudy")) {
+		if (strstr(status, "Thunder") || strstr(status, "storm") || strstr(status, "lightning")) {
+                lv_label_set_text(objects.weatherstatus, LV_SYMBOL_CHARGE " Gök Gürültülü");
+        }
+
+        	else if (strstr(status, "Snow") || strstr(status, "Sleet") || strstr(status, "Ice") || strstr(status, "snow")) {
+                lv_label_set_text(objects.weatherstatus, LV_SYMBOL_LIST " Karlı");
+        	}
+
+        	else if (strstr(status, "Mist") || strstr(status, "Fog") || strstr(status, "Haze") || strstr(status, "Smoke")) {
+                lv_label_set_text(objects.weatherstatus, LV_SYMBOL_REFRESH " Sisli");
+        	}
+
+        	else if (strstr(status, "Heavy rain") || strstr(status, "Shower") || strstr(status, "Torrential")) {
+                lv_label_set_text(objects.weatherstatus, LV_SYMBOL_DOWNLOAD " Sağanak Yağış");
+        	}
+
+        	else if (strstr(status, "Rain") || strstr(status, "Drizzle") || strstr(status, "rain") || strstr(status, "patchy")) {
+                lv_label_set_text(objects.weatherstatus, LV_SYMBOL_LIST " Yağmurlu");
+        	}
+
+        	else if (strstr(status, "Overcast") || strstr(status, "broken clouds")) {
+                lv_label_set_text(objects.weatherstatus, LV_SYMBOL_IMAGE " Kapalı");
+        	}
+
+        	else if (strstr(status, "Cloud") || strstr(status, "cloudy") || strstr(status, "scattered")) {
                 lv_label_set_text(objects.weatherstatus, LV_SYMBOL_IMAGE " Bulutlu");
-            } else if (strstr(status, "Rain") || strstr(status, "Drizzle")) {
-                lv_label_set_text(objects.weatherstatus, LV_SYMBOL_IMAGE " Yağmurlu");
-            } else {
+        	}
+ 
+        	else if (strstr(status, "Clear") || strstr(status, "Sunny") || strstr(status, "clear sky")) {
+                lv_label_set_text(objects.weatherstatus, LV_SYMBOL_SETTINGS " Güneşli");
+        	}
+			else {
                 lv_label_set_text_fmt(objects.weatherstatus, LV_SYMBOL_IMAGE " %s", status;
             }
         }
