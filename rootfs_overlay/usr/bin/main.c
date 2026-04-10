@@ -16,7 +16,8 @@ extern const lv_img_dsc_t img_sunny_dock;
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
+#include <stdbool.h> 
+bool michael_ee = false;
 void update_autumn_weather(void) {
     FILE *fp;
     char buffer[128];
@@ -74,6 +75,9 @@ void update_autumn_weather(void) {
 
         	else if (strstr(status, "Rain") || strstr(status, "Drizzle") || strstr(status, "rain") || strstr(status, "patchy")) {
                 lv_label_set_text(objects.weatherstatus, LV_SYMBOL_LIST " Yağmurlu");
+				lv_img_set_src(objects.clockground, &img_rainy_dock);
+				lv_img_set_src(objects.reflection, &img_rainy_dock);
+				lv_img_set_src(objects.weatherstatusicon, &img_rainy);
         	}
 
         	else if (strstr(status, "Overcast") || strstr(status, "broken clouds")) {
@@ -82,17 +86,31 @@ void update_autumn_weather(void) {
 
         	else if (strstr(status, "Cloud") || strstr(status, "cloudy") || strstr(status, "scattered")) {
                 lv_label_set_text(objects.weatherstatus, LV_SYMBOL_IMAGE " Bulutlu");
+				lv_img_set_src(objects.clockground, &img_cloudy_dock);
+				lv_img_set_src(objects.reflection, &img_cloudy_dock);
+				lv_img_set_src(objects.weatherstatusicon, &img_cloudy);
         	}
  
         	else if (strstr(status, "Clear") || strstr(status, "Sunny") || strstr(status, "clear sky")) {
                 lv_label_set_text(objects.weatherstatus, LV_SYMBOL_SETTINGS " Güneşli");
+				lv_img_set_src(objects.clockground, &img_sunny_dock);
+				lv_img_set_src(objects.reflection, &img_sunny_dock);
+				lv_img_set_src(objects.weatherstatusicon, &img_sun);
         	}
-			else {
-                lv_label_set_text_fmt(objects.weatherstatus, LV_SYMBOL_IMAGE " %s", status;
-            }
         }
     } else {
-        
+        	if (michael_ee = true) {
+				lv_img_set_src(objects.weatherstatusicon, &img_unknown);
+				lv_obj_set_x(objects.weatherstatusicon,254);
+				lv_obj_set_y(objects.weatherstatusicon,42);
+				lv_img_set_zoom(objects.weatherstatusicon, 91);
+			}
+			else {
+				lv_img_set_src(objects.weatherstatusicon, NULL);
+				lv_obj_set_x(objects.weatherstatusicon,336);
+                lv_obj_set_y(objects.weatherstatusicon, 130);
+				lv_img_set_zoom(objects.weatherstatusicon, 255);
+	}
         lv_label_set_text(objects.weathercity, "Bilinmiyor");
         lv_label_set_text(objects.weatherdegree, "°C");
         lv_label_set_text(objects.weatherstatus, "Bağlantı Yok");
