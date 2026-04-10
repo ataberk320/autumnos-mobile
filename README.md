@@ -1,4 +1,4 @@
-<img width="220" height="225" alt="image-00025-removebg-preview" src="https://github.com/user-attachments/assets/b7af29ae-4ce5-4a11-963b-d9e4b5525e42" />
+
  
 # **AutumnOS: RISC-V version**
 
