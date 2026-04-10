@@ -91,7 +91,7 @@ Carefully read the instructions:
 - [**SystemUI Instruction**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/rootfs_overlay/usr/bin/sysui_instruction.txt)
 - [**PPM Logo Instruction**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/buildroot/logos/logo_instruction.txt)
 - [**LVGL Compilation Instruction**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/systemui/ui_instruction.txt)
-- [**Boot Animation Instruction**]https://www.github.com/ataberk320/autumnos-mobile/tree/main/boot_logo/boot_anim_instructions.txt
+- [**Boot Animation Instruction**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/boot_logo/boot_anim_instructions.txt)
 - /buildroot/config_instruction.txt
 - /buildroot/g2d-lib/src/g2d_instruction.txt
 
