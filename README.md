@@ -92,9 +92,8 @@ Carefully read the instructions:
 - [**PPM Logo Instruction**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/buildroot/ppm_logo/logo_instruction.txt)
 - [**LVGL Compilation Instruction**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/systemui/ui_instruction.txt)
 - [**Boot Animation Instruction**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/boot_logo/boot_anim_instructions.txt)
-- [**Config List Instruction**](https://www.github
-com/ataberk320/autumnos-mobile/tree/main/buildroot/config_instruction.txt)
-- [**G2D Installation Instruction**]https://www.github.com/ataberk320/autumnos-mobile/tree/main/buildroot/g2d-lib/src/g2d_instruction.txt
+- [**Config List Instruction**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/buildroot/config_instruction.txt)
+- [**G2D Installation Instruction**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/buildroot/g2d-lib/src/g2d_instruction.txt)
 
 
 Buildroot version: Buildroot 2026.02-84-g088c3602fd-dirty
