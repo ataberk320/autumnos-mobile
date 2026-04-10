@@ -137,8 +137,7 @@ System screenshots:
 [**Screenshots Directory**](https://github.com/ataberk320/autumnos-mobile/tree/main/screenshots)
 
 
-
-
+------------------------------------------------------------------------------
 Update notes:
 * systemui will be updated soon when it's completed!
 * Added API source code
