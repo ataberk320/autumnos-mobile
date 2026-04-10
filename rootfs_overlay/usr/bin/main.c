@@ -111,7 +111,7 @@ void update_autumn_weather(void) {
 				lv_obj_set_x(objects.weatherstatusicon,336);
                 lv_obj_set_y(objects.weatherstatusicon, 130);
 				lv_img_set_zoom(objects.weatherstatusicon, 255);
-				lv_img_set_src(objects.clockground, &img_unknown_dock);
+				lv_img_set_src(objects.reflection, &img_unknown_dock);
 	}
         lv_label_set_text(objects.weathercity, "Bilinmiyor");
         lv_label_set_text(objects.weatherdegree, "°C");
