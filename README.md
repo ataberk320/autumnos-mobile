@@ -93,6 +93,7 @@ Carefully read the instructions:
 - /package_config/config_instruction.txt
 - /systemui/ui_instruction.txt
 - /boot_logo/boot_anim_instructions.txt
+- /buildroot/config_instruction.txt
 - /buildroot/g2d-lib/src/g2d_instruction.txt
 Buildroot version: Buildroot 2026.02-84-g088c3602fd-dirty
 
