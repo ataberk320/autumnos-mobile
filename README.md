@@ -8,6 +8,7 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 Technical information:
 
+- gst1/gstream
 
 - evdev/indev
 
