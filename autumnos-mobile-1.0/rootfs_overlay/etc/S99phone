@@ -1,0 +1,66 @@
+#!/bin/sh
+
+
+
+case "$1" in
+  start)
+    echo "[AUTUMNOS] Setting DNS nameserver." > /dev/kmsg
+    echo "nameserver 8.8.8.8" > /etc/resolv.conf
+    ulimit -S -u 30
+    rm /dev/shm/autumn_* 2>/dev/null
+    mkdir -p /tmp/runtime-root
+    chmod 0700 /tmp/runtime-root
+    echo 0 > /sys/class/graphics/fbcon/cursor_blink 2>/dev/null
+
+    if grep -q "QEMU" /proc/device-tree/model 2>/dev/null || grep -q "QEMU" /proc/cpuinfo; then
+        fbv -f -u /usr/share/qemu.png > /dev/null 2>&1 &
+    else
+        fbv -f -u /usr/share/default.png > /dev/null 2>&1 &
+    fi
+    echo "[AUTUMNOS] Starting hardware watchdog" > /dev/kmsg
+    /usr/bin/AutixHardwareWatchdog &
+    chmod 666 /dev/fb0
+    sleep 2
+    killall fbv 2>/dev/null
+    sleep 1
+    echo "[AUTUMNOS] Starting DRM/FBDEV surface detecting." > /dev/kmsg
+    /usr/bin/ASComposer &
+    sleep 5
+    /usr/bin/AutixSurfDetector &
+    echo "[AUTUMNOS] Starting AutumnCore." > /dev/kmsg
+    /usr/bin/AutumnCore &
+
+    echo "[AUTUMNOS] Starting NameserverDefiner."
+    /usr/bin/AutixNameserverDefiner &
+    echo "[AUTUMNOS] Starting G2D daemon."
+    /usr/bin/AutixG2DService &
+    echo 0 > /sys/class/vtconsole/vtcon1/bind
+    echo "[AUTUMNOS] Starting GUI." > /dev/kmsg
+    /usr/bin/sysui &
+    /usr/bin/com.autumnos.phone.atm -platform offscreen &
+    echo "[AUTUMNOS] Starting watchdog." > /dev/kmsg
+    (
+            while true; do
+                /usr/bin/watchdog.sh
+                sleep 1
+            done
+        ) &
+	;;
+
+  stop)
+    echo "[AUTUMNOS] Stopping system." > /dev/kmsg
+    killall sysui 2>/dev/null
+    killall fbv 2>/dev/null
+    ;;
+
+  restart)
+    $0 stop
+    sleep 1
+    $0 start
+    ;;
+
+  *)
+    echo "Using: $0 {start|stop|restart}"
+esac
+
+exit 0
