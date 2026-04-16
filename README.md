@@ -91,7 +91,7 @@ ___________________________
   <img width="220" height="225" alt="image-00025-removebg-preview" src="https://github.com/user-attachments/assets/cb29f0fe-2072-4da0-9d36-08c14f316dd6" />
 
 --------------------------
-To compile all image: make -j$(nproc) For improve compiling performance use ```make -j$(nproc)/```
+To compile all image: make -j$(nproc). For improve compiling performance use ```make -j$(nproc)/```
 
 
 
@@ -100,9 +100,7 @@ Carefully read the instructions:
 [**All Instructions**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/autumnos-mobile-1.0/instructions)
 
 Buildroot version: Buildroot 2026.02-84-g088c3602fd-dirty
-
 To pull this version:
-
 ```git clone https://github.com/buildroot/buildroot.git -> cd buildroot -> git checkout 088c3602fd```
 
 To compile lvgl, create a folder name lvgl on buildroot/package and move "Config.in" and lvgl.mk files on /buildroot directory on this repository
