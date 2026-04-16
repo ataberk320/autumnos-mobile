@@ -1,0 +1,1 @@
+  Don't forget to move "Config.in" to /packages path on buildroot folder!

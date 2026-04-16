@@ -1,0 +1,7 @@
+config BR2_PACKAGE_SUNXI_G2D
+	bool "sunxi-g2d"
+	help
+	  Allwinner G2D 2D graphics acceleration library and headers.
+	  This enables hardware-accelerated bitblt, stretching, 
+	  and color space conversion for Allwinner D1/D1s.
+

@@ -1,0 +1,1 @@
+Build the UI on EEZ Studio (File->Build or wrench icon) and move all .c and .h output files to buildroot/board/***/overlay/rootfs_overlay/usr/bin!

@@ -1,0 +1,1 @@
+Move all png files to "buildroot/board/***/overlay/rootfs_overlay/usr/share" path so S99phone can see the logo!
