@@ -99,8 +99,8 @@ Carefully read the instructions:
 
 [**All Instructions**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/autumnos-mobile-1.0/instructions)
 
-Buildroot version: Buildroot 2026.02-84-g088c3602fd-dirty
-To pull this version:
+Buildroot version: Buildroot 2026.02-84-g088c3602fd-dirty\n
+To pull this version:\n
 ```git clone https://github.com/buildroot/buildroot.git -> cd buildroot -> git checkout 088c3602fd```
 
 To compile lvgl, create a folder name lvgl on buildroot/package and move "Config.in" and lvgl.mk files on /buildroot directory on this repository
