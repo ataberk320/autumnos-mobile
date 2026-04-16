@@ -149,3 +149,8 @@ Update notes:
 * systemui will be updated soon when it's completed!
 * Added API source code
 * Icons will be completed!
+
+------------------------------------------------------------------------------
+Contributors:
+ataberk320 (Main Kernel Developer)
+Offihito   (Userland App designer)
