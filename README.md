@@ -74,12 +74,19 @@ Technical information:
 - udhcpc
 
 - Timezone data
+
+- AutumnSDK
+
+- Autumn Customization tools
+
+- Strace for memory access debug
 ___________________________
 
 # **Easter eggs**
 
 * Glitch panic (console will open when an a kernel panic occurs and it makes UI glitch!/only watchdog.sh panics!)
 * Michael Scott on weather clock widget
+* Gravity 0 (floating icons on home page)
 
   <img width="220" height="225" alt="image-00025-removebg-preview" src="https://github.com/user-attachments/assets/cb29f0fe-2072-4da0-9d36-08c14f316dd6" />
 
@@ -87,14 +94,7 @@ ___________________________
 To compile all image: make -j$(nproc)
 
 Carefully read the instructions: 
-- [**S99 Instruction**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/rootfs_overlay/etc/init.d/S99_instruction.txt)
-- [**SystemUI Instruction**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/rootfs_overlay/usr/bin/sysui_instruction.txt)
-- [**PPM Logo Instruction**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/ppm_logo/logo_instruction.txt)
-- [**LVGL Compilation Instruction**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/systemui/ui_instruction.txt)
-- [**Boot Animation Instruction**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/boot_logo/boot_anim_instructions.txt)
-- [**Config List Instruction**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/buildroot/config_instruction.txt)
-- [**G2D Installation Instruction**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/buildroot/g2d-lib/src/g2d_instruction.txt)
-
+[**All Instructions**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/autumnos-mobile-1.0/instructions)
 
 Buildroot version: Buildroot 2026.02-84-g088c3602fd-dirty
 
