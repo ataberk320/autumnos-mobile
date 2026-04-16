@@ -8,9 +8,9 @@
 ::sysinit:/etc/init.d/rcS
 
 console::respawn:/bin/su - autumnuser0 -c "/bin/sh"
+::respawn:/usr/bin/ASComposer
 
 ::ctrlaltdel:/sbin/reboot
 ::shutdown:/sbin/swapoff -a
 ::shutdown:/bin/umount -a -r
 ::restart:/sbin/init
-::respawn:/usr/bin/watchdog.sh
