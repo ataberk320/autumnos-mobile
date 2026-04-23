@@ -7,6 +7,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "atmhal.h"
+#define LIMIT 6
+static int pwr_counter = 0;
 
 void mkdir_data(void) {
 	mkdir("/tmp/autumnsys", 0777);
@@ -21,7 +23,6 @@ void mkdir_data(void) {
 void check_power_status(void) {
     char line[64];
     int req_val = -1;
-	int pwr_counter = 0;
 
 	if (atmsys_pwrstat()) {
 		pwr_counter++;
@@ -108,8 +109,8 @@ void update_system_status(int serial_fd) {
 
 	char op_name[64];
 	atmsys_get_sim_operator_name(serial_fd, op_name, sizeof(op_name));
-	FILE *fp = fopen("/tmp/autumnsys/connection/autumnoperator0", "w");
-	if (fp) {
+	FILE *fp_op = fopen("/tmp/autumnsys/connection/autumnoperator0", "w");
+	if (fp_op) {
 		fprintf(fp_op, "%s", op_name); 
         fclose(fp_op);
     }
