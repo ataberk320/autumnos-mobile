@@ -10,6 +10,8 @@ Technical information:
 
 - ext2/3/4 filesystem
 
+- alsa/pulseaudio
+
 - Qt6 multimedia support (alsa, ffmpeg, gstreamer)
 
 - LibFribidi
