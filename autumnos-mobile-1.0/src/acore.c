@@ -108,7 +108,7 @@ void update_system_status(int serial_fd) {
 
 	char op_name[64];
 	atmsys_get_sim_operator_name(serial_fd, op_name, sizeof(op_name));
-	FILE *fp = fopen("/tmp/autumnsys/connection/autumnoperator0, "w");
+	FILE *fp = fopen("/tmp/autumnsys/connection/autumnoperator0", "w");
 	if (fp) {
 		fprintf(fp_op, "%s", op_name); 
         fclose(fp_op);
