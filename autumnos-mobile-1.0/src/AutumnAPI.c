@@ -44,7 +44,7 @@ long AutumnAPI_Read_Uptime(void) {
 
 long AutumnAPI_Read_Used_RAM(void) {
     long ram = 0;
-    FILE *fp = fopen("/tmp/autumnsys/mem/autumnram0", "r");
+    FILE *fp = fopen("/tmp/autumnsys/memory/autumnram0", "r");
     if (fp) {
         fscanf(fp, "%ld", &ram);
         fclose(fp);
