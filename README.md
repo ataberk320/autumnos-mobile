@@ -8,6 +8,10 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 Technical information:
 
+- Intel HD Audio/ **AC97 will be added**
+
+- USB OHCI/XHCI drivers
+
 - PCI device support
 
 - insmod and modprobe module installers
