@@ -10,9 +10,9 @@
 
 void mkdir_data(void) {
 	mkdir("/tmp/autumnsys", 0777);
-    	mkdir("/tmp/autumnsys/battery", 0777);
-    	mkdir("/tmp/autumnsys/uptime", 0777);
-    	mkdir("/tmp/autumnsys/power", 0777);
+    mkdir("/tmp/autumnsys/battery", 0777);
+    mkdir("/tmp/autumnsys/uptime", 0777);
+    mkdir("/tmp/autumnsys/power", 0777);
 	mkdir("/tmp/autumnsys/memory", 0777);
 	mkdir("/tmp/autumnsys/storage", 0777);
 	mkdir("/tmp/autumnsys/connection", 0777);
@@ -21,7 +21,17 @@ void mkdir_data(void) {
 void check_power_status(void) {
     char line[64];
     int req_val = -1;
+	int pwr_counter = 0;
 
+	if (atmsys_pwrstat()) {
+		pwr_counter++;
+		if (pwr_counter >= LIMIT) {
+			atmsys_pwroff();
+		}
+	}
+	else {
+		pwr_counter = 0;
+	}
     FILE *fp_pwr = fopen("/tmp/autumnsys/power/itstimetopoweroff", "r");
     if (fp_pwr != NULL) {
         while (fgets(line, sizeof(line), fp_pwr)) {
