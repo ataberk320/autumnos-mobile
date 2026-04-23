@@ -8,6 +8,8 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 Technical information:
 
+- insmod and modprobe module installers
+
 - ext2/3/4 filesystem
 
 - alsa/pulseaudio
