@@ -28,7 +28,7 @@ Technical information:
 
 - evdev/indev
 
-- RISC-V Allwinner D1s and QEMU(Virtio) support
+- RISC-V (Allwinner D1s/D1) and QEMU(Virtio) support
 
 - DongshanPi/Lichee RV or RV Dock/Mango Pi/Nezha/ClockworkPi/Devterm, multi platform support
 
@@ -62,19 +62,19 @@ Technical information:
 
 - Camera support(USB/V4L2/UVC etc.)
 
-- g2d **(Only supporter or developer can add kernel space driver support.)** 2D/DRM accelerator
+- Allwinner G2D **(Only supporter or developer can add kernel space driver support.) **/DRM accelerator
 
 - libjpg, libpng, freetype support
 
 - fbv, fbtest support
 
-- nano for buildroot terminal
+- nano for Buildroot terminal
 
 - wget and curl support
 
 - live weather clock widget
 
-- Goldfish support
+- Goldfish driver support
 
 - Theme manager (Coming soon)
 
@@ -84,9 +84,9 @@ Technical information:
 
 - fbdev/drm/sdl/sdl2
 
-- DNS setup on boot (nameserver 8.8.8.8)
+- DNS setup (nameserver 8.8.8.8)
 
-- Kivy and Python support(cython, pip, python3) - **Kivy is removed for improving performance**
+- Python support(cython, pip, python3) - **Kivy is removed for improving performance**
 
 - udhcpc
 
@@ -100,7 +100,9 @@ Technical information:
 
 - libjsip (SIP call support)
 
-- GitBrowser (a GitHub port)
+- GitBrowser - a GitHub port
+
+- BusyBox tools (ls/rm/cp etc.)
 ___________________________
 
 # **Easter eggs**
