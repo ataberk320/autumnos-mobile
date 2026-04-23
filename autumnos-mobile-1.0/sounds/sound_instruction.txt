@@ -1,1 +1,0 @@
-Move sounds to buildroot/board/****/overlay/rootfs_overlay/usr/share so LVGL function can see it.

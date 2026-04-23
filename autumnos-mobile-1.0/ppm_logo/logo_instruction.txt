@@ -1,1 +1,0 @@
-Don't forget to move logo on directory "output/build/linux-6.19/drivers/video/logo"!

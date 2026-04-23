@@ -1,0 +1,6 @@
+**SH scripts instruction**: Run chmod -x for board/autix/generic/rootfs_overlay/etc/init.d/S99phone and board/autix/generic/rootfs_overlay/usr/bin/watchdog.sh
+**AutumnUI/LVGL instruction**: Create a folder named /ui on board/autix/generic/rootfs_overlay/usr/bin/ and move LVGL/EEZ Studio, outputs and AutumnAPI to this folder. to compile AutumnUI press on wrench icon.
+**PPM instruction**: Move .ppm logo on directory "output/build/linux-6.19/drivers/video/logo", so kernel can see it.
+**Board instruction**: Download the repo and move board folder on this repository to board (move /autix directory in /board folder and delete unnecessary "board"" folder on buildroot desktop path.
+**Package instruction**: Move /lvgl, /lv_drivers, /autumnsdk and /qt6 folders to "buildroot/package" (desktop path).
+**Remembering defconfig**: Move autumn_kernel_defconfig/autumn_default_defconfig to your Buildroot main path, and to add kernel defconfig, make menuconfig->Kernel->Kernel configuration (Using a custom (def)config file)->($(TOPDIR)/buildroot/config/autumn_kernel_defconfig) and finally run "make autumn_default_defconfig" command, that's all. Always use "make -j$(nproc)" for when it's compiled

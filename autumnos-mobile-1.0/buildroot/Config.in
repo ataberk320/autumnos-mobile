@@ -64,6 +64,10 @@ menu "Audio and video applications"
 	source "package/zynaddsubfx/Config.in"
 endmenu
 
+menu "AutumnOS SDK"
+	source "package/autumnsdk/Config.in"
+endmenu
+
 menu "Compressors and decompressors"
 	source "package/brotli/Config.in"
 	source "package/bzip2/Config.in"

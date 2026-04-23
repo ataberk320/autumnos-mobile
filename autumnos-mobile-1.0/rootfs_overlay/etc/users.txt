@@ -1,1 +1,0 @@
-autumnuser0 -1 autumnuser0 -1 =1234 /home/autumnuser0 /bin/sh - Autumn_OS

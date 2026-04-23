@@ -1,0 +1,6 @@
+config BR2_PACKAGE_LV_DRIVERS
+bool "lv_drivers"
+depends on BR2_PACKAGE_LVGL
+help
+  Drivers for LVGL (Framebuffer, SDL, etc.)
+  https://github.com/lvgl/lv_drivers

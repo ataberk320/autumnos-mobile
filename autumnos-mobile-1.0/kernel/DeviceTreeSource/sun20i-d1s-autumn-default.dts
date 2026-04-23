@@ -1,0 +1,106 @@
+
+
+/dts-v1/;
+
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/clock/sun20i-d1-ccu.h>
+#include <dt-bindings/reset/sun20i-d1-ccu.h>
+#include <dt-bindings/gpio/gpio.h>
+
+
+#include "sun20i-d1s.dtsi"
+
+/ {
+    model = "AutumnSoC";
+    compatible = "allwinner,sun20i-d1s";
+
+    reg_vcc: vcc {
+        compatible = "regulator-fixed";
+        regulator-name = "vcc";
+        regulator-min-microvolt = <5000000>;
+        regulator-max-microvolt = <5000000>;
+    };
+
+    reg_vcc_3v3: vcc-3v3 {
+        compatible = "regulator-fixed";
+        regulator-name = "vcc-3v3";
+        regulator-min-microvolt = <3300000>;
+        regulator-max-microvolt = <3300000>;
+        vin-supply = <&reg_vcc>;
+    };
+
+
+    sound {
+        compatible = "simple-audio-card";
+        simple-audio-card,name = "AutumnGenericAudio";
+        simple-audio-card,format = "i2s";
+        simple-audio-card,cpu {
+            sound-dai = <&i2s0_node>;
+        };
+        simple-audio-card,codec { 
+            sound-dai = <&codec_node>;
+        };
+    };
+
+    soc_extra: soc@0 {
+        compatible = "simple-bus";
+        #address-cells = <1>;
+        #size-cells = <1>;
+        ranges;
+
+
+        g2d_node: g2d@5410000 {
+            compatible = "allwinner,sun20i-d1-g2d";
+            reg = <0x05410000 0x1000>;
+            interrupts = <SOC_PERIPHERAL_IRQ(89) IRQ_TYPE_LEVEL_HIGH>; 
+            clocks = <&ccu CLK_BUS_G2D>, <&ccu CLK_G2D>;
+            resets = <&ccu RST_BUS_G2D>;
+            status = "okay";
+        };
+
+	codec_node: codec@2030000 {
+            compatible = "allwinner,sun20i-d1-codec";
+            reg = <0x02030000 0x1000>;
+            interrupts = <SOC_PERIPHERAL_IRQ(25) IRQ_TYPE_LEVEL_HIGH>;
+            clocks = <&ccu CLK_BUS_AUDIO>, <&ccu CLK_AUDIO_DAC>;
+            resets = <&ccu RST_BUS_AUDIO>;
+            #sound-dai-cells = <0>;
+            status = "okay";
+        };
+		
+        i2s0_node: i2s@2032000 {
+            compatible = "allwinner,sun20i-d1-i2s";
+            reg = <0x02032000 0x1000>;
+            interrupts = <SOC_PERIPHERAL_IRQ(26) IRQ_TYPE_LEVEL_HIGH>;
+            clocks = <&ccu CLK_BUS_I2S0>, <&ccu CLK_I2S0>;
+            clock-names = "apb", "mod";
+            resets = <&ccu RST_BUS_I2S0>;
+            status = "okay";
+            #sound-dai-cells = <0>;
+        };
+    };
+};
+
+&pio {
+    vcc-pb-supply = <&reg_vcc_3v3>;
+    vcc-pc-supply = <&reg_vcc_3v3>;
+    vcc-pd-supply = <&reg_vcc_3v3>;
+    vcc-pe-supply = <&reg_vcc_3v3>;
+    vcc-pf-supply = <&reg_vcc_3v3>;
+    vcc-pg-supply = <&reg_vcc_3v3>;
+};
+
+
+&uart0 {
+    status = "okay";
+};
+
+
+&i2s0_node {
+    status = "okay";
+};
+
+
+&riscv_wdt {
+    status = "okay";
+};

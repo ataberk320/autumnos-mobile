@@ -1,0 +1,89 @@
+/*
+* Custom Allwinner D1 SoC Device Tree Source written by Autix Electronics (ataberk320)
+* Licensed under GPL-3.0
+*/
+
+/dts-v1/;
+
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/clock/sun20i-d1-ccu.h>
+#include <dt-bindings/reset/sun20i-d1-ccu.h>
+#include <dt-bindings/gpio/gpio.h>
+#include "sun20i-d1.dtsi"
+
+/ {
+    model = "AutumnSoC";
+    compatible = "allwinner,sun20i-d1s", "allwinner,sun20i-d1";
+    interrupt-parent = <&plic>;
+
+    reg_vcc: vcc {
+        compatible = "regulator-fixed";
+        regulator-name = "vcc";
+        regulator-min-microvolt = <5000000>;
+        regulator-max-microvolt = <5000000>;
+    };
+
+    reg_vcc_3v3: vcc-3v3 {
+        compatible = "regulator-fixed";
+        regulator-name = "vcc-3v3";
+        regulator-min-microvolt = <3300000>;
+        regulator-max-microvolt = <3300000>;
+        vin-supply = <&reg_vcc>;
+    };
+
+
+    sound {
+        compatible = "simple-audio-card";
+        simple-audio-card,name = "AutumnGenericAudio";
+        simple-audio-card,format = "i2s";
+        simple-audio-card,cpu {
+            sound-dai = <&i2s0>;
+        };
+        simple-audio-card,codec { 
+            sound-dai = <&codec_node>;
+        };
+    };
+
+    soc_extra: soc@0 {
+        compatible = "simple-bus";
+        #address-cells = <1>;
+        #size-cells = <1>;
+        ranges;
+
+        g2d_node: g2d@5410000 {
+            compatible = "allwinner,sun20i-d1-g2d";
+            reg = <0x05410000 0x1000>;
+            interrupts = <0 89 4>; 
+            clocks = <&ccu 34>, <&ccu 35>;
+            resets = <&ccu 18>;
+            status = "okay";
+        };
+
+        codec_node: codec@2030000 {
+            compatible = "allwinner,sun20i-d1-codec";
+            reg = <0x02030000 0x1000>;
+            interrupts = <0 25 4>;
+            clocks = <&ccu 40>, <&ccu 41>;
+            resets = <&ccu 25>;
+            #sound-dai-cells = <0>;
+            status = "okay";
+        };
+    };
+};
+
+&pio {
+    vcc-pb-supply = <&reg_vcc_3v3>;
+    vcc-pc-supply = <&reg_vcc_3v3>;
+    vcc-pd-supply = <&reg_vcc_3v3>;
+    vcc-pe-supply = <&reg_vcc_3v3>;
+    vcc-pf-supply = <&reg_vcc_3v3>;
+    vcc-pg-supply = <&reg_vcc_3v3>;
+};
+
+&uart0 {
+    status = "okay";
+};
+
+&i2s0 {
+    status = "okay";
+};

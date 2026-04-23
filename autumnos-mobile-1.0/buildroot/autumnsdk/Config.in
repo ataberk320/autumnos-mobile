@@ -1,0 +1,34 @@
+menuconfig BR2_PACKAGE_AUTUMN_SDK
+	bool "AutumnOS SDK"
+	depends on BR2_PACKAGE_LUA
+	depends on BR2_PACKAGE_PYTHON3
+	help
+	   AutumnOS SDK/Platform development tools.
+
+
+if BR2_PACKAGE_AUTUMN_SDK
+
+config BR2_PACKAGE_AUTUMN_PKG_CNV
+	bool "Autumn Package Converter"
+	depends on BR2_PACKAGE_PYTHON3
+	select BR2_PACKAGE_AUTUMN_PKG_UNPK
+	help
+	   Tool to convert your binary to AutumnOS suitable archive format (.atm)
+
+
+config BR2_PACKAGE_AUTUMN_API_DEV
+	bool "AutumnOS API"
+	help
+	   AutumnOS API for hardware status monitoring and low-level communication.
+
+config BR2_PACKAGE_AUTUMN_PKG_UNPK
+	bool "Autumn Binary (.atm) Unpackager"
+	help
+	   An unpackager for AutumnOS archives
+
+config BR2_PACKAGE_ASDK_ENGINE
+	bool "AutumnOS SDK G-Engine"
+	depends on BR2_PACKAGE_LUA
+	help
+	   Lua based graphics engine for AutumnOS SDK Environment.
+endif

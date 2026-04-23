@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>480</width>
+    <height>768</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: rgb(0, 0, 0);</string>
+  </property>
+  <widget class="QFrame" name="frame">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>480</width>
+     <height>768</height>
+    </rect>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::Shape::NoFrame</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Shadow::Raised</enum>
+   </property>
+   <widget class="QFrame" name="frame_2">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>481</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: qlineargradient(spread:pad, x1:0.881962, y1:0.353, x2:0.882, y2:1, stop:0 rgba(29, 116, 0, 255), stop:1 rgba(17, 66, 0, 255));</string>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Shape::NoFrame</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Shadow::Raised</enum>
+    </property>
+    <widget class="QLabel" name="label">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>2</y>
+       <width>91</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Droid Sans</family>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
+     </property>
+     <property name="text">
+      <string>Mesajlar</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QFrame" name="frame_3">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>-40</x>
+      <y>25</y>
+      <width>551</width>
+      <height>341</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: qlineargradient(spread:pad, x1:0.35, y1:0.551227, x2:0.321858, y2:0, stop:0 rgba(31, 31, 31, 255), stop:1 rgba(133, 133, 133, 255));
+background-color: rgb(35, 35, 35);</string>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Shape::NoFrame</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Shadow::Raised</enum>
+    </property>
+    <widget class="QLabel" name="label_4">
+     <property name="geometry">
+      <rect>
+       <x>60</x>
+       <y>10</y>
+       <width>111</width>
+       <height>111</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="pixmap">
+      <pixmap>../Downloads/240_F_139593753_ROgZsChOUo4P4qbOdKsgbxMvwHYHrma9.jpg</pixmap>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_5">
+     <property name="geometry">
+      <rect>
+       <x>190</x>
+       <y>10</y>
+       <width>201</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Droid Sans</family>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(255, 255, 255);</string>
+     </property>
+     <property name="text">
+      <string>Giden adres:</string>
+     </property>
+    </widget>
+    <widget class="QTextEdit" name="textEdit">
+     <property name="geometry">
+      <rect>
+       <x>190</x>
+       <y>40</y>
+       <width>311</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(255, 255, 255);</string>
+     </property>
+    </widget>
+    <widget class="QCommandLinkButton" name="commandLinkButton">
+     <property name="geometry">
+      <rect>
+       <x>190</x>
+       <y>80</y>
+       <width>187</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(255, 255, 255);</string>
+     </property>
+     <property name="text">
+      <string>Kişilerden seç...</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_6">
+     <property name="geometry">
+      <rect>
+       <x>60</x>
+       <y>130</y>
+       <width>201</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Droid Sans</family>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(255, 255, 255);</string>
+     </property>
+     <property name="text">
+      <string>Mesajınız:</string>
+     </property>
+    </widget>
+    <widget class="QTextEdit" name="textEdit_2">
+     <property name="geometry">
+      <rect>
+       <x>60</x>
+       <y>160</y>
+       <width>441</width>
+       <height>131</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(255, 255, 255);</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_2">
+     <property name="geometry">
+      <rect>
+       <x>370</x>
+       <y>300</y>
+       <width>121</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Droid Sans</family>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: qlineargradient(spread:pad, x1:0.35, y1:0.551227, x2:0.321858, y2:0, stop:0 rgba(31, 31, 31, 255), stop:1 rgba(133, 133, 133, 255));
+color:rgb(255, 255, 255)</string>
+     </property>
+     <property name="text">
+      <string>Gönder</string>
+     </property>
+     <property name="autoDefault">
+      <bool>false</bool>
+     </property>
+     <property name="default">
+      <bool>false</bool>
+     </property>
+     <property name="flat">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QPushButton" name="pushButton_3">
+    <property name="geometry">
+     <rect>
+      <x>330</x>
+      <y>710</y>
+      <width>131</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Droid Sans</family>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: qlineargradient(spread:pad, x1:0.35, y1:0.551227, x2:0.321858, y2:0, stop:0 rgba(31, 31, 31, 255), stop:1 rgba(133, 133, 133, 255));
+color: rgb(255, 255, 255);</string>
+    </property>
+    <property name="text">
+     <string>Yeni mesaj</string>
+    </property>
+   </widget>
+   <widget class="QTreeWidget" name="treeWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>50</y>
+      <width>461</width>
+      <height>661</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Droid Sans</family>
+      <pointsize>12</pointsize>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(255, 255, 255);</string>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Shape::NoFrame</enum>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>30</width>
+      <height>30</height>
+     </size>
+    </property>
+    <property name="animated">
+     <bool>true</bool>
+    </property>
+    <column>
+     <property name="text">
+      <string>Tüm mesajlar</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normaloff>../Downloads/logo.png</normaloff>../Downloads/logo.png</iconset>
+     </property>
+    </column>
+    <item>
+     <property name="text">
+      <string>Mesajlar</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normaloff>../Downloads/Frame 10 (2) (1).png</normaloff>../Downloads/Frame 10 (2) (1).png</iconset>
+     </property>
+     <item>
+      <property name="text">
+       <string>Okunmamış mesajlar</string>
+      </property>
+      <property name="icon">
+       <iconset>
+        <normaloff>../Downloads/Removal-193.png</normaloff>../Downloads/Removal-193.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Okunmuş mesajlar</string>
+      </property>
+      <property name="icon">
+       <iconset>
+        <normaloff>../Downloads/Removal-665.png</normaloff>../Downloads/Removal-665.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Engellenmiş mesajlar</string>
+      </property>
+      <property name="icon">
+       <iconset>
+        <normaloff>../Downloads/Removal-797.png</normaloff>../Downloads/Removal-797.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Taslaklar</string>
+      </property>
+      <property name="icon">
+       <iconset>
+        <normaloff>../Downloads/Frame 13 (1) (1).png</normaloff>../Downloads/Frame 13 (1) (1).png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Gönderilen mesajlar</string>
+      </property>
+      <property name="icon">
+       <iconset>
+        <normaloff>../Downloads/icons8-touch-50.png</normaloff>../Downloads/icons8-touch-50.png</iconset>
+      </property>
+     </item>
+    </item>
+    <item>
+     <property name="text">
+      <string>İçerik bulunduran mesajlar</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normaloff>../Downloads/Frame 16 (5).png</normaloff>../Downloads/Frame 16 (5).png</iconset>
+     </property>
+     <item>
+      <property name="text">
+       <string>Bağlantı içeren mesajlar</string>
+      </property>
+      <property name="icon">
+       <iconset>
+        <normaloff>../Documents/1000021801-removebg-preview.png</normaloff>../Documents/1000021801-removebg-preview.png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Numara içeren mesajlar</string>
+      </property>
+      <property name="icon">
+       <iconset>
+        <normaloff>../Downloads/Frame 12 (5).png</normaloff>../Downloads/Frame 12 (5).png</iconset>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Resim/ek içeren mesajlar</string>
+      </property>
+      <property name="icon">
+       <iconset>
+        <normaloff>../Downloads/Frame 16 (5).png</normaloff>../Downloads/Frame 16 (5).png</iconset>
+      </property>
+     </item>
+    </item>
+   </widget>
+   <zorder>frame_2</zorder>
+   <zorder>pushButton_3</zorder>
+   <zorder>treeWidget</zorder>
+   <zorder>frame_3</zorder>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
