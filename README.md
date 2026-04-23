@@ -96,7 +96,7 @@ Technical information:
 
 - libjsip (SIP call support)
 
-- Working on port Wikipedia and GitHub!
+- GitBrowser (a GitHub port)
 ___________________________
 
 # **Easter eggs**
