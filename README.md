@@ -121,6 +121,7 @@ ___________________________
 * Gravity 0 (floating icons on home page)
 * Kernel hacking (sysrq)
 --------------------------
+# Compiling
 To compile all image: make -j$(nproc). For improve compiling performance use ```make -j$(nproc)/2```
 
 **Important! Carefully read the instructions:** 
