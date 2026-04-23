@@ -170,7 +170,7 @@ int atmsys_battery_perc(void)  {
         	if (battery_percent < 0) battery_percent = 0;
         }
 	 else {
-        	battery_percent = -1; // Okuma hatası
+        	battery_percent = -1;
     	}
 
     fclose(fp);
