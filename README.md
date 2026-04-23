@@ -118,7 +118,7 @@ ___________________________
 * Glitch panic (console will open when an a kernel panic occurs and it makes UI glitch!/only watchdog.sh panics!)
 * Michael Scott on weather clock widget
 * Gravity 0 (floating icons on home page)
-
+* Kernel hacking (sysrq)
 --------------------------
 To compile all image: make -j$(nproc). For improve compiling performance use ```make -j$(nproc)/2```
 
