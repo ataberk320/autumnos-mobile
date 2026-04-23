@@ -32,7 +32,7 @@ void atmsys_volume_down(void) {
 }
 
 void atmsys_safe_volume(uint8_t volume) {
-	if (volume > 70) volume = 70;
+	if (volume > 60) volume = 60;
 	char cmd[128];
 	sprintf(cmd, "amixer sset 'Master' %d%% > /dev/null 2>&1", volume);
 	system(cmd);
