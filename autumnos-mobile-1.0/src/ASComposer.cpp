@@ -42,16 +42,16 @@ int main() {
     while (1) {
         memcpy(back_buffer, ui_ptr, ui_len);
 
-        if (app_ptr != non_gpf_buffer) {
+        if (app_ptr != NULL) {
             for (uint32_t i = 0; i < app_pixel_count; i++) {
                 uint32_t pixel = app_ptr[i];
-                if (pixel & 0xFF000000) {
+                if (pixel != 0) { 
                     back_buffer[i + offset] = pixel;
                 }
             }
         }
         memcpy(fb_ptr, back_buffer, ui_len);
-        usleep(33333);
+        usleep(16666); 
     }
 
     free(back_buffer);
