@@ -1,0 +1,3 @@
+[submodule "g2d_driver"]
+    path = g2d_driver
+    url = https://github.com/sterling-teng/d1s-melis.git
