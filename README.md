@@ -10,9 +10,9 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 - E1000/VLAN/eth0 support
 
-- LVGL PrintF log output
+- LVGL printf log output
 
-- Intel HD Audio/**AC97 will be added**
+- Intel HD Audio/AC97
 
 - USB OHCI/XHCI drivers
 
@@ -35,8 +35,6 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 - gst1/gstreamer
 
 - OpenSSL
-
-- iproute2 (ip addr, ip link set up, ip route)
 
 - evdev/indev
 
@@ -70,7 +68,7 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 - RTC support
 
-- dropbear sshd and IP protections
+- dropbear sshd and iproute2 (ip addr, ip link set up, ip route)
 
 - Camera support(USB/V4L2/UVC etc.)
 
