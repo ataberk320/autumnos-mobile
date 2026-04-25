@@ -8,6 +8,7 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 # Technical information:
 
+- LVGL PrintF log output
 
 - Intel HD Audio/**AC97 will be added**
 
@@ -120,6 +121,7 @@ ___________________________
 * Michael Scott on weather clock widget
 * Gravity 0 (floating icons on home page)
 * Kernel hacking (sysrq)
+* UI crashing feature when an error occurs
 --------------------------
 # Compiling
 To compile all image: make -j$(nproc). For improve compiling performance use ```make -j$(nproc)/2```
