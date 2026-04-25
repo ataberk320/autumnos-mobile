@@ -50,7 +50,7 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 - SDL and SDL2 support
 
-- links/links graphics support
+- links/links graphics support **(Out of support, new browser: netsurf!)**
 
 - ffmpeg and ffplay video player and sound support
 
