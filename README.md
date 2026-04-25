@@ -8,6 +8,8 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 # Technical information:
 
+- HDMI and sun4i Resistive Touchscreen support
+
 - Unix Socket support
 
 - USB Gadget (Serial port support)
