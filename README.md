@@ -8,6 +8,8 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 # Technical information:
 
+- E1000/VLAN/eth0 support
+
 - LVGL PrintF log output
 
 - Intel HD Audio/**AC97 will be added**
