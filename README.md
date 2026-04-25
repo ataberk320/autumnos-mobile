@@ -8,6 +8,10 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 # Technical information:
 
+- Unix Socket support
+
+- USB Gadget (Serial port support)
+
 - E1000/VLAN/eth0 support
 
 - LVGL printf log output
