@@ -8,7 +8,7 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 # Technical information:
 
-- Double framebuffer support (fb1)
+- Double framebuffer support (fb0, fb1)
 
 - HDMI and sun4i Resistive Touchscreen support
 
