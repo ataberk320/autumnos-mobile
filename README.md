@@ -80,7 +80,7 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 - Camera support(USB/V4L2/UVC etc.)
 
-- Allwinner G2D **(Only supporter or developer can add kernel space driver support.) **/DRM accelerator
+- Allwinner G2D **(Only supporter or developer can add kernel space driver support.) **/DRM accelerator with KMS
 
 - libjpg, libpng, freetype support
 
@@ -99,8 +99,6 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 - Watchdog script(Software and hardware watchdog)
 
 - AutixSurf(SurfaceFlinger alternative, DRM/fbdev)
-
-- fbdev/drm/sdl/sdl2
 
 - DNS setup (nameserver 8.8.8.8)
 
