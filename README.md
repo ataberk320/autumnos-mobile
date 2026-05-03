@@ -120,7 +120,12 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 - BusyBox tools (ls/rm/cp etc.)
 
-- acoreutils (kmsg)
+- acoreutils (kmsg, kpanic, kassert, kbeat, kmap)
+
+- SIGKILL mechanism
+
+- Multilanguage
+
 ___________________________
 
 # **Easter eggs**
