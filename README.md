@@ -8,11 +8,11 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 # Technical information:
 
-- Double framebuffer support (fb0, fb1)
+- Virtual framebuffer support (fb0, fb1)
 
 - HDMI and sun4i Resistive Touchscreen support
 
-- Unix Socket support
+- Unix Domain Socket support
 
 - USB Gadget (Serial port support)
 
@@ -54,7 +54,7 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 - SDL and SDL2 support
 
-- links/links graphics support **(Out of support, new browser: netsurf!)**
+- links support **(Out of support, new browser: netsurf!)**
 
 - ffmpeg and ffplay video player and sound support
 
@@ -65,10 +65,6 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 - http support
 
 - Virtio support
-
-- Reading battery percent from BAT0
-
-- Reading temperature
 
 - Autumn Core, HAL, API
 
@@ -134,7 +130,7 @@ ___________________________
 * Michael Scott on weather clock widget
 * Gravity 0 (floating icons on home page)
 * Kernel hacking (sysrq)
-* UI crashing feature when an error occurs
+*AutumnOS Bare Idle Mode
 --------------------------
 # Compiling
 To compile all image: make -j$(nproc). For improve compiling performance use ```make -j$(nproc)/2```
