@@ -130,7 +130,7 @@ ___________________________
 * Michael Scott on weather clock widget
 * Gravity 0 (floating icons on home page)
 * Kernel hacking (sysrq)
-*AutumnOS Bare Idle Mode
+* AutumnOS Bare Idle Mode
 --------------------------
 # Compiling
 To compile all image: make -j$(nproc). For improve compiling performance use ```make -j$(nproc)/2```
@@ -146,7 +146,7 @@ LVGL Designer: EEZ Studio 0.26.2 <br>
 EEZ Studio setup link: https://drive.google.com/file/d/1Nfeg9FtOeK48H4LRhqOBRV9haR9v_n8W/view?usp=sharing
 
 To get Qt Creator: [**QT6 link**](https://drive.google.com/file/d/1P_o6vA0y19AfJXvIR_mIG1IByxjvckpz/view?usp=sharing) <br>
-I bypassed -j9 for Qt6 <br>
+I bypassed -j9 for Qt6 (by BR2_JLEVEL) <br>
 
 
 WSL version: must be Ubuntu 22.04 LTS
