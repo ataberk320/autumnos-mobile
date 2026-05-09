@@ -1,3 +1,4 @@
+**Source code**: Create a folder named atm_src on $(TOPDIR)/buildroot and move all source codes and [**build scripts**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/autumnos-mobile-1.0/build_script)
 **SH scripts instruction**: Run chmod -x for board/autix/generic/rootfs_overlay/etc/init.d/S99phone and board/autix/generic/rootfs_overlay/usr/bin/watchdog.sh
 **AutumnUI/LVGL instruction**: Create a folder named /ui and move LVGL/EEZ Studio, outputs and AutumnAPI to this folder. to compile AutumnUI press on wrench icon.
 **PPM instruction**: Move .ppm logo on directory "output/build/linux-6.19/drivers/video/logo", so kernel can see it.
