@@ -120,9 +120,9 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 - GitBrowser - a GitHub port
 
-- BusyBox tools (ls/rm/cp etc.)
+- BusyBox tools (ls/rm/cp/mkdir etc.) **out of support**
 
-- acoreutils (kmsg, kpanic, kassert, kbeat, kmap)
+- acoreutils (kmsg, kpanic, kassert, kbeat, kmap, ls, rm, cp, mkdir)
 
 - SIGKILL mechanism (SIGHandler)
 
