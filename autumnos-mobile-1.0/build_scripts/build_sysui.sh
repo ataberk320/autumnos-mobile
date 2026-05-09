@@ -3,16 +3,16 @@
 
 
 
-BR_PATH="/home/ataberk/buildroot"
-CC="$BR_PATH/output/host/bin/riscv64-linux-gcc"
-LVGL_SRC="$BR_PATH/output/build/lvgl-8.3.11"
-LV_DRV_SRC="$BR_PATH/output/build/lv_drivers-v8.3.0"
-STAGING="$BR_PATH/output/staging"
+BR_DIR="($TOPDIR)/buildroot"
+CC="$BR_DIR/output/host/bin/riscv64-linux-gcc"
+LVGL_SRC="$BR_DIR/output/build/lvgl-8.3.11"
+LV_DRV_SRC="$BR_DIR/output/build/lv_drivers-v8.3.0"
+STAGING="$BR_DIR/output/staging"
 
 
 $CC -o sysui \ 
-ui/*.c \
-atmhal.c \
+atm_src/ui/*.c \
+atm_src/atmhal.c \
 $(find $LVGL_SRC/src -name "*.c") \
 $(find $LV_DRV_SRC -name "*.c" ! -name "lv_drv_conf_template.c") \
 -I. \
