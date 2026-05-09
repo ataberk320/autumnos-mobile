@@ -8,6 +8,8 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 # Technical information:
 
+- AutumnOS AutumnCoreUtilsTerminal
+
 - OTA Software Update
 
 - Pingpong slot on SD card for software update
