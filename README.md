@@ -124,7 +124,7 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 - acoreutils (kmsg, kpanic, kassert, kbeat, kmap)
 
-- SIGKILL mechanism
+- SIGKILL mechanism (SIGHandler)
 
 - Multilanguage
 
