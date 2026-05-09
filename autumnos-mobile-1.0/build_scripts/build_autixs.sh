@@ -5,7 +5,7 @@ HOST_BIN="$BR_DIR/output/host/bin"
 CROSS_CXX="$HOST_BIN/riscv64-linux-g++"
 SYSROOT="$BR_DIR/output/host/riscv64-buildroot-linux-gnu/sysroot"
 
-BASE_PATH="board/sipeed/lichee_rv_dock/overlay/rootfs_overlay/usr/bin"
+BASE_PATH="$(TOPDIR)/buildroot/src"
 TARGET="$BASE_PATH/AutixSurfDetector"
 
 $CROSS_CXX \
