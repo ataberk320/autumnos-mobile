@@ -8,6 +8,12 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 # Technical information:
 
+- OTA Software Update
+
+- Pingpong slot on SD card for software update
+
+- Downgrading update without deleting user data
+
 - Virtual framebuffer support (fb0, fb1)
 
 - HDMI and sun4i Resistive Touchscreen support
@@ -122,6 +128,7 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 - Multilanguage
 
+- Pull repo with git
 ___________________________
 
 # **Easter eggs**
