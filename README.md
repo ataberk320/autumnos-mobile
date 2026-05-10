@@ -122,7 +122,6 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 - GitBrowser - a GitHub port
 
-
 - acoreutils (kmsg, kpanic, kassert, kbeat, kmap, ls, rm, cp, mkdir)
 
 - SIGKILL mechanism (SIGHandler)
