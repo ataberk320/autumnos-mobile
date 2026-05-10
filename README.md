@@ -54,7 +54,7 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 - evdev/indev
 
-- RISC-V (Allwinner D1s/D1) and QEMU(Virtio) support
+- QEMU(Virtio) support
 
 - Chocolate-Doom and LTris support
 
