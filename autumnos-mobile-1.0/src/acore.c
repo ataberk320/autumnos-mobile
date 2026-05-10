@@ -6,9 +6,14 @@
 #include <stdbool.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include "cheaders/atmhal.h"
+#include "atmhal.h"
+#include "AutumnMouseArg.h"
+#include "AtmDrv_G2D.h"
+#include "acoreutils.h"
 #define LIMIT 6
 static int pwr_counter = 0;
+static int kmsg_fd = -1;
+
 
 void mkdir_data(void) {
 	mkdir("/tmp/autumnsys", 0777);
@@ -18,6 +23,7 @@ void mkdir_data(void) {
 	mkdir("/tmp/autumnsys/memory", 0777);
 	mkdir("/tmp/autumnsys/storage", 0777);
 	mkdir("/tmp/autumnsys/connection", 0777);
+	mkdir("/tmp/autumnsys/autumn_data", 0777);
 }
 
 void check_power_status(void) {
@@ -65,6 +71,17 @@ void check_power_status(void) {
     }
 }
 
+void update_driver_status(void) {
+	autumn_touchpad_t touch;
+	atmsys_get_touch(&touch);
+	
+	FILE *fp_mouse = fopen("/tmp/autumnsys/mouse0", "w");
+	if (fp_mouse != NULL) {
+		fprintf(fp_mouse, "%d %d %d", touch.x, touch.y, touch.pressed);
+        fclose(fp_mouse);
+	}
+}
+
 void update_system_status(int serial_fd) {
 	int bat = atmsys_battery_perc();
 	FILE *fp_bat = fopen("/tmp/autumnsys/battery/autumnbat0", "w");
@@ -99,6 +116,7 @@ void update_system_status(int serial_fd) {
 		fprintf(fp_disk, "%ld", free_disk);
 		fclose(fp_disk);
 	}
+
 	
 	int status = atmsys_is_sim_inserted(serial_fd);
 	FILE *fp = fopen("/tmp/autumnsys/connection/autumnsim0", "w");
@@ -111,27 +129,43 @@ void update_system_status(int serial_fd) {
 	atmsys_get_sim_operator_name(serial_fd, op_name, sizeof(op_name));
 	FILE *fp_op = fopen("/tmp/autumnsys/connection/autumnoperator0", "w");
 	if (fp_op) {
-		fprintf(fp_op, "%s", op_name); 
+	fprintf(fp_op, "%s", op_name); 
         fclose(fp_op);
     }
+
+
 }
 
 int main(void) {
 	mkdir_data();
+	atmsys_indev_init("/dev/input/event1");
 	atmsys_safe_volume(65);
 	atmsys_modemhdinit();
 	int serial_fd = open("/dev/ttyS1", O_RDWR | O_NOCTTY);
+
 	if (atmsys_camera_init() == 0) {
-		//komut gelcek
+		//.
 	}
 	else {
-		//komut gelcek
+		//.
 	}
 
-	while (1) {
-		update_system_status(serial_fd);
-		check_power_status();
-		usleep(500000);
+	if (AtmDrv_G2D_Init() == 0) {
+		kmsg("AtmDrv_G2D: the driver was initialized.");
 	}
+	else { 
+		kmsg("AtmDrv_G2D: initialize error");
+	}
+
+	int tick = 0;
+	while (1) {
+		update_driver_status();
+		if (tick++ >= 10) {
+			update_system_status(serial_fd);
+			check_power_status();
+			usleep(16666);
+		}
+	}
+	usleep(16666);
 	return 0;
 }
