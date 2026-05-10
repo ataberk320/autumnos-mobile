@@ -211,9 +211,9 @@ For Non SoM(System On Module) chips:
 [**Allwinner D1s is out of support**](https://github.com/ataberk320/autumnos-mobile/raw/main/autumnos-mobile-1.0/kernel/DeviceTreeBlob/sun20i-d1s-autumn-default.dtb)
 
 -----------------
-**Packages and userspace**
-AutumnSDK: App development and SDK environment for AutumnOS
-acoreutils: File operations and kmsg like functions
-**ASComposer:** Layer composer for AutixSurf Display Server.
-**AutixSurf:** Our display server which supports DRM/fb0 [**Documentation**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/autumnos-mobile-1.0/AutixSurf.md)
+# Packages and userspace:
+AutumnSDK: App development and SDK environment for AutumnOS<br>
+acoreutils: File operations and kmsg like functions.<br>
+**ASComposer:** Layer composer for AutixSurf Display Server.<br>
+**AutixSurf:** Our display server which supports DRM/fb0 [**Documentation**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/autumnos-mobile-1.0/AutixSurf.md)<br>
 
