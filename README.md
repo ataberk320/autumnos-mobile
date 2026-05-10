@@ -10,7 +10,7 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 - BusyTools (only kernel-space)
 
-- AutumnOS AutumnCoreUtilsTerminal
+- AutumnOS CoreUtils Terminal
 
 - OTA Software Update
 
