@@ -8,7 +8,7 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 # Technical information:
 
-- BusyTools (only kernel-space)
+- BusyBox Tools (only kernel-space)
 
 - AutumnOS CoreUtils Terminal
 
@@ -120,7 +120,6 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 - GitBrowser - a GitHub port
 
-- BusyBox tools (ls/rm/cp/mkdir etc.) **out of support**
 
 - acoreutils (kmsg, kpanic, kassert, kbeat, kmap, ls, rm, cp, mkdir)
 
