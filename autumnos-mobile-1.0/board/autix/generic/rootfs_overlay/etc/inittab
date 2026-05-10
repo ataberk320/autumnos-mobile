@@ -7,7 +7,7 @@
 
 ::sysinit:/etc/init.d/rcS
 
-console::respawn:/bin/su - autumnuser0 -c "/bin/sh"
+console::respawn:/bin/su - autumnuser0 -c "/usr/bin/CoreTerminal"
 ::respawn:/usr/bin/ASComposer
 
 ::ctrlaltdel:/sbin/reboot
