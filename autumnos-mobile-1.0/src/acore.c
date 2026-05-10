@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include "atmhal.h"
+#include "cheaders/atmhal.h"
 #define LIMIT 6
 static int pwr_counter = 0;
 
