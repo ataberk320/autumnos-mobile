@@ -10,7 +10,9 @@
 #include <sys/statvfs.h>
 #include <linux/videodev2.h>
 #include <sys/ioctl.h>
-#include "cheaders/atmhal.h"
+#include <pthread.h>
+#include "atmhal.h"
+#include "AutumnVideoArg.h"
 #define PWRBT_GPIO "21"
 #define MODEM_RST_PIN "118"
 int cam_fd = -1;
@@ -32,7 +34,7 @@ void atmsys_volume_down(void) {
 }
 
 void atmsys_safe_volume(uint8_t volume) {
-	if (volume > 60) volume = 60;
+	if (volume > 70) volume = 70;
 	char cmd[128];
 	sprintf(cmd, "amixer sset 'Master' %d%% > /dev/null 2>&1", volume);
 	system(cmd);
@@ -71,63 +73,47 @@ int  atmsys_camera_init(void) {
 void atmsys_convert_videofrm(AVFrame *pFrame, AVCodecContext *pCodecCtx, unsigned char *out_buffer, int target_width, int target_height) {
     static struct SwsContext *sws_ctx = NULL;
     static int last_w = 0, last_h = 0;
+    static enum AVPixelFormat last_fmt = AV_PIX_FMT_NONE;
 
-    if (sws_ctx == NULL || last_w != pCodecCtx->width || last_h != pCodecCtx->height) {
+    if (sws_ctx == NULL || last_w != pCodecCtx->width || last_h != pCodecCtx->height || last_h != pCodecCtx->pix_fmt) {
         if (sws_ctx) sws_freeContext(sws_ctx);
-        
         sws_ctx = sws_getContext(
             pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt,
             target_width, target_height, AV_PIX_FMT_RGB24,
-            SWS_BILINEAR, NULL, NULL, NULL
+            SWS_FAST_BILINEAR, NULL, NULL, NULL
         );
-        
+        if (!sws_ctx) return;
         last_w = pCodecCtx->width;
         last_h = pCodecCtx->height;
+        last_fmt = pCodecCtx->pix_fmt;
     }
-
     uint8_t *dest[4] = { (uint8_t *)out_buffer, NULL, NULL, NULL };
     int dest_linesize[4] = { target_width * 3, 0, 0, 0 };
-
-    sws_scale(sws_ctx, 
-              (const uint8_t * const *)pFrame->data, pFrame->linesize, 
-              0, pCodecCtx->height, 
+    sws_scale(sws_ctx,
+              (const uint8_t * const *)pFrame->data, pFrame->linesize,
+              0, pCodecCtx->height,
               dest, dest_linesize);
 }
 
+void atmsys_play_video_wrapper(void *arg) {
+	VideoThreadArgs *args = (VideoThreadArgs *)arg;
+	if (!args) return;
+	atmsys_play_video(args->source, args->out_buffer,  args->start_sec);
+	free(args->source);
+	free(args);
+	pthread_exit(NULL);
+}
+
 void atmsys_play_video(const char *source, unsigned char *final_out_buffer, int start_second) {
-    char cmd[1024];
-    
-    snprintf(cmd, sizeof(cmd), 
-             "ffmpeg -ss %d -re -i \"%s\" -f rawvideo -pix_fmt yuv420p -s 320x240 pipe:1 2>/dev/null", 
-             start_second, source);
-
-    FILE *pipein = popen(cmd, "r");
-    if (!pipein) {
-        return;
-    }
-
-    AVFrame *pFrame = av_frame_alloc();
-    AVCodecContext *pCodecCtx = avcodec_alloc_context3(NULL);
-    pCodecCtx->width = 320;
-    pCodecCtx->height = 240;
-    pCodecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
-
-    size_t yuv_size = (320 * 240 * 3) / 2;
-    unsigned char *raw_yuv = (unsigned char *)malloc(yuv_size);
-
-    while (fread(raw_yuv, 1, yuv_size, pipein) == yuv_size) {
-        
-        av_image_fill_arrays(pFrame->data, pFrame->linesize, raw_yuv, 
-                             AV_PIX_FMT_YUV420P, 320, 240, 1);
-
-        atmsys_convert_videofrm(pFrame, pCodecCtx, final_out_buffer, 320, 240);
-
-        usleep(33000); 
-    }
-
-    free(raw_yuv);
-    av_frame_free(&pFrame);
-    pclose(pipein);
+	char cmd[1024];
+	snprintf(cmd, sizeof(cmd), "ffmpeg -ss %d -re -i \"%s\" -f rawvideo -pix_fmt rgb24 -s 320x240 pipe:1 2>/dev/null", start_second, source);
+	FILE *pipein = popen(cmd, "r");
+	if (!pipein) return;
+	size_t rgb_size = 320 * 240 * 3;
+	while (fread(final_out_buffer, 1, rgb_size, pipein) == rgb_size) {
+		usleep(25000);
+	}
+	pclose(pipein);
 }
 
 //Power options
@@ -170,7 +156,7 @@ int atmsys_battery_perc(void)  {
         	if (battery_percent < 0) battery_percent = 0;
         }
 	 else {
-        	battery_percent = -1;
+        	battery_percent = -1; // Okuma hatası
     	}
 
     fclose(fp);
