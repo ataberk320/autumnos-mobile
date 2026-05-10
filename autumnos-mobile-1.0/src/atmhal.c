@@ -10,7 +10,7 @@
 #include <sys/statvfs.h>
 #include <linux/videodev2.h>
 #include <sys/ioctl.h>
-#include "atmhal.h"
+#include "cheaders/atmhal.h"
 #define PWRBT_GPIO "21"
 #define MODEM_RST_PIN "118"
 int cam_fd = -1;
