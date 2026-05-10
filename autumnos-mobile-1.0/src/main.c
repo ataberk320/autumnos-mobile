@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <stdio.h>
-#include "AutumnAPI.h"
+#include "cheaders/AutumnAPI.h"
 #include <stdbool.h>
 extern float cpu_temperature;
 bool michael_ee = false;
