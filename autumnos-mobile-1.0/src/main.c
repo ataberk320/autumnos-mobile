@@ -446,7 +446,7 @@ void AutumnUI_IndevDrv() {
 int main(void) {
     int pwrst = AutumnAPI_Read_Power_Button_Status();
     if (pwrst == 1) {
-	//bişey yok knk.
+		
     }
     else if (pwrst == 2) {
 	AutumnAPI_Request_PowerOff();
