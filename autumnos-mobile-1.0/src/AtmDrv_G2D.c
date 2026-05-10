@@ -2,7 +2,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
-#include "AtmDrv_G2D.h"
+#include "cheaders/AtmDrv_G2D.h"
 #include <stdlib.h>
 static int g2d_fd = -1;
 
