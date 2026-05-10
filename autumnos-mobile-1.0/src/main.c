@@ -1,12 +1,20 @@
 #include "lvgl.h"
-#include "lv_drivers-v8.3.0/display/fbdev.h"
-#include "lv_drivers-v8.3.0/indev/evdev.h"
 #include "ui.h"
 #include <unistd.h>
 #include <pthread.h>
-#include <stdio.h>
-#include "cheaders/AutumnAPI.h"
+#include "AutumnAPI.h"
 #include <stdbool.h>
+#include "acoreutils.h"
+#include "AutumnMouseArg.h"
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/un.h>
+#include <sys/socket.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <fcntl.h>
+#include <signal.h>
 extern float cpu_temperature;
 bool michael_ee = false;
 extern const lv_img_dsc_t img_cloudy_dock;
@@ -19,31 +27,123 @@ extern const lv_img_dsc_t img_rainy_dock;
 extern const lv_img_dsc_t img_rainy;
 extern const lv_img_dsc_t img_sun;
 extern const lv_img_dsc_t img_cloudy;
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include "lvgl.h"
+extern const lv_font_t ui_font_default_18;
+extern const lv_font_t ui_font_default_title;
+extern const lv_font_t ui_font_default_16;
+extern const lv_font_t ui_font_default_title;
+extern const lv_font_t ui_font_noto_sans_ch_16;
+static int mouse_pipe_fd = -1;
+const lv_font_t * ui_18 = &ui_font_default_18;
+const lv_font_t * ui_16 = &ui_font_default_16;
+const lv_font_t * ui_22 = &ui_font_default_title;
+volatile sig_atomic_t ANR_DETECTED = 0;
+static autumn_touchpad_t last_mouse_data = {0, 0, 0};
 
-void AutumnUI_Play_Touch_Sound() {
-	system("mpg123 /usr/share/touch.mp3 &");
+void Touch_Shield() {
+	lv_obj_clear_flag(objects.temperaturelock, LV_OBJ_FLAG_HIDDEN);
 }
 
+
+
+void AutumnUI_Overheating_Lock() {
+	FILE *fp = fopen("/sys/class/thermal/thermal_zone0/temp", "r");
+	if (fp == NULL) {
+		return;
+	}
+
+	int temp;
+	fscanf(fp, "%d", &temp);
+	fclose(fp);
+	if (temp > 200000) {
+                system("echo 1 > /sys/class/graphics/fbcon/cursor_blink 2>/dev/null");
+                kmsg("Corrupted or invalid temperature data detected! System is not stable.");
+                system("echo c > /proc/sysrq-trigger");
+        }
+
+	else if (temp > 90000) {
+                kmsg("Dangerous data received! Forcing to power off without GUI!");
+                AutumnAPI_Emergency_PowerOff();
+	}
+	
+	else if (temp >= 45000) {
+		Touch_Shield();
+	}
+
+	else {
+		if (!lv_obj_has_flag(objects.temperaturelock, LV_OBJ_FLAG_HIDDEN)) {
+			lv_obj_add_flag(objects.temperaturelock, LV_OBJ_FLAG_HIDDEN);
+			AutumnAPI_Show_Toast("Sıcaklık kilidi kaldırıldı, cihazınız normal ısıya döndü.");
+		}
+	}
+	
+}
+
+void Prepare_Bare_Idle_Console() {
+        system("clear || printf '\033[2J\033[H'");
+        system("echo 1 > /sys/class/graphics/fbcon/cursor_blink 2>/dev/null");
+}
+
+void AutumnUI_Bare_Idle_Mode() {
+        kmsg("AutumnUI idle mode is active.");
+}
+
+void AutumnUI_Crash_Handler() {
+                Prepare_Bare_Idle_Console();
+                kmsg("Unfortunately, AutumnUI has stopped!");
+                AutumnUI_Bare_Idle_Mode();
+                kill(getpid(), SIGKILL);
+}
+
+void AutumnUI_Restart() {
+        int result = system("/usr/bin/sysui -platform offscreen &");
+        if (result == -1) {
+                AutumnUI_Crash_Handler();
+        }
+        else {
+                exit(0);
+        }
+}
+
+void AutumnUI_NonCrash_Stop() {
+        AutumnUI_Restart();
+}
+
+
+void AutumnUI_ANR_HANDLER(int sig) {
+	if (sig == SIGUSR1) {
+		ANR_DETECTED = 1;
+	}
+
+
+}
+void UI_Lifetime() {
+	if (ANR_DETECTED == 1) {
+		AutumnUI_NonCrash_Stop();
+	}
+}
+
+void AutumnUI_Play_Touch_Sound() {
+	system("mpg123 /usr/share/touch.mp3 > /dev/null 2>&1 &");
+}
+
+
+ 
 static void AutumnUI_Detect_TouchEvent(lv_event_t * e) {
 	lv_event_code_t code = lv_event_get_code(e);
 	
-	if(code == LV_EVENT_PRESSED) {
+	if (code == LV_EVENT_PRESSED) {
 		AutumnUI_Play_Touch_Sound();
 	}
 }
 
+void AutumnUI_Set_UI_Status() {
+	FILE *fpconf = fopen ("/etc/autumn_conf/sysui.cfg", "rb");
+	if  (fpconf == NULL) {
+		return;
+	}
+
+}
+				
 void update_autumn_weather(void) {
     FILE *fp;
     char buffer[128];
@@ -295,11 +395,15 @@ void ui_date_timer(lv_timer_t * timer) {
 	update_date_label(objects.datelabel, objects.daylabel, objects.lockscreendatelabel, objects.lockscreendaylabel);
 }
 
-int main(void) {
-    lv_init();
+void AutumnUI_PrintF_Log_Callback(const char *buf) {
+	printf("[LVERR] %s", buf);
+	fflush(stdout);
+}
+
+void AutumnUI_CanvasDrv() {
     static lv_disp_draw_buf_t draw_buf;
-    static lv_color_t buf1[480 * 200]; 
-    static lv_color_t buf2[480 * 200]; 
+    static lv_color_t buf1[480 * 200];
+    static lv_color_t buf2[480 * 200];
     lv_disp_draw_buf_init(&draw_buf, buf1, buf2, 480 * 200);
     static lv_disp_drv_t disp_drv;
     lv_disp_drv_init(&disp_drv);
@@ -308,33 +412,66 @@ int main(void) {
     disp_drv.hor_res = 480;
     disp_drv.ver_res = 800;
     lv_disp_drv_register(&disp_drv);
+}
+
+void AutumnUI_Read_MouseDrv(lv_indev_drv_t * indev_drv, lv_indev_data_t * data) {
+    char buffer[64];
+    ssize_t n;
+    
+    while ((n = read(mouse_pipe_fd, buffer, sizeof(buffer) - 1)) > 0) {
+        buffer[n] = '\0';
+        int temp_x, temp_y, temp_pr;
+        
+        if (sscanf(buffer, "%d %d %d", &temp_x, &temp_y, &temp_pr) == 3) {
+            last_mouse_data.x = temp_x;
+            last_mouse_data.y = temp_y;
+            last_mouse_data.pressed = temp_pr;
+        }
+    }
+
+    data->point.x = (lv_coord_t)last_mouse_data.x;
+    data->point.y = (lv_coord_t)last_mouse_data.y;
+    data->state = (last_mouse_data.pressed) ? LV_INDEV_STATE_PR : LV_INDEV_STATE_REL;
+}
+
+void AutumnUI_IndevDrv() {
+	mouse_pipe_fd = AutumnAPI_Set_MsPipe();
+	static lv_indev_drv_t indev_drv;
+	lv_indev_drv_init(&indev_drv);
+	indev_drv.type = LV_INDEV_TYPE_POINTER;
+	indev_drv.read_cb = AutumnUI_Read_MouseDrv;
+	lv_indev_drv_register(&indev_drv);
+}
+
+int main(void) {
+    int pwrst = AutumnAPI_Read_Power_Button_Status();
+    if (pwrst == 1) {
+	//bişey yok knk.
+    }
+    else if (pwrst == 2) {
+	AutumnAPI_Request_PowerOff();
+    }
+    struct sigaction sa;
+    sa.sa_handler = AutumnUI_ANR_HANDLER;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGUSR1, &sa, NULL);
+    lv_init();
+    lv_log_register_print_cb(AutumnUI_PrintF_Log_Callback);
+    AutumnUI_CanvasDrv();
     ui_init();
-    evdev_init();
-    static lv_indev_drv_t indev_drv;
-    lv_indev_drv_init(&indev_drv);
-    indev_drv.type = LV_INDEV_TYPE_POINTER;
-    indev_drv.read_cb = evdev_read;
-    lv_indev_t * mouse_indev = lv_indev_drv_register(&indev_drv);
-    lv_obj_t * invisible_cursor = lv_obj_create(lv_layer_top());
-    lv_obj_set_size(invisible_cursor, 4, 4);
-    lv_obj_set_style_radius(invisible_cursor, 0, 0);
-    lv_obj_set_style_border_width(invisible_cursor, 0, 0);
-    lv_obj_set_style_pad_all(invisible_cursor, 0, 0);
-    lv_obj_clear_flag(invisible_cursor, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_set_style_bg_color(invisible_cursor, lv_color_make(255, 0, 0), 0);
-    lv_indev_set_cursor(mouse_indev, invisible_cursor);
+    AutumnUI_IndevDrv();
     lv_obj_add_event_cb(lv_scr_act(), AutumnUI_Detect_TouchEvent, LV_EVENT_ALL, NULL);
     lv_timer_create(system_monitor_task, 1000, NULL);
     lv_obj_clear_flag(lv_scr_act(), LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_pos(objects.lockscreendaylabel, 207, 607);
-    lv_obj_set_style_align(objects.lockscreendaylabel, LV_ALIGN_CENTER, 0);
     lv_timer_create(clock_timer, 5000, NULL);
     update_autumn_weather();
     lv_timer_create(weather_timer_callback, 300000, NULL);
-    lv_timer_create(system_monitor_task, 500, NULL);
     lv_timer_t * date_timer = lv_timer_create(ui_date_timer, 1000, NULL);
 
     while(1) {
+	UI_Lifetime();
         lv_timer_handler();
         usleep(15000);
         lv_tick_inc(15);
