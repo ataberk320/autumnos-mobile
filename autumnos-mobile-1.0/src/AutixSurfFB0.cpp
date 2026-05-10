@@ -5,14 +5,20 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <linux/fb.h>
+#include <sys/un.h>
+#include <sys/socket.h>
 #include <cstring>
 #include <stdint.h>
-
+#include <stdbool.h>
+#include <vector>
 
 struct Surface {
+    char name[32];
     uint32_t width, height;
     int shm_fd;
     uint32_t *data;
+    bool active;
+    
 };
 
 class AutixSurfFB {
@@ -20,11 +26,29 @@ private:
     int fb_fd;
     uint32_t *fb_ptr;
     long screen_size;
-    Surface app_surface;
-    Surface ui_surface;
+    #define MAX_APPS 10
+    Surface apps[MAX_APPS];
+    int app_count = 0;
+    int current_foreground_app = -1;
+    int server_fd;
+    uint32_t screen_w;
+    uint32_t screen_h;
+    const char *socket_path = "/etc/autumn_sock/asurf.sock";
+    std::vector<Surface> app_list;
+    bool setupSocket() {
+	server_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+	if (server_fd < 0) return false;
 
-    uint32_t screen_w, screen_h;
-
+	unlink(socket_path);
+	struct sockaddr_un addr;
+	memset(&addr, 0, sizeof(addr));
+	addr.sun_family = AF_UNIX;
+	strncpy(addr.sun_path, socket_path, sizeof(addr.sun_path) - 1);
+	if (bind(server_fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) return false;
+	listen (server_fd, 5);
+	fcntl(server_fd, F_SETFL, O_NONBLOCK);
+	return true;
+   }
 public:
     bool init() {
         fb_fd = open("/dev/fb0", O_RDWR);
@@ -55,14 +79,42 @@ public:
         return surf.data != MAP_FAILED;
     }
 
+    bool registerNewApp(const char *name, uint32_t w, uint32_t h) { 
+	Surface new_app;
+	strncpy(new_app.name, name, 31);
+	new_app.width = w;
+	new_app.height = h;
+	new_app.shm_fd = shm_open(name, O_RDWR | O_CREAT, 0666);
+	if (new_app.shm_fd < 0) return false;
+	
+	ftruncate(new_app.shm_fd, w* h * 4);
+	new_app.active = true;
+
+	app_list.push_back(new_app);
+	return true;
+   }
 
     void run() {
-        connectSurface("/autumn_app", 480, 768, app_surface);
-        connectSurface("/autumn_ui", 480, 800, ui_surface);
-
+	setupSocket();
 
         while (true) {
-            usleep(16000); // ~60 FPS
+	    int client_fd = accept(server_fd, NULL, NULL);
+	    if (client_fd > 0) {
+		char buffer[64];
+		int n = read(client_fd, buffer, sizeof(buffer));
+		if (n>0) {
+			if (strncmp(buffer, "DRAW:", 5) == 0) {
+				char *target_name = buffer + 5;
+				for (auto &s : app_list) {
+					if (strcmp(s.name, target_name) == 0) {
+						system("/usr/bin/ASComposer");
+					}
+				}
+			}				
+		}
+		close(client_fd);
+	    }
+            usleep(16000);
         }
     }
 
