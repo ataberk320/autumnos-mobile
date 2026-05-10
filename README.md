@@ -8,6 +8,8 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 # Technical information:
 
+- BusyTools (only kernel-space)
+
 - AutumnOS AutumnCoreUtilsTerminal
 
 - OTA Software Update
@@ -213,7 +215,7 @@ For Non SoM(System On Module) chips:
 -----------------
 # Packages and userspace:
 - **AutumnSDK:** App development and SDK environment for AutumnOS<br>
-- **acoreutils:** File operations and kmsg like functions. (BusyTools is removed)<br>
+- **acoreutils:** File operations and kmsg like functions. (BusyTools is removed from userspace)<br>
 - **ASComposer:** Layer composer for AutixSurf Display Server.<br>
 - **AutixSurf:** Our display server which supports DRM/fb0 [**Documentation**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/autumnos-mobile-1.0/AutixSurf.md)<br>
 
