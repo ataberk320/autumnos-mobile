@@ -1,11 +1,15 @@
-#include "cheaders/actions.h"
+#include "actions.h"
 #include "ui.h"
 #include "lvgl.h"
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 static lv_point_t start_point;
+extern bool michael_ee;
+
+
 
 void action_unlock_only(lv_event_t * e) {
 	lv_obj_t *screen = objects.lockscreen;
@@ -42,13 +46,13 @@ void action_start_process(lv_event_t * e){
 	lv_obj_t * obj = lv_event_get_target(e);
 	if(code == LV_EVENT_CLICKED) {
 		if (obj == objects.phone_icon) {
-			system("/usr/bin/com.autumnos.phone.atm -platform offscreen &");
+			system("/usr/bin/com.autumnos.phone.atm -platform offscreen");
 		}
 		else if(obj == objects.contacts_icon) {
 			// .
 		}
 		else if(obj == objects.camera_icon) {
-			system("echo 'camera process test!' > /dev/kmsg");
+			system("/usr/bin/com.autumnos.camera.atm -platform offscreen");
 		}
 		else if(obj == objects.calendar_icon) {
 			system("echo 'calendar process test!' > /dev/kmsg");
@@ -70,4 +74,24 @@ void action_search_on_internet(lv_event_t * e) {
 void action_show_weather_clock_widget_settings(lv_event_t * e) {
 	lv_obj_clear_flag(objects.weatherclockwidgetsettings, LV_OBJ_FLAG_HIDDEN);
 	lv_obj_fade_in(objects.weatherclockwidgetsettings, 300, 0);
+}
+
+
+void action_enable_weather_easter_egg(lv_event_t *e) {
+    michael_ee = true;
+}
+
+void action_show_apps_menu(lv_event_t *e) {
+	if (lv_obj_has_flag(objects.apps_menu, LV_OBJ_FLAG_HIDDEN)) {
+		lv_obj_clear_flag(objects.apps_menu, LV_OBJ_FLAG_HIDDEN);
+	}
+	else {
+		lv_obj_add_flag(objects.apps_menu, LV_OBJ_FLAG_HIDDEN);
+	}
+	// lv_img_set_src(objects.apps_icon, &img_home)
+}
+
+
+void action_touch_shield(lv_event_t *e) {
+	printf("Touch Shield: Catched touch!\n");
 }
