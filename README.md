@@ -14,8 +14,6 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 - OTA Software Update
 
-- Pingpong slot on SD card for software update
-
 - Downgrading update without deleting user data
 
 - Virtual framebuffer support (fb0, fb1)
