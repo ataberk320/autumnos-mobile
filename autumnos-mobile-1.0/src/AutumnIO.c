@@ -1,6 +1,6 @@
-#include "AutumnIO.h"
+#include "cheaders/AutumnIO.h"
 #include <stdint.h>
-#include "AutumnSyscall.h"
+#include "cheaders/AutumnSyscall.h"
 void AutumnIO_Write(int fd, const void *buf, uint32_t len) {
 	AutumnSys_Syscall(SYS_WRITE, fd, (long)buf, len, 0, 0, 0);
 }
