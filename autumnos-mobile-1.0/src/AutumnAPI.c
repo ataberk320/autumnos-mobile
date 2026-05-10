@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <string.h>
-#include "AutumnAPI.h"
+#include "cheaders/AutumnAPI.h"
 
 static unsigned char *video_raw_pixels = NULL;
 extern void atmsys_play_video(const char *source, unsigned char *final_out_buffer, int start_second);
