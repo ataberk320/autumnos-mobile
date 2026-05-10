@@ -82,7 +82,9 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 - Camera support(USB/V4L2/UVC etc.)
 
-- Allwinner G2D/DRM accelerator with KMS
+- Allwinner G2D
+
+- DRM accelerator with KMS
 
 - libjpg, libpng, freetype support
 
