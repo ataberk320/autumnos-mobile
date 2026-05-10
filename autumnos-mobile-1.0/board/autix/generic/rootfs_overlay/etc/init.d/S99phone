@@ -29,15 +29,13 @@ case "$1" in
     /usr/bin/AutixSurfDetector &
     echo "[AUTUMNOS] Starting AutumnCore." > /dev/kmsg
     /usr/bin/AutumnCore &
-
     echo "[AUTUMNOS] Starting NameserverDefiner."
     /usr/bin/AutixNameserverDefiner &
-    echo "[AUTUMNOS] Starting G2D daemon."
-    /usr/bin/AutixG2DService &
     echo 0 > /sys/class/vtconsole/vtcon1/bind
     echo "[AUTUMNOS] Starting GUI." > /dev/kmsg
-    /usr/bin/sysui &
-    /usr/bin/com.autumnos.phone.atm -platform offscreen &
+    /usr/bin/procterm &
+    echo "[AUTUMNOS] Process terminater is running." > /dev/kmsg
+    /usr/bin/sysui -platform offscreen &
     echo "[AUTUMNOS] Starting watchdog." > /dev/kmsg
     (
             while true; do
