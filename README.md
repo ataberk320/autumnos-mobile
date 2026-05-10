@@ -30,7 +30,7 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 - Intel HD Audio/AC97
 
-- USB OHCI/XHCI drivers
+- USB OHCI/XHCI/HID drivers
 
 - PCI device support
 
