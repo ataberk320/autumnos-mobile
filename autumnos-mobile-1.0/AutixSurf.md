@@ -4,7 +4,7 @@ AutixSurf is a lightweight, high-performance Surface Manager and Display Server 
 Key Technical Features
 DRM Backend: Operates at the kernel level via the Direct Rendering Manager (DRM) for direct hardware access.
 
-Hardware Acceleration (G2D): Fully utilizes the Allwinner D1s G2D hardware accelerator, offloading graphical tasks from the CPU to boost efficiency.
+Hardware Acceleration (G2D): Fully utilizes the Allwinner G2D hardware accelerator, offloading graphical tasks from the CPU to boost efficiency.
 
 Memory Efficiency: Architected for devices with 64MB to 128MB of RAM, ensuring a smooth 60 FPS user interface without memory exhaustion.
 
