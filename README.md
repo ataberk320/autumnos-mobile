@@ -56,8 +56,6 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 - RISC-V (Allwinner D1s/D1) and QEMU(Virtio) support
 
-- DongshanPi/Lichee RV or RV Dock/Mango Pi/Nezha/ClockworkPi/Devterm, multi platform support
-
 - Chocolate-Doom and LTris support
 
 - SDL and SDL2 support
@@ -164,7 +162,7 @@ LVGL version must be 8.4.0!
 
 Target architecture: RV64 (RISC-V 64bit)
 
-CPU requirement: 64MB+
+CPU requirement: 256MB+
 
 Supported SoC's: StarFive JH7110, Allwinner D1 family
 ---------------------------
