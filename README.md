@@ -129,6 +129,8 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 - Multilanguage
 
 - Pull repo with git
+
+- AutumnGL (GLES 3.0 based)
 ___________________________
 
 # **Easter eggs**
