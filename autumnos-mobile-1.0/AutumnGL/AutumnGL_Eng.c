@@ -22,10 +22,10 @@ GLuint CompileShader(GLenum type, const char* source) {
 	if (!success) {
 		char log[512];
 		glGetShaderInfoLog(shader,512, NULL, log);
-		printf("Shader error: Type->%d, Detail->%s", type, log);
+		printf("Shader error: Type->%d, Detail->%s", type, log\n);
 	}
 	else {
-		printf("Shaders is compiled, ID->%u/n", shader);
+		printf("Shaders is compiled, ID->%u\n", shader);
 	}
 	return shader;
 }
