@@ -53,7 +53,7 @@ GLuint CreateProgram(const char* vsSource, const char* fsSource) {
 static const char* COMMON_VERTEX =
 	"#version 300 es\n"
 	"precision mediump float;\n"
-	"layout(location = 0) in vec4 a_position;\n"
+	"layout(location = 0) in vec2 a_position;\n"
 	"layout(location = 1) in vec2 a_uv;\n"
 	"out vec2 v_uv;\n"
 	"void main() {\n"
