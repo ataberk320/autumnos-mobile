@@ -36,20 +36,28 @@ void Terminal_PutStr(const char *str) {
 		if (*str == '\n') {
 			cursor_y++;
 			cursor_x = 0;
+			char n = '\n';
+			AutumnSys_Syscall(64, 1, (long)&n, 1, 0, 0, 0);
 		}
+
 		else if (*str == '\r') {
 			cursor_x = 0;
+			char r = '\r';
+			AutumnSys_Syscall(64, 1, (long)&r, 1, 0, 0, 0);
 		}
+
 		else {
-			AutumnSys_Syscall(64, 1, (long)str, len, 0, 0, 0);
+			AutumnSys_Syscall(64, 1, (long)str, 1, 0, 0, 0);
 			cursor_x++;
 		}
 		if (cursor_x >= TERM_WIDTH) {
 			cursor_x = 0;
 			cursor_y++;
+			char n = '\n';
+			AutumnSys_Syscall(64, 1, (long)&n, 1, 0, 0, 0);
 		}
+		str++;
 	}
-	str++;
 }
 
 
@@ -99,7 +107,8 @@ int main(int argc, char *argv[]) {
 			char *arg_part = "";
 
 			for (int i = 0; input[i] != '\0'; i++) {
-				if (input[i] = '\0') {
+				if (input[i] == ' ') {
+					input[i] = '\0';
 					arg_part = &input[i+1];
 					while(*arg_part == ' ') arg_part++;
 					break;
