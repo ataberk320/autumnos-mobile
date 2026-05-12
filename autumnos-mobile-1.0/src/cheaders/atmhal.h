@@ -6,6 +6,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include "AutumnMouseArg.h"
 #include <libswscale/swscale.h>
 #include <libavutil/imgutils.h>
 #include <libavcodec/avcodec.h>
@@ -25,6 +26,11 @@ int atmsys_camera_init(void);
 void atmsys_convert_videofrm(AVFrame *pFrame, AVCodecContext *pCodecCtx, unsigned char *out_buffer, int target_width, int target_height);
 
 void atmsys_play_video(const char *source, unsigned char *final_out_buffer, int start_second);
+//Driver initialization 
+
+int atmsys_indev_init(const char* device);
+
+void atmsys_get_touch(autumn_touchpad_t *touch);
 
 //Power options
 void atmsys_reboot(void);
