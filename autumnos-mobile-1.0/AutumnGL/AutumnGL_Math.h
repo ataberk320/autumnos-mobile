@@ -4,6 +4,7 @@
 #include <GLES3/gl3.h>
 #include <math.h>
 #include <string.h>
+
 typedef struct {
 	float m[16];
 } mat4;
