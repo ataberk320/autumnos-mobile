@@ -37,6 +37,8 @@ GLuint CreateProgram(const char* vsSource, const char* fsSource) {
 	glAttachShader(prog, vs);
 	glAttachShader(prog, fs);
 	glLinkProgram(prog);
+ glDeleteShader(vs);
+ glDeleteShader(fs);
 	GLint success;
 	glGetProgramiv(prog, GL_LINK_STATUS, &success);
 	if (!success) {
@@ -71,11 +73,25 @@ void AutumnGL_Init() {
     shadowProg = CreateProgram(COMMON_VERTEX, SHADOW_FRAG);
     framedgradrectProg = CreateProgram(COMMON_VERTEX, ROUNDED_FRM_RECT_FRAG);
     cubeProg = CreateProgram(COMMON_VERTEX, CUBE_FRAG);
+modelLoc = glGetUniformLocation(cubeProg, "u_model");
     printf("AutumnGL: shaders successfully installed. RectProg ID: %u/n", rectProg);
+    // Triangle VAO/VBO
+glGenVertexArrays(1, &triangleVAO);
+glGenBuffers(1, &triangleVBO);
+
+glBindVertexArray(triangleVAO);
+
+glBindBuffer(GL_ARRAY_BUFFER, triangleVBO);
+glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6, NULL, GL_DYNAMIC_DRAW);
+
+glEnableVertexAttribArray(0);
+glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+
+glBindVertexArray(0);
 }
 
 void _Autumn_RenderFT(const char* text, float x, float y, float scale, vec3 color) {
-	glUseProgram(fontProg);
+	glUseProgram(fontProg); glUniform1i(glGetUniformLocation(fontProg, "u_texture"), 0);
 	glActiveTexture(GL_TEXTURE0);
 	glBindVertexArray(fontVAO);
 	for (const char* c = text; *c; c++) {
@@ -167,6 +183,7 @@ GLuint LoadTexture3D(int width, int height, int depth, unsigned char* data) {
     	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, width, height, depth, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	return texID;
 }
@@ -180,6 +197,7 @@ GLuint LoadTexture2D(unsigned char* data, int width, int height, GLenum format) 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
     	return texID;
 }
@@ -225,6 +243,7 @@ void AutumnGL_DrawIcon(GLuint texID, float x, float y, float w, float h, float o
 
 void AutumnGL_DrawText(const char *text, float x, float y, float scale,float rr, float gg, float bb, float opacity) {
 	glUseProgram(fontProg);
+ glUniform1i(glGetUniformLocation(fontProg, "u_texture"), 0);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glActiveTexture(GL_TEXTURE0);
