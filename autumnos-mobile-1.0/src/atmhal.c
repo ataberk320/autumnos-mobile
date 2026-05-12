@@ -11,6 +11,7 @@
 #include <linux/videodev2.h>
 #include <sys/ioctl.h>
 #include <pthread.h>
+#include <sys/reboot.h>
 #include "atmhal.h"
 #include "AutumnVideoArg.h"
 #define PWRBT_GPIO "21"
@@ -119,15 +120,15 @@ void atmsys_play_video(const char *source, unsigned char *final_out_buffer, int 
 //Power options
 void atmsys_reboot(void) {
 	sync();
-	if (system("reboot") == -1) {
-		system("busybox reboot");
+	if (reboot(RB_AUTOBOOT) == -1) {
+		printf("Reboot is failed");
 	}
 }
 
 void atmsys_pwroff(void) {
 	sync();
-	if (system("poweroff") == -1) {
-		system("busybox poweroff");
+	if (reboot(RB_POWER_OFF) == -1) {
+		printf("Shutdown is failed");
 	}
 }
 

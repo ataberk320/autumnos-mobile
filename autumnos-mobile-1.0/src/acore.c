@@ -1,3 +1,5 @@
+#define TERMINAL_AS_LIB
+#include "AutumnCoreUtilsTerminal.c"
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -73,12 +75,11 @@ void check_power_status(void) {
 
 void update_driver_status(void) {
 	autumn_touchpad_t touch;
-	atmsys_get_touch(&touch);
 	
-	FILE *fp_mouse = fopen("/tmp/autumnsys/mouse0", "w");
+	FILE *fp_mouse = fopen("/etc/autumn_conf/AutumnMsP0", "w");
 	if (fp_mouse != NULL) {
 		fprintf(fp_mouse, "%d %d %d", touch.x, touch.y, touch.pressed);
-        fclose(fp_mouse);
+        	fclose(fp_mouse);
 	}
 }
 
@@ -135,10 +136,8 @@ void update_system_status(int serial_fd) {
 
 
 }
-
 int main(void) {
 	mkdir_data();
-	atmsys_indev_init("/dev/input/event1");
 	atmsys_safe_volume(65);
 	atmsys_modemhdinit();
 	int serial_fd = open("/dev/ttyS1", O_RDWR | O_NOCTTY);

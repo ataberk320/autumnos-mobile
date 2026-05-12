@@ -1,7 +1,10 @@
+
 #include "AutumnIO.h"
 #include "acoreutils.h"
 #include "AutumnSyscall.h"
 #include <stdlib.h> //system();
+#include "AutumnCoreUtilsTerminal.h"
+#include "AutumnAPI.h"
 int cursor_x = 0;
 int cursor_y = 0;
 #define TERM_WIDTH 60
@@ -91,7 +94,7 @@ void Terminal_GetInp(char *buf, int max_len) {
 	buf[i] = '\0';
 	Terminal_PutStr("\n");
 }
-
+#ifndef TERMINAL_AS_LIB
 int main(int argc, char *argv[]) {
 	if (argc < 1) return 1;
 	const char *cmd = Terminal_GetCmd(argv[0]);
@@ -130,7 +133,7 @@ int main(int argc, char *argv[]) {
 
         		else if (Terminal_StrCmp(input, "mkdir") == 0) {
                 		if (arg_part[0] == '\0') {
-					Terminal_PutStr("Folder name is not defined");
+					Terminal_PutStr("Using: mkdir <folder>");
 				}
 				else {
 					coreu_crdir(argv[1], 0755);
@@ -140,11 +143,63 @@ int main(int argc, char *argv[]) {
         		else if (Terminal_StrCmp(input, "sudo") == 0) {
                 		atmsu_root(argc > 1 ? argv[1] : "/bin/sh");
         		}
+			
+			else if (Terminal_StrCmp(input, "atch") == 0) {
+				if (arg_part[0] == '\0') {
+					Terminal_PutStr("Using: atouch <file.format>");
+				}
+				else {
+					coreu_crfil(arg_part);
+				}
+			}
 
+			else if (Terminal_StrCmp(input, "ls") == 0) {
+				if (arg_part[0] == '\0') {
+					Terminal_PutStr("Using: ls /your/path/to/file");
+				}
+				else {
+					coreu_lsdir(arg_part);
+				}
+			}
+
+			else if (Terminal_StrCmp(input, "cd") == 0) {
+				if (arg_part[0] == '\0') {
+					Terminal_PutStr("Using: cd /current/path/to/change");
+				}
+				else {
+					coreu_goto(arg_part);
+				}
+			}
+
+			else if (Terminal_StrCmp(input, "reboot") == 0) {
+				AutumnAPI_Request_Reboot();
+			}
+
+			else if (Terminal_StrCmp(input, "shutdown") == 0) {
+				AutumnAPI_Request_PowerOff();
+			}
+
+			else if (Terminal_StrCmp(input, "exit") == 0) {
+				Terminal_PutStr("[CoreUtilsTerminal]: Ending current terminal session\n");
+				Terminal_PutStr("Process '/usr/bin/CoreTerminal' exited by 0\n");
+				break;
+			}
+
+			else if (Terminal_StrCmp(input, "echo") == 0) {
+				if (arg_part[0] == '\0') {
+					Terminal_PutStr("Using: echo autumn");
+				}
+				else {
+					Terminal_PutStr(arg_part);
+					Terminal_PutStr("\n");
+				}
+			}
         		else {
-                		Terminal_PutStr("Command not found:\n");
+                		Terminal_PutStr("Command not found: ");
                 		Terminal_PutStr(cmd_part);
+				Terminal_PutStr("\n");
         		}
 	  	}
 	}
 }
+#endif
