@@ -122,9 +122,10 @@ void _Autumn_RenderFT(const char* text, float x, float y, float scale, vec3 colo
 
 void _Autumn_Pipe(float x, float y, float w, float h) {
     float x1 = (x / 480.0f) * 2.0f - 1.0f;
-    float y1 = (y / 800.0f) * 2.0f - 1.0f;
+    float y1 = 1.0f - (y / 800.0f) * 2.0f;
+
     float x2 = ((x + w) / 480.0f) * 2.0f - 1.0f;
-    float y2 = ((y + h) / 800.0f) * 2.0f - 1.0f;
+    float y2 = 1.0f - ((y + h) / 800.0f) * 2.0f;
 
     static GLfloat vertices[8];
     vertices[0] = x1;	vertices[1] = y2;
