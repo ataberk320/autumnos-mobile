@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <linux/input.h>
 #include "atmhal.h"
 #include "AutumnMouseArg.h"
 #include "AtmDrv_G2D.h"
@@ -15,7 +16,9 @@
 #define LIMIT 6
 static int pwr_counter = 0;
 static int kmsg_fd = -1;
+static int mouse_fd = -1;
 #define AUTUMN_IPC_PATH "/tmp/autumn_conf/AutumnCore0"
+static autumn_touchpad_t touch = {0, 0, 0};
 
 void mkdir_data(void) {
 	mkdir("/tmp/autumnsys", 0777);
@@ -119,8 +122,20 @@ void check_power_status(void) {
 }
 
 void update_driver_status(void) {
-	autumn_touchpad_t touch;
-	
+	struct input_event ev;
+	if (mouse_fd < 0) {
+        	mouse_fd = open("/dev/input/event1", O_RDONLY | O_NONBLOCK);
+    	}
+
+    	while (read(mouse_fd, &ev, sizeof(ev)) > 0) {
+        	if (ev.type == EV_ABS) {
+            		if (ev.code == ABS_X) touch.x = (ev.value * 480) / 32767;
+            		if (ev.code == ABS_Y) touch.y = (ev.value * 800) / 32767;
+        	}
+        	if (ev.type == EV_KEY && ev.code == BTN_LEFT) {
+            		touch.pressed = ev.value;
+        	}
+    	}	
 	FILE *fp_mouse = fopen("/etc/autumn_conf/AutumnMsP0", "w");
 	if (fp_mouse != NULL) {
 		fprintf(fp_mouse, "%d %d %d", touch.x, touch.y, touch.pressed);
