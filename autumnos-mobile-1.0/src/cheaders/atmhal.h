@@ -37,7 +37,9 @@ void atmsys_reboot(void);
 
 void atmsys_pwroff(void);
 
-bool atmsys_pwrstat(void);
+void atmsys_indev_init(const char *suggested_path);
+
+void atmsys_indev_type(void);
 
 int atmsys_battery_perc(void);
 
