@@ -14,7 +14,7 @@
 #include <sys/reboot.h>
 #include "atmhal.h"
 #include "AutumnVideoArg.h"
-#define PWRBT_GPIO "21"
+#define PWRBT_GPIO "117"
 #define MODEM_RST_PIN "118"
 int cam_fd = -1;
 //System configuration functions
