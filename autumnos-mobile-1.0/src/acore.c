@@ -15,19 +15,64 @@
 #define LIMIT 6
 static int pwr_counter = 0;
 static int kmsg_fd = -1;
-
+#define AUTUMN_IPC_PATH "/tmp/autumn_conf/AutumnCore0"
 
 void mkdir_data(void) {
 	mkdir("/tmp/autumnsys", 0777);
-    mkdir("/tmp/autumnsys/battery", 0777);
-    mkdir("/tmp/autumnsys/uptime", 0777);
-    mkdir("/tmp/autumnsys/power", 0777);
+    	mkdir("/tmp/autumnsys/battery", 0777);
+    	mkdir("/tmp/autumnsys/uptime", 0777);
+    	mkdir("/tmp/autumnsys/power", 0777);
 	mkdir("/tmp/autumnsys/memory", 0777);
 	mkdir("/tmp/autumnsys/storage", 0777);
 	mkdir("/tmp/autumnsys/connection", 0777);
-	mkdir("/tmp/autumnsys/autumn_data", 0777);
+	mkdir("/tmp/autumn_sock", 0777);
+	mkdir("/tmp/autumn_conf", 0777);
 }
 
+void setup_ipc() {
+	mkfifo(AUTUMN_IPC_PATH, 0666);
+}
+
+void get_cmd(int serial_fd) {
+	char buffer[128];
+	int fd = open(AUTUMN_IPC_PATH, O_RDONLY | O_NONBLOCK);
+	if (fd >= 0) {
+		ssize_t n = read(fd, buffer, sizeof(buffer) - 1);
+		if (n > 0) {
+			buffer[n] = '\0';
+			if (strncmp(buffer, "set_bright:", 11) == 0) {
+				int val = atoi(buffer + 11);
+				atmsys_set_brightness(val);
+			}
+			else if (strcmp(buffer, "flight_mode") == 0) {
+				atmsys_flight(true);
+			}
+			
+			else if (strcmp(buffer, "volume_down") == 0) {
+				atmsys_volume_down();
+			}
+
+			else if (strcmp(buffer, "volume_up") == 0) {
+				atmsys_volume_up();
+			}
+
+			else if (strcmp(buffer, "answer_call") == 0) {
+				atmsys_modem_answer(serial_fd);
+			}
+
+			else if (strcmp(buffer, "decline_call") == 0) {
+				atmsys_modem_reject(serial_fd);
+			}
+
+			else {
+				printf("Invalid HAL parameter or command!");
+				return;
+			}
+
+		}
+	}
+	close(fd);
+}
 void check_power_status(void) {
     char line[64];
     int req_val = -1;
@@ -141,7 +186,7 @@ int main(void) {
 	atmsys_safe_volume(65);
 	atmsys_modemhdinit();
 	int serial_fd = open("/dev/ttyS1", O_RDWR | O_NOCTTY);
-
+	get_cmd(serial_fd);
 	if (atmsys_camera_init() == 0) {
 		//.
 	}

@@ -14,9 +14,12 @@
 #include <sys/reboot.h>
 #include "atmhal.h"
 #include "AutumnVideoArg.h"
+#include <linux/input.h>
+#include <linux/input-event-codes.h>
 #define PWRBT_GPIO "117"
 #define MODEM_RST_PIN "118"
 int cam_fd = -1;
+static int input_fd = -1;
 //System configuration functions
 void atmsys_set_brightness(uint8_t level) {
 	FILE *fp = fopen("/sys/class/backlight/backlight/brightness", "w");
@@ -35,7 +38,7 @@ void atmsys_volume_down(void) {
 }
 
 void atmsys_safe_volume(uint8_t volume) {
-	if (volume > 70) volume = 70;
+	if (volume > 50) volume = 50;
 	char cmd[128];
 	sprintf(cmd, "amixer sset 'Master' %d%% > /dev/null 2>&1", volume);
 	system(cmd);
@@ -83,7 +86,7 @@ void atmsys_indev_init(const char *suggested_path) {
 			}
 		}
 		close(input_fd);
-		input_fd = (open("/dev/input/mouse0", O_RDONLY | O_NONBLOCK);
+		input_fd = (open("/dev/input/mouse0", O_RDONLY | O_NONBLOCK));
 	}
 }
 
@@ -108,6 +111,13 @@ void atmsys_indev_type(void) {
     }
 }
 
+void atmsys_gpio(const char *path, const char *value) {
+	int fd = open(path, O_WRONLY);
+	if (fd >= 0) {
+		write(fd, value, strlen(value));
+		close(fd);
+	}
+}
 
 void atmsys_convert_videofrm(AVFrame *pFrame, AVCodecContext *pCodecCtx, unsigned char *out_buffer, int target_width, int target_height) {
     static struct SwsContext *sws_ctx = NULL;
@@ -182,6 +192,23 @@ void atmsys_pwroff(void) {
 	}
 }
 
+int atmsys_pwrstat(void) {
+	char val[2];
+	int fd = open("/sys/class/gpio/gpio117/value", O_RDONLY);
+	if (fd < 0) {
+		return 0;
+	}
+
+	if (read(fd, val, 1) < 0) {
+		close(fd);
+		return 0;
+	}
+
+	close(fd);
+	return (val[0] == '0') ? 1 : 0;
+
+}
+
 int atmsys_battery_perc(void)  {
 	FILE *fp;
 	char buffer[16];
@@ -215,12 +242,15 @@ void atmsys_flight(bool enable) {
 }
 
 void atmsys_modemhdinit(void) {
-	system("echo " MODEM_RST_PIN " > /sys/class/gpio/export");
+	char path[128];
+	atmsys_gpio("/sys/class/gpio/export", MODEM_RST_PIN);
 	usleep(100000);
-	system ("echo out > /sys/class/gpio/gpio" MODEM_RST_PIN "/direction");
-	system("echo 0 > /sys/class/gpio/gpio" MODEM_RST_PIN "/value");
+	sprintf(path, "/sys/class/gpio/gpio%s/direction", MODEM_RST_PIN);
+	atmsys_gpio(path, "out");
+	sprintf(path, "/sys/class/gpio/gpio%s/value", MODEM_RST_PIN);
+	atmsys_gpio(path, "0");
 	usleep(200000);
-	system("echo 1 > /sys/class/gpio/gpio" MODEM_RST_PIN "/value");
+	atmsys_gpio(path, "1");
 	sleep(3);
 }
 

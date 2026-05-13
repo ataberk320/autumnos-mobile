@@ -11,16 +11,28 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <linux/i2c-dev.h>
 #include "AutumnGestureArg.h"
 #include <time.h>
-#define STATUS_SOCK_PATH "/etc/autumn_conf/status.sock"
-#define MS_SOCK_PATH "/etc/autumn_conf/mscoord.sock"
+#include "AutumnPwrBtnArg.h"
+#define STATUS_SOCK_PATH "/tmp/autumn_sock/status.sock"
+#define MS_SOCK_PATH "/tmp/autumn_sock/mscoord.sock"
+#define AUTUMN_IPC_PATH "/tmp/autumn_conf/AutumnCore0"
 #define MPR121_ADDR 0x5A
 static unsigned char *video_raw_pixels = NULL;
 extern void atmsys_play_video_wrapper(void *arg);
 extern void atmsys_play_video(const char *source, unsigned char *final_out_buffer, int start_second);
+ButtonTracker power_track = {1, {0,0}};
+
+int AutumnAPI_System(const char *cmd) {
+	int fd = open(AUTUMN_IPC_PATH, O_WRONLY | O_NONBLOCK);
+	if (fd < 0) return -1;
+	write(fd, cmd, strlen(cmd));
+	close(fd);
+	return 0;
+}
 
 uint32_t AutumnAPI_Get_TickMS() {
 	struct timespec ts;
@@ -63,8 +75,7 @@ AutumnGestureEvent AutumnAPI_Detect_Gesture() {
 	time_t now = time(NULL);
 	static uint32_t start_time = 0;
 	static int start_pin = -1;
-	static int last_state = 0;
-	
+	static int last_state = 0;	
 	AutumnGestureEvent event = {AUTUMN_G_NONE, 0, 0};
 	int current_state = AutumnAPI_MPR_Read();
 	
@@ -104,6 +115,30 @@ AutumnGestureEvent AutumnAPI_Detect_Gesture() {
 	return event;
 }
 
+int AutumnAPI_Read_Power_Button_Status() {
+	char val;
+	int fd = open("/sys/class/gpio/gpio200/value", O_RDONLY);
+	read(fd, &val, 1);
+	close(fd);
+	int current_state = (val == '0');
+	
+	if (current_state && power_track.last_state == 0) {
+		clock_gettime(CLOCK_MONOTONIC, &power_track.press_start);
+		power_track.last_state = 1;
+	}
+	else if (current_state && power_track.last_state == 1) {
+		struct timespec now;
+		clock_gettime(CLOCK_MONOTONIC, &now);
+		long elapsed = now.tv_sec - power_track.press_start.tv_sec;
+		if (elapsed >= 10) return 2;
+		if (elapsed >= 5) return 1;
+	}
+	else if(!current_state) {
+		power_track.last_state = 0;
+	}
+	return 0;
+}
+
 int AutumnAPI_Show_Toast(const char *msg) {
 	int sock = 0;
 	struct sockaddr_un serv_addr;
@@ -130,35 +165,35 @@ int AutumnAPI_Show_Toast(const char *msg) {
 	//dummy: system("/usr/bin/com.autumnos.errcnt.atm &");
 //}
 
-int AutumnAPI_Set_MsSock() {
-	int sock = socket(AF_UNIX, SOCK_DGRAM, 0);
-        struct sockaddr_un addr;
-        memset(&addr, 0, sizeof(addr));
-        addr.sun_family = AF_UNIX;
-        strncpy(addr.sun_path, MS_SOCK_PATH, sizeof(addr.sun_path) - 1);
-        unlink(MS_SOCK_PATH);
-        bind(sock, (struct sockaddr*)&addr, sizeof(addr));
-        fcntl(sock, F_SETFL, O_NONBLOCK);
-        return sock;
+int AutumnAPI_Set_MsPipe() {
+	const char *fifo_path = "/etc/autumn_conf/AutumnMsP0";
+	mkfifo(fifo_path, 0666);
+	chmod(fifo_path, 0666);
+	int fd = open(fifo_path, O_RDONLY | O_NONBLOCK);
+	return fd;
 }
 
-void AutumnAPI_Read_Mouse(int sock, MouseData *data) {
-        char buffer[64];
-	int dx = 0, dy = 0, pr = 0;
-	int n = recvfrom(sock, buffer, sizeof(buffer) - 1, 0, NULL, NULL);
-	if (n > 0) {
-		buffer[n] = '\0';
-		if (sscanf(buffer, "%d %d %d", &dx, &dy, &pr) == 3) {
-			data->x += dx;
-			data->y += dy;
-			data->pressed = pr;
-			if(data->x < 0) data->x = 0;
-			if(data->y < 0) data->y = 0;
-			if(data->x >= 480) data->x = 479;
-            		if(data->y >= 800) data->y = 799;
-		}
-	}
+void AutumnAPI_Read_Mouse(int fd, MouseData *data) {
+    char buffer[64];
+    ssize_t n;
+    
+    while ((n = read(fd, buffer, sizeof(buffer) - 1)) > 0) {
+        buffer[n] = '\0';
+        int dx = 0, dy = 0, pr = 0;
+        
+        if (sscanf(buffer, "%d %d %d", &dx, &dy, &pr) == 3) {
+            data->x += dx;
+            data->y += dy;
+            data->pressed = pr;
+
+            if(data->x < 0) data->x = 0;
+            if(data->y < 0) data->y = 0;
+            if(data->x >= 480) data->x = 479;
+            if(data->y >= 800) data->y = 799;
+        }
+    }
 }
+
 
 void AutumnAPI_Request_Reboot(void) {
 	FILE *fp = fopen("/tmp/autumnsys/power/itstimetoreboot", "w");
