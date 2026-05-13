@@ -71,6 +71,44 @@ int  atmsys_camera_init(void) {
 	return 0;
 } 
 
+void atmsys_indev_init(const char *suggested_path) {
+	input_fd = open(suggested_path, O_RDONLY | O_NONBLOCK);
+	if (input_fd >= 0) {
+		unsigned long abs_bits[NBITS(ABS_MAX)];
+		
+		if (ioctl(input_fd, EVIOCGBIT(EV_ABS, sizeof(abs_bits)), abs_bits) >= 0) {
+			if (TEST_BIT(ABS_X, abs_bits) && TEST_BIT(ABS_Y, abs_bits)) {
+				printf("[AUTUMNOS]: Touchsreen hardware detected");
+				return;
+			}
+		}
+		close(input_fd);
+		input_fd = (open("/dev/input/mouse0", O_RDONLY | O_NONBLOCK);
+	}
+}
+
+void atmsys_indev_type(void) {
+	int check_fd = open("/dev/input/event1", O_RDONLY | O_NONBLOCK);
+	int is_touch = 0;
+	if (check_fd >= 0) {
+		unsigned long abs_bits[NBITS(ABS_MAX)];
+		if (ioctl(check_fd, EVIOCGBIT(EV_ABS, sizeof(abs_bits)), abs_bits) >= 0) {
+            		if (TEST_BIT(ABS_X, abs_bits) && TEST_BIT(ABS_Y, abs_bits)) {
+                	is_touch = 1;
+            }
+        }
+        close(check_fd);
+    }
+
+    if (is_touch) {
+	atmsys_indev_init("/dev/input/event1");
+    }
+    else {
+	atmsys_indev_init("/dev/input/event0");
+    }
+}
+
+
 void atmsys_convert_videofrm(AVFrame *pFrame, AVCodecContext *pCodecCtx, unsigned char *out_buffer, int target_width, int target_height) {
     static struct SwsContext *sws_ctx = NULL;
     static int last_w = 0, last_h = 0;
@@ -117,6 +155,18 @@ void atmsys_play_video(const char *source, unsigned char *final_out_buffer, int 
 	pclose(pipein);
 }
 
+int atmsys_is_headphone(void) {
+	if (input_fd < 0) return -1;
+	unsigned long sw_bits[NBITS(SW_MAX)];
+	if (ioctl(input_fd, EVIOCGSW(sizeof(sw_bits)), sw_bits) >= 0) {
+		if (TEST_BIT(SW_HEADPHONE_INSERT, sw_bits)) {
+			printf("A headphone device detected!");
+			return 1;
+		}
+	}
+	return 0;
+}
+
 //Power options
 void atmsys_reboot(void) {
 	sync();
@@ -132,15 +182,6 @@ void atmsys_pwroff(void) {
 	}
 }
 
-bool atmsys_pwrstat(void) {
-	char value;
-	FILE *fp = fopen("/sys/class/gpio/gpio" PWRBT_GPIO "/value", "r");
-	if (fp ==  NULL) return false;
-	fread(&value, 1, 1, fp);
-	fclose(fp);
-	return (value == '0');
-}
-
 int atmsys_battery_perc(void)  {
 	FILE *fp;
 	char buffer[16];
@@ -151,7 +192,6 @@ int atmsys_battery_perc(void)  {
 	}
 	if (fgets(buffer, sizeof(buffer), fp) != NULL) {
        		battery_percent = atoi(buffer);
-        
         
         	if (battery_percent > 100) battery_percent = 100;
         	if (battery_percent < 0) battery_percent = 0;
@@ -256,6 +296,14 @@ void atmsys_get_sim_operator_name(int fd, char *provider_name, size_t max_len) {
     
     
     strncpy(provider_name, "Servis yok - Yalnızca acil aramalar.", max_len);
+}
+
+void atmsys_modem_answer(int serial_fd) {
+	write(serial_fd, "ATA\r\n", 5);
+}
+
+void atmsys_modem_reject(int serial_fd) {
+	write(serial_fd, "ATH\r\n", 5);
 }
 
 //Performance and storage status (Memory stat)
