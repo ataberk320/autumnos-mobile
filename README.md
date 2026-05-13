@@ -8,6 +8,8 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 # Technical information:
 
+- initramfs
+
 - FIFO Pipe
 
 - BusyBox Tools (only kernel-space)
