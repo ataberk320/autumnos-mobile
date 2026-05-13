@@ -6,6 +6,12 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#define BITS_PER_LONG (sizeof(long) * 8)
+#define NBITS(x) ((((x)-1)/BITS_PER_LONG)+1)
+#define OFF(x)  ((x)%BITS_PER_LONG)
+#define BIT(x)  (1UL<<OFF(x))
+#define LONG(x) ((x)/BITS_PER_LONG)
+#define TEST_BIT(bit, array) ((array[LONG(bit)] >> OFF(bit)) & 1)
 #include "AutumnMouseArg.h"
 #include <libswscale/swscale.h>
 #include <libavutil/imgutils.h>
@@ -26,16 +32,16 @@ int atmsys_camera_init(void);
 void atmsys_convert_videofrm(AVFrame *pFrame, AVCodecContext *pCodecCtx, unsigned char *out_buffer, int target_width, int target_height);
 
 void atmsys_play_video(const char *source, unsigned char *final_out_buffer, int start_second);
+
 //Driver initialization 
-
-int atmsys_indev_init(const char* device);
-
 void atmsys_get_touch(autumn_touchpad_t *touch);
 
 //Power options
 void atmsys_reboot(void);
 
 void atmsys_pwroff(void);
+
+int atmsys_pwrstat(void);
 
 void atmsys_indev_init(const char *suggested_path);
 
@@ -55,6 +61,10 @@ void atmsys_modem_software_init(int fd);
 int atmsys_is_sim_inserted(int fd);
 
 void atmsys_get_sim_operator_name(int fd, char *provider_name, size_t max_len);
+
+void atmsys_modem_answer(int serial_fd);
+
+void atmsys_modem_reject(int serial_fd);
 
 //Performance and storage status (Memory stat)
 long atmsys_uptime(void);

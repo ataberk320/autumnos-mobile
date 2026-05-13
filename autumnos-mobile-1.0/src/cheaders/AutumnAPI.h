@@ -11,13 +11,13 @@ void AutumnAPI_Request_PowerOff(void);
 
 void AutumnAPI_Emergency_PowerOff();
 
-int AutumnAPI_Set_MsSock();
+int AutumnAPI_Set_MsPipe();
 
 int AutumnAPI_Show_Toast(const char *msg);
 
 void AutumnAPI_Request_Reboot(void);
 
-void AutumnAPI_Read_Mouse(int sock, MouseData *data);
+void AutumnAPI_Read_Mouse(int fd, MouseData *data);
 
 int AutumnAPI_Read_Battery_Level(void);
 
