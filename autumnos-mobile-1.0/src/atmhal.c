@@ -14,12 +14,15 @@
 #include <sys/reboot.h>
 #include "atmhal.h"
 #include "AutumnVideoArg.h"
+#include "AutumnExternModem.h"
 #include <linux/input.h>
 #include <linux/input-event-codes.h>
 #define PWRBT_GPIO "117"
 #define MODEM_RST_PIN "118"
 int cam_fd = -1;
 static int input_fd = -1;
+bool external = false;
+
 //System configuration functions
 void atmsys_set_brightness(uint8_t level) {
 	FILE *fp = fopen("/sys/class/backlight/backlight/brightness", "w");
@@ -238,6 +241,18 @@ void atmsys_flight(bool enable) {
 	}
 	else {
 		system("rfkill unblock all");
+	}
+}
+
+void atmsys_parse_modem(void) {
+	static AutumnSIM_t md;
+	int serial_fd = AutumnModem_Int_Init(&md);
+	if (serial_fd >= 0) {
+		external = true;
+	}
+	else {
+		external = false;
+		atmsys_modemhdinit();
 	}
 }
 

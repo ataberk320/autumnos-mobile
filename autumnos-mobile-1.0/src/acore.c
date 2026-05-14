@@ -124,7 +124,8 @@ void check_power_status(void) {
 void update_driver_status(void) {
 	struct input_event ev;
 	if (mouse_fd < 0) {
-        	mouse_fd = open("/dev/input/event1", O_RDONLY | O_NONBLOCK);
+        	atmsys_indev_type();
+		if (mouse_fd < 0) return;
     	}
 
     	while (read(mouse_fd, &ev, sizeof(ev)) > 0) {
