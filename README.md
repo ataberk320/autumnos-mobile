@@ -214,7 +214,7 @@ For Non SoM(System On Module) chips:
 * *For Allwinner D1 SoC's:*
 [**Customized generic Device Tree Blob for Allwinner D1 by ataberk320**](https://github.com/ataberk320/autumnos-mobile/raw/main/autumnos-mobile-1.0/kernel/DeviceTreeBlob/sun20i-d1-autumn-default.dtb) <br>
 * *For Allwinner D1s SoC's:*
-[**Allwinner D1s is out of support, for this SoC, use AutumnOS RT Edition**](https://github.com/ataberk320/autumnos-rt)
+[**Allwinner D1s is out of support, for this SoC, use AutumnOS "Through" Edition**](https://github.com/ataberk320/autumnos-rt)
 
 -----------------
 # Packages and userspace:
