@@ -31,6 +31,8 @@ int atmsys_camera_init(void);
 
 void atmsys_convert_videofrm(AVFrame *pFrame, AVCodecContext *pCodecCtx, unsigned char *out_buffer, int target_width, int target_height);
 
+int atmsys_decode_videopix_libc(AVFormatContext *pFormatCtx, AVCodecContext *pCodecCtx, int videoStream, AVFrame *pFrame, unsigned char *out_buffer);
+
 void atmsys_play_video(const char *source, unsigned char *final_out_buffer, int start_second);
 
 //Driver initialization 
@@ -40,6 +42,8 @@ void atmsys_get_touch(autumn_touchpad_t *touch);
 void atmsys_reboot(void);
 
 void atmsys_pwroff(void);
+
+void atmsys_emergency_pwroff(void);
 
 int atmsys_pwrstat(void);
 
@@ -51,6 +55,14 @@ int atmsys_battery_perc(void);
 
 //Connection functions
 void atmsys_flight(bool enable);
+
+void atmsys_bt(bool enable);
+
+void atmsys_wifi(bool enable);
+
+bool atmsys_wifi_stat(void);
+
+bool atmsys_bt_stat(void);
 
 void atmsys_modemhdinit(void);
 
