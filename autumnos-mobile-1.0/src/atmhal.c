@@ -28,10 +28,11 @@ int cam_fd = -1;
 int input_fd = -1;
 bool external = false;
 
+
 static void slog(const char *content) {
-	FILE *fd = fopen("/tmp/logs/atmsys.log", "w");
+	FILE *fd = fopen("/tmp/logs/atmsys.log", "a");
 	if (fd != NULL) {
-		fprintf(fd, "%d", content);
+		fprintf(fd, "%s\n", content);
 		fclose(fd);
 	}
 }
@@ -507,4 +508,26 @@ long atmsys_get_free_disk_space(const char *path) {
 	return free_bytes/(1024*1024);
 }
 
-
+void cpuv(char *buffer, size_t max_len) {
+	FILE *fp = fopen("/proc/cpuinfo", "r");
+	if (fp == NULL) return;
+	
+	char line[256];
+	while (fgets(line, sizeof(line), fp)) {
+		if (strncmp(line, "vendor_id", 9) == 0 || strncmp(line, "isa", 3) == 0) {
+            		char *delim = strchr(line, ':');
+			if (delim != NULL) {
+				delim++;
+				while (*delim == ' ' || *delim == '\t') delim++;
+				size_t len = strlen(delim);
+				if (len > 0 && delim[len - 1] == '\n') {
+					delim[len - 1] = '\0';
+				}
+				snprintf(buffer, max_len, "%s", delim);
+				fclose(fp);
+				return;
+			}
+		}
+	}
+	fclose(fp);
+}
