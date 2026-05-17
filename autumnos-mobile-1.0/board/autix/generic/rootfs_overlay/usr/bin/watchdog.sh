@@ -2,6 +2,23 @@
 
 sudo echo 1 > /proc/sys/kernel/sysrq
 
+cpu_detector() {
+	CPU_INFO="/proc/cpuinfo"
+	
+	if [! -f "$CPU_INFO" ]; then
+		echo 1 > /sys/class/vtconsole/vtcon1/bind
+		echo "CPU is missing. Hardware halted!" > /dev/kmsg
+		sleep 0.1
+		echo c > /proc/sysrq-trigger
+	fi
+
+        if ! grep -qE "vendor_id|isa" "$CPU_INFO"; then
+        	echo 1 > /sys/class/vtconsole/vtcon1/bind
+        	echo "Processor info not found in cpuinfo! System confused." > /dev/kmsg
+        	sleep 0.1
+        	echo c > /proc/sysrq-trigger
+    	fi
+
 uptime_format_detector() {
     UPTIME_FILE="/tmp/autumnsys/uptime/autumnuptime0"
     
