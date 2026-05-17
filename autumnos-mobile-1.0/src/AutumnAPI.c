@@ -17,8 +17,8 @@
 #include "AutumnGestureArg.h"
 #include <time.h>
 #include "AutumnPwrBtnArg.h"
+#include <linux/rfkill.h>
 #define STATUS_SOCK_PATH "/tmp/autumn_sock/status.sock"
-#define MS_SOCK_PATH "/tmp/autumn_sock/mscoord.sock"
 #define AUTUMN_IPC_PATH "/tmp/autumn_conf/AutumnCore0"
 #define MPR121_ADDR 0x5A
 static unsigned char *video_raw_pixels = NULL;
@@ -50,7 +50,7 @@ void AutumnAPI_Request_PowerOff(void) {
 }
 
 void AutumnAPI_Emergency_PowerOff() {
-	system("poweroff -f");
+	atmsys_emergency_pwroff();
 }
 
 int AutumnAPI_MPR_Read() {
@@ -161,12 +161,8 @@ int AutumnAPI_Show_Toast(const char *msg) {
 	return 0;
 }
 
-//void AutumnAPI_Error_Center() {
-	//dummy: system("/usr/bin/com.autumnos.errcnt.atm &");
-//}
-
 int AutumnAPI_Set_MsPipe() {
-	const char *fifo_path = "/etc/autumn_conf/AutumnMsP0";
+	const char *fifo_path = "/tmp/autumn_sock/AutumnMsP0";
 	mkfifo(fifo_path, 0666);
 	chmod(fifo_path, 0666);
 	int fd = open(fifo_path, O_RDONLY | O_NONBLOCK);
@@ -182,8 +178,8 @@ void AutumnAPI_Read_Mouse(int fd, MouseData *data) {
         int dx = 0, dy = 0, pr = 0;
         
         if (sscanf(buffer, "%d %d %d", &dx, &dy, &pr) == 3) {
-            data->x += dx;
-            data->y += dy;
+            data->x = dx;
+            data->y = dy;
             data->pressed = pr;
 
             if(data->x < 0) data->x = 0;
@@ -225,7 +221,7 @@ long AutumnAPI_Read_Uptime(void) {
 
 long AutumnAPI_Read_Used_RAM(void) {
     long ram = 0;
-    FILE *fp = fopen("/tmp/autumnsys/mem/autumnram0", "r");
+    FILE *fp = fopen("/tmp/autumnsys/memory/autumnram0", "r");
     if (fp) {
         fscanf(fp, "%ld", &ram);
         fclose(fp);
@@ -269,76 +265,16 @@ int AutumnAPI_SIM_Status(void) {
 	return status;
 }
 
-int AutumnAPI_List_SSID(char ssid_list[][33], int max_count) {
-	FILE *fp = popen("iw dev wlan0 scan | grep 'SSID:'", "r");
-	if (fp == NULL) return -1;
-	char line[128];
-	int count = 0;
-
-	while (fgets(line, sizeof(line), fp) && count < max_count) {
-		char *start = strstr(line, "SSID: ");
-		if (start) {
-			start += 6;
-			start[strcspn(start, "\n")] = 0;
-			if (strlen(start) > 0) {
-				strncpy(ssid_list[count], start, 32);
-				ssid_list[count][32] = '\0';
-				count++;
-			}
-		}
-	}
-	pclose(fp);
-	return count;
-}
-
 void AutumnAPI_Bluetooth(bool enable) {
-	if (enable) {
-		system("rfkill unblock bluetooth");
-		system("hciconfig hci0 up > /dev/null 2>&1");
-	}
-	else {
-		system("hciconfig hci0 down > /dev/null 2>&1");
-		system("rfkill block bluetooth");
-	}
+	atmsys_bt(enable);
 }
 
 void AutumnAPI_WiFi(bool enable) {
-	if (enable) {
-		system("rfkill unblock wifi");
-		system("ifconfig wlan0 up > /dev/null 2>&1");
-	}
-	else {
-		system("ifconfig wlan0 down > /dev/null 2>&1");
-		system("rfkill block wifi");
-	}
+	atmsys_wifi(enable);
 }
 
 bool AutumnAPI_Connection(void) {
-	char buffer[128];
-	bool is_wifi_blk = false;
-	bool is_bt_blk = false;
-	
-	FILE *wififp = popen("rfkill list wifi", "r");
-    	if (wififp) {
-        	while (fgets(buffer, sizeof(buffer), wififp)) {
-            		if (strstr(buffer, "Soft blocked: yes")) {
-                		is_wifi_blk = true;
-                		break;
-            		}
-        	}
-        	pclose(wififp);
-    	}
-
-    	FILE *btfp = popen("rfkill list bluetooth", "r");
-    	if (btfp) {
-        	while (fgets(buffer, sizeof(buffer), btfp)) {
-            		if (strstr(buffer, "Soft blocked: yes")) {
-                		is_bt_blk = true;
-                		break;
-            		}
-        	}
-        	pclose(btfp);
-    	}	
-
-	return (!is_wifi_blk && !is_bt_blk);
+	bool wifi_blk = atmsys_wifi_stat();
+	bool bt_blk = atmsys_bt_stat();
+	return (!wifi_blk && !bt_blk);
 }

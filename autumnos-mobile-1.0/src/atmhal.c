@@ -1,27 +1,57 @@
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include "atmhal.h"
 #include <sys/sysinfo.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <termios.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdbool.h>
 #include <sys/statvfs.h>
 #include <linux/videodev2.h>
 #include <sys/ioctl.h>
 #include <pthread.h>
 #include <sys/reboot.h>
-#include "atmhal.h"
+#include <sys/wait.h>
 #include "AutumnVideoArg.h"
 #include "AutumnExternModem.h"
 #include <linux/input.h>
 #include <linux/input-event-codes.h>
+#include <linux/rfkill.h>
+
 #define PWRBT_GPIO "117"
 #define MODEM_RST_PIN "118"
 int cam_fd = -1;
-static int input_fd = -1;
+int input_fd = -1;
 bool external = false;
+
+static void slog(const char *content) {
+	FILE *fd = fopen("/tmp/logs/atmsys.log", "w");
+	if (fd != NULL) {
+		fprintf(fd, "%d", content);
+		fclose(fd);
+	}
+}
+
+static void atmexecve(char *const argv[]) {
+	pid_t pid = fork();
+	if (pid == 0) {
+		int null_fd = open("/dev/null", O_WRONLY);
+		if (null_fd >= 0) {
+			dup2(null_fd, STDOUT_FILENO);
+			dup2(null_fd, STDERR_FILENO);
+			close(null_fd);
+		}
+		execv(argv[0], argv);
+		_exit(127);
+	}
+	else if (pid > 0) {
+		waitpid(pid, NULL, 0);
+	}
+}
 
 //System configuration functions
 void atmsys_set_brightness(uint8_t level) {
@@ -54,13 +84,17 @@ void playaudio(const char *path) {
 	char cmd[512];
 	snprintf(cmd, sizeof(cmd), "aplay -q -N %s &", path);
 	int status = system(cmd);
-	if (status == -1) printf("ALSA not initialized!");
+	if (status == -1)  {
+		slog("[AudioPlayer-Log]: ALSA not initialized!");
+	}	
 }
 
 int  atmsys_camera_init(void) {
 	cam_fd = open("/dev/video0", O_RDWR | O_NONBLOCK);
-	if (cam_fd < 0) return -1;
-
+	if (cam_fd < 0) {
+		slog("[CamDev-Log]: Could not init camera device!");
+		return -1;
+	}
 	struct v4l2_capability cap;
 	if (ioctl(cam_fd, VIDIOC_QUERYCAP, &cap) < 0) return -2;
 	
@@ -78,22 +112,23 @@ int  atmsys_camera_init(void) {
 } 
 
 void atmsys_indev_init(const char *suggested_path) {
-	input_fd = open(suggested_path, O_RDONLY | O_NONBLOCK);
 	if (input_fd >= 0) {
-		unsigned long abs_bits[NBITS(ABS_MAX)];
-		
-		if (ioctl(input_fd, EVIOCGBIT(EV_ABS, sizeof(abs_bits)), abs_bits) >= 0) {
-			if (TEST_BIT(ABS_X, abs_bits) && TEST_BIT(ABS_Y, abs_bits)) {
-				printf("[AUTUMNOS]: Touchsreen hardware detected");
-				return;
-			}
-		}
 		close(input_fd);
-		input_fd = (open("/dev/input/mouse0", O_RDONLY | O_NONBLOCK));
+		input_fd = -1;
+	}
+
+	input_fd = open(suggested_path, O_RDONLY | O_NONBLOCK);
+
+	if (input_fd >= 0) {
+		slog("[Mouse-Log]: Input device initialized");
+	}
+	else {
+		slog("[Mouse-Log]: Could not init input device");
 	}
 }
 
 void atmsys_indev_type(void) {
+	if (input_fd >= 0) return;
 	int check_fd = open("/dev/input/event1", O_RDONLY | O_NONBLOCK);
 	int is_touch = 0;
 	if (check_fd >= 0) {
@@ -127,24 +162,57 @@ void atmsys_convert_videofrm(AVFrame *pFrame, AVCodecContext *pCodecCtx, unsigne
     static int last_w = 0, last_h = 0;
     static enum AVPixelFormat last_fmt = AV_PIX_FMT_NONE;
 
-    if (sws_ctx == NULL || last_w != pCodecCtx->width || last_h != pCodecCtx->height || last_h != pCodecCtx->pix_fmt) {
+    if (sws_ctx == NULL || last_w != pCodecCtx->width || last_h != pCodecCtx->height || last_fmt != pCodecCtx->pix_fmt) {
         if (sws_ctx) sws_freeContext(sws_ctx);
+        
         sws_ctx = sws_getContext(
             pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt,
             target_width, target_height, AV_PIX_FMT_RGB24,
             SWS_FAST_BILINEAR, NULL, NULL, NULL
         );
+        
         if (!sws_ctx) return;
         last_w = pCodecCtx->width;
         last_h = pCodecCtx->height;
         last_fmt = pCodecCtx->pix_fmt;
     }
+
     uint8_t *dest[4] = { (uint8_t *)out_buffer, NULL, NULL, NULL };
     int dest_linesize[4] = { target_width * 3, 0, 0, 0 };
+
     sws_scale(sws_ctx,
               (const uint8_t * const *)pFrame->data, pFrame->linesize,
               0, pCodecCtx->height,
               dest, dest_linesize);
+}
+
+int atmsys_decode_videopix_libc(AVFormatContext *pFormatCtx, AVCodecContext *pCodecCtx, int videoStream, AVFrame *pFrame, unsigned char *out_buffer) {
+	AVPacket packet;
+	int frameFinished = 0;
+	while (av_read_frame(pFormatCtx, &packet) >= 0) {
+		if (packet.stream_index == videoStream) {
+			int response = avcodec_send_packet(pCodecCtx, &packet);
+			if (response < 0) {
+				av_packet_unref(&packet);
+				return 0;
+			}
+
+			response = avcodec_receive_frame(pCodecCtx, pFrame);
+			if (response == AVERROR(EAGAIN) || response == AVERROR_EOF) {
+				av_packet_unref(&packet);
+				continue;
+			}
+			else if (response < 0) {
+				av_packet_unref(&packet);
+				return 0;
+			}
+			atmsys_convert_videofrm(pFrame, pCodecCtx, out_buffer, 320, 240);
+			av_packet_unref(&packet);
+			return 1;
+		}
+		av_packet_unref(&packet);
+	}
+	return 0;
 }
 
 void atmsys_play_video_wrapper(void *arg) {
@@ -174,6 +242,7 @@ int atmsys_is_headphone(void) {
 	if (ioctl(input_fd, EVIOCGSW(sizeof(sw_bits)), sw_bits) >= 0) {
 		if (TEST_BIT(SW_HEADPHONE_INSERT, sw_bits)) {
 			printf("A headphone device detected!");
+			slog("[HeadphoneDev-Log]: A headphone device detected!");
 			return 1;
 		}
 	}
@@ -183,16 +252,19 @@ int atmsys_is_headphone(void) {
 //Power options
 void atmsys_reboot(void) {
 	sync();
-	if (reboot(RB_AUTOBOOT) == -1) {
-		printf("Reboot is failed");
-	}
+	reboot(RB_AUTOBOOT);
 }
 
 void atmsys_pwroff(void) {
 	sync();
-	if (reboot(RB_POWER_OFF) == -1) {
-		printf("Shutdown is failed");
-	}
+	reboot(RB_POWER_OFF);
+}
+
+void atmsys_emergency_pwroff(void) {
+	char *const argv[] = {"/sbin/poweroff", "-f", NULL};
+	execv(argv[0], argv);
+    	system("echo o > /proc/sysrq-trigger");
+	_exit(1);
 }
 
 int atmsys_pwrstat(void) {
@@ -235,13 +307,65 @@ int atmsys_battery_perc(void)  {
 }
 
 //Connection functions
+void atmsys_conn_status(uint8_t rf_type, bool block) {
+	int rfk_fd = open("/dev/rfkill", O_WRONLY | O_NONBLOCK);
+        if (rfk_fd < 0) {
+		slog("[Conn-Log]: No rfkill device found.");
+		slog("[Conn-Log]: Network unavailable.");
+                printf("[AUTUMNOS]: No rfkill device found. Network unavailable!");
+                return;
+        }
+        struct rfkill_event event;
+        memset(&event, 0, sizeof(event));
+        event.op = RFKILL_OP_CHANGE_ALL;
+	event.type = rf_type;
+        event.soft = block ? 1 : 0;
+        write(rfk_fd, &event, sizeof(event));
+	close(rfk_fd);
+}
+
 void atmsys_flight(bool enable) {
-	if (enable) {
-		system("rfkill block all");
+	atmsys_conn_status(RFKILL_TYPE_ALL, enable);
+}
+
+void atmsys_bt(bool enable) {
+	atmsys_conn_status(RFKILL_TYPE_BLUETOOTH, !enable);
+}
+
+void atmsys_wifi(bool enable) {
+	atmsys_conn_status(RFKILL_TYPE_WLAN, !enable);
+}
+
+bool atmsys_wifi_stat(void) {
+	int wifi_fd = open("/dev/rfkill", O_RDONLY | O_NONBLOCK);
+	if (wifi_fd < 0) return false;
+	struct rfkill_event event;
+	bool is_blocked = false;
+	
+	while (read(wifi_fd, &event, sizeof(event)) == sizeof(event)) {
+		if (event.type == RFKILL_TYPE_WLAN) {
+			is_blocked = (event.soft == 1);
+		}
 	}
-	else {
-		system("rfkill unblock all");
+	close(wifi_fd);
+	return is_blocked;
+}
+
+bool atmsys_bt_stat(void) {
+	int bt_fd = open("/dev/rfkill", O_WRONLY | O_RDONLY | O_NONBLOCK);
+	if (bt_fd < 0) {
+		bt_fd = open("/dev/rfkill", O_RDONLY | O_NONBLOCK);
+		if (bt_fd < 0) return false;
 	}
+	struct rfkill_event event;
+	bool is_blocked = false;
+	while (read(bt_fd, &event, sizeof(event)) == sizeof(event)) {
+		if (event.type == RFKILL_TYPE_BLUETOOTH) {
+			is_blocked = (event.soft == 1);
+		}
+	}
+	close(bt_fd);
+	return is_blocked;
 }
 
 void atmsys_parse_modem(void) {
@@ -382,3 +506,5 @@ long atmsys_get_free_disk_space(const char *path) {
 	unsigned long free_bytes = vfs.f_bavail * vfs.f_frsize;
 	return free_bytes/(1024*1024);
 }
+
+
