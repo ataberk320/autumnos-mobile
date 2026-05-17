@@ -2,6 +2,26 @@
 
 set -e
 echo "Downloading Buildroot..."
+
+git clone https://github.com/buildroot/buildroot.git
+cd buildroot
+
+echo "Updating Buildroot..."
+git checkout 088c3602fd
+
+echo "Moving source codes to Buildroot repo to easy compiling"
+
+cp ~/autumnos-mobile/autumnos-mobile-1.0/buildroot/autumn_kernel_defconfig -r ~/buildroot/configs
+cp ~/autumnos-mobile/autumnos-mobile-1.0/buildroot/autumn_default_defconfig -r ~/buildroot/configs
+cp ~/autumnos-mobile/autumnos-mobile-1.0/buildroot/Config.in -r ~/buildroot/package
+cp ~/autumnos-mobile/autumnos-mobile-1.0/src -r ~/buildroot/atmsrc
+cp ~/autumnos-mobile/autumnos-mobile-1.0/buildroot/.config -r ~/buildroot/
+
+make autumn_default_defconfig
+
+
+make -j3
+
 echo "[AutumnOS]: Starting build process..."
 
 echo "Building sysui..."
