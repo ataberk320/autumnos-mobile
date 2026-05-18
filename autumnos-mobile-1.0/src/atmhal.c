@@ -13,20 +13,34 @@
 #include <sys/statvfs.h> // for Filesystem status
 #include <linux/videodev2.h>
 #include <sys/ioctl.h>
-//#include <pthread.h>
+#include <pthread.h>
 #include <sys/reboot.h>
 #include <sys/wait.h> //for PID
-//#include "AutumnVideoArg.h" we have shared memory for it already.
 #include "AutumnExternModem.h" // for SIM Slot definitions
 #include <linux/input.h>
 #include <linux/input-event-codes.h>
 #include <linux/rfkill.h> // for connection
 #include <dirent.h>
+#include <drm.h>
+#include <drm_mode.h>
+#include <sys/mman.h>
 #define PWRBT_GPIO "117" // if device is Allwinner
 #define MODEM_RST_PIN "118" // if device is Allwinner
 int cam_fd = -1; // Is camera device exists?
 int input_fd = -1; // Is input device exists?
 bool external = false; // External modem or SIM800L?
+int g2d_fd = -1;
+int drm_fd = -1;
+#if defined(ARCH_SUN4I)
+	#define HALCONF_PATH "/etc/DRV_CONF/riscv/allwinner/hw_extdrv.conf"
+#elif defined(ARCH_STARFIVE)
+	#define HALCONF_PATH "/etc/DRV_CONF/riscv/starfive/hw_extdrv.conf"
+#elif defined(ARCH_ARM64)
+	#define HALCONF_PATH "/etc/DRV_CONF/arm/hw_extdrv.conf"
+#else
+	#error "Invalid architecture!"
+#endif
+
 //HAL config struct
 static struct {
 	char soc_family[32];
@@ -53,7 +67,7 @@ static void _hal_load_config(void) {
     	AutumnHardwareID_t.screen_width = 480;
 	AutumnHardwareID_t.screen_height = 800;
     	strcpy(AutumnHardwareID_t.accelerator, "/dev/g2d");
-	FILE *file = fopen("/etc/DRV_CONF/allwinner/hw_extdrv.conf", "r"); // Our default HAL config
+	FILE *file = fopen(HALCONF_PATH, "r"); // Our default HAL config
 	if (!file) return;
 	char line[128];
     	while (fgets(line, sizeof(line), file)) {
@@ -112,32 +126,138 @@ void atmsys_set_brightness(uint8_t level) {
 }
 
 void atmsys_volume_up(void) {
-	system("amixer sset 'Master' 5%+ > /dev/null 2>&1");
+	char* const argv[] = {(char*)"amixer", (char*)"sset", (char*)"Master", (char*)"5%+", NULL};
+        atmexecve(argv);
 }
 
 void atmsys_volume_down(void) {
-	 system("amixer sset 'Master' 5%- > /dev/null 2>&1"); 
+	char* const argv[] = {(char*)"amixer", (char*)"sset", (char*)"Master", (char*)"5%-", NULL};
+        atmexecve(argv);
 }
 
 void atmsys_safe_volume(uint8_t volume) {
 	if (volume > 50) volume = 50;
-	char cmd[128];
-	sprintf(cmd, "amixer sset 'Master' %d%% > /dev/null 2>&1", volume);
-	system(cmd);
+	char vol_str[16];
+        snprintf(vol_str, sizeof(vol_str), "%d%%", volume);
+        char* const amixer_argv[] = {
+                (char*)"/usr/bin/amixer", 
+                (char*)"sset", 
+                (char*)"Master", 
+                vol_str, 
+                NULL
+        };
+
+        atmexecve(amixer_argv);
 }
 
 void playaudio(const char *path) {
 	if (access(path, F_OK) != 0) {
 		return;
 	}
-	char cmd[512];
-	snprintf(cmd, sizeof(cmd), "aplay -q -N %s &", path);
-	int status = system(cmd);
-	if (status == -1)  {
-		slog("[AudioPlayer-Log]: ALSA not initialized!");
-	}	
+	char* const aplay_argv[] = {
+		(char*)"/usr/bin/aplay",
+		(char*)"-q",
+		(char*)"-N",
+		(char*)path,
+		NULL
+	};
+	atmexecve(aplay_argv);
 }
 
+void atmsys_g2d_blit(uintptr_t src, uintptr_t dst, int w, int h, int rotate) {
+        AtmDrv_G2D_Blit(src, dst, w, h, rotate);
+}
+
+int atmsys_g2d(uintptr_t src, uintptr_t dst, int w, int h, int rotate) {
+	if (g2d_fd < 0) {
+		g2d_fd = open("/dev/g2d", O_RDWR);
+	}
+	if (g2d_fd < 0) {
+		slog("[G2D-Log]: No G2D device found");
+		return -1;
+	else {
+		slog("[G2D-Log]: G2D device is ready for blit!");
+		return 0;
+	}
+}
+void atmsys_drm_drw(uintptr_t src, uint32_t width, uint32_t height) {
+	struct drm_mode_create_dumb creq;
+	struct drm_mode_map_dumb mreq;
+	uint32_t *map_address = NULL;
+
+	creq.height = height;
+        creq.width = width;
+        creq.bpp = 32;
+        creq.flags = 0;
+        creq.handle = 0;
+        creq.pitch = 0;
+        creq.size = 0;
+
+	if (ioctl(drm_fd, DRM_IOCTL_MODE_CREATE_DUMB, &creq) < 0) {
+                slog("[DRM-Log]: DRM_IOCTL_MODE_CREATE_DUMB failed!");
+                return;
+        }
+
+        mreq.handle = creq.handle;
+        mreq.pad = 0;
+        mreq.offset = 0;
+
+        if (ioctl(drm_fd, DRM_IOCTL_MODE_MAP_DUMB, &mreq) < 0) {
+                slog("[DRM-Log]: In/Out control failed!");
+                return;
+        }
+
+        map_address = (uint32_t*)mmap(0, creq.size, PROT_READ | PROT_WRITE, MAP_SHARED, drm_fd, mreq.offset);
+        if (map_address == MAP_FAILED) {
+                slog("[DRM-Log]: mmap failed!");
+                return;
+        }
+
+        uint32_t *source = (uint32_t*)src;
+        int total_pixels = width * height;
+        for (int i = 0; i < total_pixels; i++) {
+                map_address[i] = source[i];
+        }
+
+        munmap(map_address, creq.size);
+        struct drm_mode_destroy_dumb dreq = { creq.handle };
+        ioctl(drm_fd, DRM_IOCTL_MODE_DESTROY_DUMB, &dreq);
+}
+
+void atmsys_drm_init(uintptr_t src, uint32_t width, uint32_t height) {
+	if (drm_fd < 0) {
+		drm_fd = open("/dev/dri/card0", O_RDWR | O_CLOEXEC);
+	}
+	else {
+
+	}	
+	slog("[DRM-Log]: KMS scanout triggered.");
+	atmsys_drm_drw(src, width, height);
+}
+	
+int atmsys_is_hdmi(void) {
+	struct drm_mode_card_res res = {0};
+	uint32_t conn_ids[32] = {0};
+
+	res.connector_id_ptr = (uint64_t)(uintptr_t)conn_ids;
+	res.count_connectors = 32;
+	
+	if (ioctl(drm_fd, DRM_IOCTL_MODE_GETRESOURCES, &res) < 0) return false;
+	
+	for (uint32_t i = 0; i < res.count_connectors; i++) {
+		struct drm_mode_get_connector conn = {0};
+		conn.connector_id = conn_ids[i];
+		
+		if (ioctl(drm_fd, DRM_IOCTL_MODE_GETCONNECTOR, &conn) < 0) continue;
+		
+		if (conn.connection == 1 && conn.connector_type == 11) {
+			slog("[HDMI-Log]: HDMI screen detected");
+			return true;
+		}
+	}
+	return false;
+]
+}
 int  atmsys_camera_init(void) {
 	cam_fd = open("/dev/video0", O_RDWR | O_NONBLOCK); //V4L device
 	if (cam_fd < 0) {
@@ -302,7 +422,7 @@ void atmsys_pwroff(void) {
 
 void atmsys_emergency_pwroff(void) {
 	char *const argv[] = {"/sbin/poweroff", "-f", NULL}; //Forcing system to power off
-	execv(argv[0], argv);
+	atmexecve(argv);
     	system("echo o > /proc/sysrq-trigger"); //If the system frozen, force kernel to power off
 	_exit(1);
 }
