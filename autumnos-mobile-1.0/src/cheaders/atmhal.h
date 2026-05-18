@@ -32,8 +32,6 @@ void atmsys_safe_volume(uint8_t volume);
 
 void playaudio(const char *path);
 
-int atmsys_camera_init(void);
-
 void atmsys_convert_videofrm(AVFrame *pFrame, AVCodecContext *pCodecCtx, unsigned char *out_buffer, int target_width, int target_height);
 
 int atmsys_decode_videopix_libc(AVFormatContext *pFormatCtx, AVCodecContext *pCodecCtx, int videoStream, AVFrame *pFrame, unsigned char *out_buffer);
@@ -41,7 +39,19 @@ int atmsys_decode_videopix_libc(AVFormatContext *pFormatCtx, AVCodecContext *pCo
 void atmsys_play_video(const char *source, unsigned char *final_out_buffer, int start_second);
 
 //Driver initialization 
+int atmsys_camera_init(void);
+
 void atmsys_get_touch(autumn_touchpad_t *touch);
+
+int atmsys_g2d(uintptr_t src, uintptr_t dst, int w, int h, int rotate);
+          
+int atmsys_is_hdmi(void);
+
+void atmsys_drm_init(uintptr_t src, uint32_t width, uint32_t height);
+
+void atmsys_g2d_blit(uintptr_t src, uintptr_t dst, int w, int h, int rotate);
+
+void atmsys_drm_drw(uintptr_t src, uint32_t width, uint32_t height);
 
 //Power options
 void atmsys_reboot(void);
