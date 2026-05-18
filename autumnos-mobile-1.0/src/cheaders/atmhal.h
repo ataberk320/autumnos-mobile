@@ -17,9 +17,14 @@ extern "C" {
 #include <libavutil/imgutils.h>
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
+
+//Defining structs
+
+//Standard structs
+
 void atmsys_set_brightness(uint8_t level);
 
-void atmsys_volume_up(void) ;
+void atmsys_volume_up(void);
 
 void atmsys_volume_down(void);
 
