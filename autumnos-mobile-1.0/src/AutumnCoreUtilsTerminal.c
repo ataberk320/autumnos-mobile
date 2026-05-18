@@ -1,14 +1,41 @@
-
+#include <termios.h>
 #include "AutumnIO.h"
 #include "acoreutils.h"
 #include "AutumnSyscall.h"
 #include <stdlib.h> //system();
 #include "AutumnCoreUtilsTerminal.h"
 #include "AutumnAPI.h"
+#include <fcntl.h>    // open() & O_RDWR
+#include <unistd.h>   // close()
 int cursor_x = 0;
 int cursor_y = 0;
 #define TERM_WIDTH 60
 #define TERM_HEIGHT 24
+
+void Serial_Disable_Echo(int fd) {
+        if (fd < 0) return;
+        struct termios toptions;
+
+        if (tcgetattr(fd, &toptions) < 0) {
+                return;
+        }
+
+        toptions.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL | ICANON | ISIG);
+
+        toptions.c_iflag &= ~(INPCK | ISTRIP | IGNCR | ICRNL | INLCR | IXON | IXOFF);
+        toptions.c_oflag &= ~(OPOST);
+
+        toptions.c_cflag &= ~PARENB;
+        toptions.c_cflag &= ~CSTOPB;
+        toptions.c_cflag &= ~CSIZE;
+        toptions.c_cflag |= CS8;
+
+        toptions.c_cc[VMIN] = 1;
+        toptions.c_cc[VTIME] = 0;
+
+        tcsetattr(fd, TCSANOW, &toptions);
+}
+
 void Terminal_Clr() {
 	system("clear || printf '\033[2J\033[H'");
 }
@@ -53,12 +80,6 @@ void Terminal_PutStr(const char *str) {
 			AutumnSys_Syscall(64, 1, (long)str, 1, 0, 0, 0);
 			cursor_x++;
 		}
-		if (cursor_x >= TERM_WIDTH) {
-			cursor_x = 0;
-			cursor_y++;
-			char n = '\n';
-			AutumnSys_Syscall(64, 1, (long)&n, 1, 0, 0, 0);
-		}
 		str++;
 	}
 }
@@ -87,12 +108,13 @@ void Terminal_GetInp(char *buf, int max_len) {
 	while (i < max_len - 1) {
 		AutumnSys_Syscall(63, 0, (long)&c, 1, 0, 0, 0);
 		if (c == '\n' || c == '\r') break;
-		
-		buf[i++] = c;
-		Terminal_PutStr(&c);
+		if (c >= 32 && c < 127) {
+			buf[i++] = c;
+			Terminal_PutChr(c);
+		}
 	}
 	buf[i] = '\0';
-	Terminal_PutStr("\n");
+	Terminal_PutChr('\n');
 }
 #ifndef TERMINAL_AS_LIB
 int main(int argc, char *argv[]) {
@@ -101,10 +123,24 @@ int main(int argc, char *argv[]) {
 	if (Terminal_StrCmp(cmd, "CoreTerminal") == 0) {
 		char input[128];
 		Terminal_Clr();
-		Terminal_PutStr("Welcome to AutumnOS CoreUtils Terminal!\n");
+		Terminal_PutStr("\033[1;33mW\033[0;34me\033[0;31ml\033[1;33mc\033[0;34mo\033[0;31mm\033[1;33me\033[0;34m \033[0;31mt\033[1;33mo\033[0;34m \033[0;31mA\033[1;33mu\033[0;34mt\033[0;31mu\033[1;33mm\033[0;34mn\033[0;31mO\033[1;33mS\033[0;34m \033[0;31mC\033[1;33mo\033[0;34mr\033[0;31me\033[1;33mU\033[0;34mt\033[0;31mi\033[1;33ml\033[0;34ms\033[0;31m \033[1;33mT\033[0;34me\033[0;31mr\033[1;33mm\033[0;34mi\033[0;31mn\033[1;33ma\033[0;34ml\033[0;31m!\033[0m\n");
 		while(1) {
+			int tty_fd = open("/dev/ttyS0", O_RDWR);
+			struct termios oldt;
+			if (tty_fd >= 0) {
+				tcgetattr(tty_fd, &oldt);
+				Serial_Disable_Echo(tty_fd);
+				close(tty_fd);
+			}
 			Terminal_PutStr("\033[32mAutumnOS\033[34m@\033[33mUser\033[0m: /#");
 			Terminal_GetInp(input, 128);
+
+			tty_fd = open("/dev/ttyS0", O_RDWR);
+			if (tty_fd >= 0) {
+				tcdrain(tty_fd);
+				tcsetattr(tty_fd, TCSANOW, &oldt);
+				close(tty_fd);
+			}
 			if (input[0] == '\0') continue;
 			char *cmd_part = input;
 			char *arg_part = "";
@@ -117,7 +153,14 @@ int main(int argc, char *argv[]) {
 					break;
 				}	
 			}
-		
+			if (Terminal_StrCmp(input, "exec") == 0) {
+				if (arg_part[0] == '\0') {
+					Terminal_PutStr("Using: exec <example: pip install package>\n");
+				}
+				else {
+					coreu_exec(arg_part);
+				}
+			}
 			if (Terminal_StrCmp(cmd_part, "cat") == 0) {
                         	if (arg_part[0] == '\0') {	
 					Terminal_PutStr("Using: cat <file.txt>\n");
@@ -136,7 +179,7 @@ int main(int argc, char *argv[]) {
 					Terminal_PutStr("Using: mkdir <folder>");
 				}
 				else {
-					coreu_crdir(argv[1], 0755);
+					coreu_crdir(arg_part, 0755);
 				}
         		}
 
