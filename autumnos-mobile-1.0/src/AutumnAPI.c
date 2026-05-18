@@ -240,17 +240,6 @@ long AutumnAPI_Read_Free_Disk(void) {
 }
 
 void AutumnAPI_Play_Video(const char* source) {
-	if (!video_raw_pixels) {
-		video_raw_pixels = (unsigned char *)malloc(320 * 240 * 3);
-	}
-
-	VideoThreadArgs *args = (VideoThreadArgs *)malloc(sizeof(VideoThreadArgs));
-	args->source = strdup(source);
-	args->out_buffer = video_raw_pixels;
-	args->start_sec = 0;
-	pthread_t tid;
-	pthread_create(&tid, NULL, (void *(*)(void *))atmsys_play_video_wrapper, args);
-        pthread_detach(tid);
 }
 
 int AutumnAPI_SIM_Status(void) {
