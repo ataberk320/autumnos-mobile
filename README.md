@@ -12,7 +12,7 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 
 - FIFO Pipe
 
-- BusyBox Tools (only kernel-space)
+- BusyBox Tools (only boot scripts)
 
 - AutumnOS CoreUtils Terminal
 
