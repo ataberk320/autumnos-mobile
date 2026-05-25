@@ -7,134 +7,95 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 ​By transitioning from a custom microkernel approach to a highly optimized Linux kernel, AutumnOS now leverages advanced process management, robust networking stacks, and extensive driver support. Targeting RISC-V mobile platforms, AutumnOS aims to provide a seamless, open-source mobile experience that bridges the gap between lightweight hardware and handheld efficiency.
 
 # Technical information:
+# 🗂 File system:
+   - initramfs
+   - ext2/3/4 filesystem
+
+# 🌐 Connection:
+   - FIFO Pipe
+   - Unix Domain Socket
+   - E1000/VLAN/eth0
+   - OpenSSL
+   - http support
+   - wget and curl
+   - dropbear sshd and iproute2 (ip addr, ip link set up, ip route)
+   - udhcpc
+   - Timezone data
+   - libjsip (SIP call)
+   - GitBrowser - a GitHub port
+   - Pull repo with git
+   - ca-certificates
+   - netsurf
+   - DNS setup (nameserver 8.8.8.8)
+   - OTA Software Update
+
+# 🌄 Graphics:
+   - SDL and SDL2
+   - LVGL graphics library
+   - Allwinner G2D
+   - DRM accelerator with KMS
+   - libjpg, libpng, freetype
+   - AutumnGL (GLES 3.0 based)
+   - fbv, fbtest
+   - AutixSurf Display Server
+
+# 💽 Multimedia:
+   - Qt6 multimedia (alsa, ffmpeg, gstreamer)
+   - ffmpeg and ffplay video player and sound
+   - mpg123
+   - gst1/gstreamer
+   - Camera (USB/V4L2/UVC etc.)
+
+# 🔊 Sound driver:
+   - Intel HD Audio/AC97
+   - alsa/pulseaudio
+
+# ⚙️ External drivers:
+   - evdev/indev
+   - USB Gadget (Serial port)
+   - USB OHCI/XHCI/HID drivers
+   - PCI device
+   - HDMI and sun4i Resistive Touchscreen
+   - QEMU(Virtio)
+   - RTC
+   - Watchdog script(Software and hardware watchdog)
+   - Goldfish driver support
+   - Virtual framebuffer(fb0, fb1)
+   - GPIO reader
+
+# 🗃 Libraries:
+   - BusyBox Tools (only boot scripts)
+   - AutumnSDK
+   - Autumn Core, HAL, API
+   - acoreutils (kmsg, kpanic, kassert, kbeat, kmap, ls, rm, cp, mkdir)
+
+# 🎏 Userspace:
+   - AutumnOS CoreUtils Terminal
+   - nano for Buildroot terminal
+   - sudo wrapper (atmsu_root)
+   - Resource managing
+   - Multilanguage
+   - Multitasking
+   - live weather clock widget
+   - Theme manager (Coming soon)
+
+#📄 Logging/debugging: 
+   - LVGL printf log output
+   - strace for memory access debug
+
+# 🧮 Games: 
+     - chocolate-doom
+     - LTris
+
+# 👾 Coding: 
+     - Python
+     - pip, python3
+
+# 🗄 Package manager:
+     - Autumn Store
+     - insmod
+     - modprobe
 
-- initramfs
-
-- FIFO Pipe
-
-- BusyBox Tools (only boot scripts)
-
-- AutumnOS CoreUtils Terminal
-
-- OTA Software Update
-
-- Downgrading update without deleting user data
-
-- Virtual framebuffer support (fb0, fb1)
-
-- HDMI and sun4i Resistive Touchscreen support
-
-- Unix Domain Socket support
-
-- USB Gadget (Serial port support)
-
-- E1000/VLAN/eth0 support
-
-- LVGL printf log output
-
-- Intel HD Audio/AC97
-
-- USB OHCI/XHCI/HID drivers
-
-- PCI device support
-
-- insmod and modprobe module installers
-
-- ext2/3/4 filesystem
-
-- alsa/pulseaudio
-
-- Qt6 multimedia support (alsa, ffmpeg, gstreamer)
-
-- LibFribidi
-
-- BusyBox
-
-- ca-certificates
-
-- gst1/gstreamer
-
-- OpenSSL
-
-- evdev/indev
-
-- QEMU(Virtio) support
-
-- Chocolate-Doom and LTris support
-
-- SDL and SDL2 support
-
-- links support **(Out of support, new browser: netsurf!)**
-
-- ffmpeg and ffplay video player and sound support
-
-- GPIO reader
-
-- LVGL graphics library
-
-- http support
-
-- Virtio support
-
-- Autumn Core, HAL, API
-
-- sudo (root password)
-
-- RTC support
-
-- dropbear sshd and iproute2 (ip addr, ip link set up, ip route)
-
-- Camera support(USB/V4L2/UVC etc.)
-
-- Allwinner G2D
-
-- DRM accelerator with KMS
-
-- libjpg, libpng, freetype support
-
-- fbv, fbtest support
-
-- nano for Buildroot terminal
-
-- wget and curl support
-
-- live weather clock widget
-
-- Goldfish driver support
-
-- Theme manager (Coming soon)
-
-- Watchdog script(Software and hardware watchdog)
-
-- AutixSurf(SurfaceFlinger alternative, DRM/fbdev)
-
-- DNS setup (nameserver 8.8.8.8)
-
-- Python support(cython, pip, python3) - **Kivy is removed for improving performance**
-
-- udhcpc
-
-- Timezone data
-
-- AutumnSDK
-
-- Autumn Customization tools
-
-- strace for memory access debug
-
-- libjsip (SIP call support)
-
-- GitBrowser - a GitHub port
-
-- acoreutils (kmsg, kpanic, kassert, kbeat, kmap, ls, rm, cp, mkdir)
-
-- SIGKILL mechanism (SIGHandler)
-
-- Multilanguage
-
-- Pull repo with git
-
-- AutumnGL (GLES 3.0 based)
 ___________________________
 
 # **Easter eggs**
