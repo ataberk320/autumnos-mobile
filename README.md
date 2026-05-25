@@ -7,11 +7,11 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 ​By transitioning from a custom microkernel approach to a highly optimized Linux kernel, AutumnOS now leverages advanced process management, robust networking stacks, and extensive driver support. Targeting RISC-V mobile platforms, AutumnOS aims to provide a seamless, open-source mobile experience that bridges the gap between lightweight hardware and handheld efficiency.
 
 # Technical information:
-# 🗂 File system:
+🗂 File system:
    - initramfs
    - ext2/3/4 filesystem
 
-# 🌐 Connection:
+🌐 Connection:
    - FIFO Pipe
    - Unix Domain Socket
    - E1000/VLAN/eth0
@@ -29,7 +29,7 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
    - DNS setup (nameserver 8.8.8.8)
    - OTA Software Update
 
-# 🌄 Graphics:
+🌄 Graphics:
    - SDL and SDL2
    - LVGL graphics library
    - Allwinner G2D
@@ -39,18 +39,18 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
    - fbv, fbtest
    - AutixSurf Display Server
 
-# 💽 Multimedia:
+💽 Multimedia:
    - Qt6 multimedia (alsa, ffmpeg, gstreamer)
    - ffmpeg and ffplay video player and sound
    - mpg123
    - gst1/gstreamer
    - Camera (USB/V4L2/UVC etc.)
 
-# 🔊 Sound driver:
+🔊 Sound driver:
    - Intel HD Audio/AC97
    - alsa/pulseaudio
 
-# ⚙️ External drivers:
+⚙️ External drivers:
    - evdev/indev
    - USB Gadget (Serial port)
    - USB OHCI/XHCI/HID drivers
@@ -63,13 +63,13 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
    - Virtual framebuffer(fb0, fb1)
    - GPIO reader
 
-# 🗃 Libraries:
+🗃 Libraries:
    - BusyBox Tools (only boot scripts)
    - AutumnSDK
    - Autumn Core, HAL, API
    - acoreutils (kmsg, kpanic, kassert, kbeat, kmap, ls, rm, cp, mkdir)
 
-# 🎏 Userspace:
+🎏 Userspace:
    - AutumnOS CoreUtils Terminal
    - nano for Buildroot terminal
    - sudo wrapper (atmsu_root)
@@ -79,23 +79,23 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
    - live weather clock widget
    - Theme manager (Coming soon)
 
-#📄 Logging/debugging: 
+📄 Logging/debugging: 
    - LVGL printf log output
    - strace for memory access debug
 
-# 🧮 Games: 
+🧮 Games: 
      - chocolate-doom
      - LTris
 
-# 👾 Coding: 
+👾 Coding: 
      - Python
      - pip, python3
 
-# 🗄 Package manager:
+🗄 Package manager:
      - Autumn Store
      - insmod
      - modprobe
-
+.
 ___________________________
 
 # **Easter eggs**
