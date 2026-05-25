@@ -84,17 +84,17 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
    - strace for memory access debug
 
 🧮 Games: 
-     - chocolate-doom
-     - LTris
+    - chocolate-doom
+    - LTris
 
 👾 Coding: 
-     - Python
-     - pip, python3
+    - Python
+    - pip, python3
 
 🗄 Package manager:
-     - Autumn Store
-     - insmod
-     - modprobe
+    - Autumn Store
+    - insmod
+    - modprobe
 .
 ___________________________
 
