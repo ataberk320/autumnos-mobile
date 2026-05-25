@@ -38,7 +38,7 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
    - AutumnGL (GLES 3.0 based)
    - fbv, fbtest
    - AutixSurf Display Server
-
+   - CedarX
 💽 Multimedia:
    - Qt6 multimedia (alsa, ffmpeg, gstreamer)
    - ffmpeg and ffplay video player and sound
