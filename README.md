@@ -184,3 +184,8 @@ For Non SoM(System On Module) chips:
 - **ASComposer:** Layer composer for AutixSurf Display Server.<br>
 - **AutixSurf:** Our display server which supports DRM/fb0 [**Documentation**](https://www.github.com/ataberk320/autumnos-mobile/tree/main/autumnos-mobile-1.0/AutixSurf.md)<br>
 - **AutumnGL**: GLES 3.0 based graphics engine.
+
+---------------------
+# **Freedom for developers**
+- Endless Life Policity: Developers can use source code (According to GPL-3.0) and write their own Custom ROM and port new features.
+- Protected files: If you want to downgrade your AutumnOS version, your data will not be lost thanks to ping pong slot and User data partition on SD card.
