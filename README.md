@@ -83,18 +83,18 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
    - LVGL printf log output
    - strace for memory access debug
 
-🧮 Games: 
-    - chocolate-doom
-    - LTris
+🧮 Games:<br>
+   - chocolate-doom<br>
+   - LTris<br>
 
-👾 Coding: 
-    - Python
-    - pip, python3
+👾 Coding:<br>
+   - Python<br>
+   - pip, python3<br>
 
-🗄 Package manager:
-    - Autumn Store
-    - insmod
-    - modprobe
+🗄 Package manager:<br>
+   - Autumn Store<br>
+   - insmod<br>
+   - modprobe<br
 .
 ___________________________
 
