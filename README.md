@@ -132,7 +132,7 @@ Target architecture: RV64 (RISC-V 64bit)
 
 CPU requirement: 256MB+
 
-Supported SoC's: StarFive JH7110, Allwinner D1 family
+Supported SoC's: StarFive JH7110/JH7100, Allwinner D1, Canaan K230
 
 ---------------------------
 
