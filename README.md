@@ -14,7 +14,7 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 🌐 Connection:
    - FIFO Pipe
    - Unix Domain Socket
-   - E1000/VLAN/eth0
+   - eth0/VLAN/WLAN
    - OpenSSL
    - http support
    - wget and curl
@@ -63,6 +63,7 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
    - Goldfish driver support
    - Virtual framebuffer(fb0, fb1)
    - GPIO reader
+   - E1000 & RTL8723ds
 
 🗃 Libraries:
    - BusyBox Tools (only boot scripts)
