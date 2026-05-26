@@ -14,7 +14,6 @@
 / {
     model = "AutumnSoC";
     compatible = "allwinner,sun20i-d1s", "allwinner,sun20i-d1";
-    interrupt-parent = <&plic>;
 
     reg_vcc: vcc {
         compatible = "regulator-fixed";
@@ -31,8 +30,7 @@
         vin-supply = <&reg_vcc>;
     };
 
-
-    sound {
+    sound: sound {
         compatible = "simple-audio-card";
         simple-audio-card,name = "AutumnGenericAudio";
         simple-audio-card,format = "i2s";
@@ -43,31 +41,27 @@
             sound-dai = <&codec_node>;
         };
     };
+};
 
-    soc_extra: soc@0 {
-        compatible = "simple-bus";
-        #address-cells = <1>;
-        #size-cells = <1>;
-        ranges;
+/* SoC altındaki blokları birleştirerek tanımlıyoruz */
+&soc {
+    g2d: g2d@5410000 {
+        compatible = "allwinner,sun20i-d1-g2d";
+        reg = <0x05410000 0x1000>;
+        interrupts = <SOC_PERIPHERAL_IRQ(89) IRQ_TYPE_LEVEL_HIGH>;
+        clocks = <&ccu CLK_BUS_G2D>, <&ccu CLK_G2D>;
+        resets = <&ccu RST_BUS_G2D>;
+        status = "okay";
+    };
 
-        g2d_node: g2d@5410000 {
-            compatible = "allwinner,sun20i-d1-g2d";
-            reg = <0x05410000 0x1000>;
-            interrupts = <0 89 4>; 
-            clocks = <&ccu 34>, <&ccu 35>;
-            resets = <&ccu 18>;
-            status = "okay";
-        };
-
-        codec_node: codec@2030000 {
-            compatible = "allwinner,sun20i-d1-codec";
-            reg = <0x02030000 0x1000>;
-            interrupts = <0 25 4>;
-            clocks = <&ccu 40>, <&ccu 41>;
-            resets = <&ccu 25>;
-            #sound-dai-cells = <0>;
-            status = "okay";
-        };
+    codec_node: codec@2030000 {
+        compatible = "allwinner,sun20i-d1-codec";
+        reg = <0x02030000 0x1000>;
+        interrupts = <SOC_PERIPHERAL_IRQ(25) IRQ_TYPE_LEVEL_HIGH>;
+        clocks = <&ccu CLK_BUS_AUDIO_CODEC>, <&ccu CLK_AUDIO_CODEC>;
+        resets = <&ccu RST_BUS_AUDIO_CODEC>;
+        #sound-dai-cells = <0>;
+        status = "okay";
     };
 };
 
@@ -85,5 +79,7 @@
 };
 
 &i2s0 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&i2s0_pins>;
     status = "okay";
 };
