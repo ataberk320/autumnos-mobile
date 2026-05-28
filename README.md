@@ -127,8 +127,6 @@ I bypassed -j9 for Qt6 (by BR2_JLEVEL) <br>
 
 WSL version: must be Ubuntu 22.04 LTS
 
-LVGL version must be 8.4.0!
-
 Target architecture: RV64 (RISC-V 64bit)
 
 CPU requirement: 256MB+
