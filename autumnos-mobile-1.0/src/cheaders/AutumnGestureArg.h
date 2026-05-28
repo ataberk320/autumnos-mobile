@@ -9,7 +9,7 @@ typedef enum {
 	AUTUMN_G_TAP
 } AutumnGesture;
 
-tyoedef struct {
+typedef struct {
 	AutumnGesture type;
 	uint32_t duration;
 	uint8_t intensity;

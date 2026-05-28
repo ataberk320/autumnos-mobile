@@ -5,6 +5,6 @@
 typedef struct {
 	int last_state;
 	struct timespec press_start;
-} ButtonTracker
+} ButtonTracker;
 
 #endif
