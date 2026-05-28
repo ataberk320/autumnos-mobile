@@ -5,8 +5,9 @@
 #include <string.h>
 #include <stdlib.h> //system(); (if necessary)
 #include <stdint.h>
-#include "atmhal.h" //extern HAL definitions
+#include "cheaders/atmhal.h" //extern HAL definitions
 #include <sys/sysinfo.h>
+#include "cheaders/AtmDrv_G2D.h"
 #include <unistd.h>
 #include <fcntl.h>
 #include <termios.h> // for serial configuration
@@ -16,7 +17,7 @@
 #include <pthread.h>
 #include <sys/reboot.h>
 #include <sys/wait.h> //for PID
-#include "AutumnExternModem.h" // for SIM Slot definitions
+#include "cheaders/AutumnExternModem.h" // for SIM Slot definitions
 #include <linux/input.h>
 #include <linux/input-event-codes.h>
 #include <linux/rfkill.h> // for connection
@@ -663,6 +664,47 @@ void atmsys_modem_reject(int serial_fd) {
 	write(serial_fd, "ATH\r\n", 5); //AT Hang
 }
 
+int atmhal_crt_ipcsrv(const char *socket_path) {
+	int server_fd;
+	struct sockaddr_un addr;
+	unlink(socket_path);
+	server_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+	if (server_fd < 0) return -1;
+	memset(&addr, 0, sizeof(addr));
+	addr.sun_family = AF_UNIX;
+	strncpy(addr.sun_path, socket_path, sizeof(addr.sun_path) - 1);
+	if (bind(server_fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+       		close(server_fd);
+        	return -1;
+    	}
+
+    	if (listen(server_fd, 5) < 0) {
+        	close(server_fd);
+        	return -1;
+    	}
+
+    	return server_fd;
+}
+
+int atmhal_ipc_read_cmd(int server_fd, int *client_fd, char *buffer, size_t max_len) {
+	if (*client_fd < 0) {
+		*client_fd = accept(server_fd, NULL, NULL);
+        if (*client_fd < 0) return -1;
+        	printf("New client connected.\n");
+    	}
+
+    	memset(buffer, 0, max_len);
+    	ssize_t read_bytes = read(*client_fd, buffer, max_len - 1);
+
+    	if (read_bytes <= 0) {
+        	printf("Client ended connection.\n");
+        	close(*client_fd);
+        	*client_fd = -1;
+        	return -1;
+    	}
+
+    	return read_bytes;
+}
 //Performance and storage status (Memory stat)
 long atmsys_uptime(void) {
 	struct  sysinfo s_info; // We pull uptime, RAM info from sysinfo
