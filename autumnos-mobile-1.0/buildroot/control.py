@@ -8,7 +8,7 @@
 from collections import OrderedDict
 import glob
 import os
-from importlib import resources
+from importlib import resources # For solving incompatible Python version error!<-
 import re
 
 import sys
