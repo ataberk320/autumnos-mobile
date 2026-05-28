@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "cheaders/acoreutils.h"
-
+#include "cheaders/AutumnCoreUtilsTerminal.h"
 void procterm (pid_t pid, const char* process_name) {
 	kmsgf("Unfortunately %s is stopped!", process_name);
 	if (kill(pid, SIGTERM) == 0) {

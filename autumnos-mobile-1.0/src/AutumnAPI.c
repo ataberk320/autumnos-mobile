@@ -3,9 +3,8 @@
 #include <pthread.h>
 #include <string.h>
 #include <stdbool.h>
-#include "AutumnAPI.h"
-#include "AutumnVideoArg.h"
-#include "atmhal.h"
+#include "cheaders/AutumnAPI.h"
+#include "cheaders/atmhal.h"
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <stdlib.h>
@@ -14,9 +13,9 @@
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <linux/i2c-dev.h>
-#include "AutumnGestureArg.h"
+#include "cheaders/AutumnGestureArg.h"
 #include <time.h>
-#include "AutumnPwrBtnArg.h"
+#include "cheaders/AutumnPwrBtnArg.h"
 #include <linux/rfkill.h>
 #define STATUS_SOCK_PATH "/tmp/autumn_sock/status.sock"
 #define AUTUMN_IPC_PATH "/tmp/autumn_conf/AutumnCore0"

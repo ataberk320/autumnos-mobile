@@ -9,10 +9,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <linux/input.h>
-#include "atmhal.h"
-#include "AutumnMouseArg.h"
-#include "AtmDrv_G2D.h"
-#include "acoreutils.h"
+#include "cheaders/atmhal.h"
+#include "cheaders/AutumnMouseArg.h"
+#include "cheaders/AtmDrv_G2D.h"
+#include "cheaders/acoreutils.h"
 #include <termios.h>
 #include <pthread.h>
 #include <sys/mman.h>

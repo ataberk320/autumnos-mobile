@@ -6,9 +6,9 @@
 #include <sys/ioctl.h>
 #include <linux/types.h>
 #include <termios.h>
-#include "AutumnExternModem.h"
+#include "cheaders/AutumnExternModem.h"
 int AutumnModem_Int_Init(AutumnSIM_t *modem) {
-	modem->fd = open("/dev/ttyACM0", O_RDWR | O_NOCTTY | O_NONBLOCK);
+	modem->data_fd = open("/dev/ttyACM0", O_RDWR | O_NOCTTY | O_NONBLOCK);
 	if (modem->ctrl_fd < 0) {
 		printf("Cannot init external SIM card");
 		return -1;
