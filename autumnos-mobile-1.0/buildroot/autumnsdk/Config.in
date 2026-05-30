@@ -1,6 +1,5 @@
 menuconfig BR2_PACKAGE_AUTUMN_SDK
 	bool "AutumnOS SDK"
-	depends on BR2_PACKAGE_LUA
 	depends on BR2_PACKAGE_PYTHON3
 	help
 	   AutumnOS SDK/Platform development tools.
@@ -19,7 +18,7 @@ config BR2_PACKAGE_AUTUMN_PKG_CNV
 config BR2_PACKAGE_AUTUMN_API_DEV
 	bool "AutumnOS API"
 	help
-	   AutumnOS API for hardware status monitoring and low-level communication.
+	   AutumnOS API library for hardware status monitoring and low-level communication.
 
 config BR2_PACKAGE_AUTUMN_PKG_UNPK
 	bool "Autumn Binary (.atm) Unpackager"
