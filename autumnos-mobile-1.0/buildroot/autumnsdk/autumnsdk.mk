@@ -4,8 +4,7 @@ AUTUMNSDK_SITE_METHOD = git
 
 ifeq ($(BR2_PACKAGE_AUTUMN_API_DEV),y)
 define AUTUMNSDK_INSTALL_API
-	$(INSTALL) -D -m 0644 $(@D)/AutumnAPI/AutumnAPI.h $(TARGET_DIR)/usr/include/api.h
-	$(INSTALL) -D -m 0644 $(@D)/AutumnAPI/AutumnAPI.c $(TARGET_DIR)/usr/src/api.c
+	$(INSTALL) -D -m 0644 $(@D)/AutumnLib/libacoreapi.so $(TARGET_DIR)/usr/src/libacoreapi.so
 endef
 endif
 
