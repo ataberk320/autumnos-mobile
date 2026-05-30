@@ -25,9 +25,4 @@ config BR2_PACKAGE_AUTUMN_PKG_UNPK
 	help
 	   An unpackager for AutumnOS archives
 
-config BR2_PACKAGE_ASDK_ENGINE
-	bool "AutumnOS SDK G-Engine"
-	depends on BR2_PACKAGE_LUA
-	help
-	   Lua based graphics engine for AutumnOS SDK Environment.
 endif
