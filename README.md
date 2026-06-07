@@ -129,7 +129,15 @@ ________________
 and;<br>
 
 ------------
-``ramfs(Low battery status)->Boot->Drivers->Core->dlsym->Subsystem->UI->CoreUtils``
+**Boot schematic**
+ramfs(Low battery status)->
+Boot->
+Drivers->
+Core->
+dlsym->
+Subsystem->
+UI->
+CoreUtils
 
 ________________ 
           
