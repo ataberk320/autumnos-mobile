@@ -125,7 +125,9 @@ ________________
              Hardware
 
 ------------
+
 and;
+
 ------------
 ramfs(Low battery status)->Boot->Drivers->Core->dlsym->Subsystem->UI->CoreUtils
 ________________ 
