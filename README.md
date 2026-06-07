@@ -107,15 +107,21 @@ ___________________________
                  |
                  ¥
       API (.so) -> Other APIs
-                 |
-                 ¥
-             UDS Socket
-                 |
-                 ¥
+                            |
+                            ¥
+                    UDS Socket
+                             |
+                  <__________|
                Core
                  |
                  ¥
-                HAL
+            **HAL (.so)**
+                 |
+                 ¥
+            Linux Kernel
+                 |
+                 ¥
+             Hardware
 
 ------------                 
 # **Easter eggs**
