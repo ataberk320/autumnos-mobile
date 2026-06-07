@@ -129,9 +129,10 @@ ________________
 and;<br>
 
 ------------
-ramfs(Low battery status)->Boot->Drivers->Core->dlsym->Subsystem->UI->CoreUtils
+``ramfs(Low battery status)->Boot->Drivers->Core->dlsym->Subsystem->UI->CoreUtils``
+
 ________________ 
-<br>            
+          
     
 # **Easter eggs**
 
