@@ -100,6 +100,24 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 .
 ___________________________
 
+       **The layered struct**
+                 |
+                 ¥
+             Autumn UI
+                 |
+                 ¥
+      API (.so) -> Other APIs
+                 |
+                 ¥
+             UDS Socket
+                 |
+                 ¥
+               Core
+                 |
+                 ¥
+                HAL
+
+------------                 
 # **Easter eggs**
 
 * Glitch panic (console will open when an a kernel panic occurs and it makes UI glitch!/only watchdog.sh panics!)
