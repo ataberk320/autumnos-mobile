@@ -99,8 +99,8 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
    - modprobe<br>
 .
 ___________________________
-
-       **The layered struct**
+The schematic of how our OS works
+       ``**The layered struct**
                  |
                  ¥
              Autumn UI
@@ -121,7 +121,7 @@ ___________________________
             Linux Kernel
                  |
                  ¥
-             Hardware
+             Hardware``
 
 ------------                 
 # **Easter eggs**
