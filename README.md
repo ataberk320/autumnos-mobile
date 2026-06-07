@@ -126,12 +126,13 @@ ________________
 
 ------------
 
-and;
+and;<br>
 
 ------------
 ramfs(Low battery status)->Boot->Drivers->Core->dlsym->Subsystem->UI->CoreUtils
 ________________ 
-                
+<br>            
+    
 # **Easter eggs**
 
 * Glitch panic (console will open when an a kernel panic occurs and it makes UI glitch!/only watchdog.sh panics!)
