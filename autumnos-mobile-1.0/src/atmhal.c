@@ -5,9 +5,18 @@
 #include <string.h>
 #include <stdlib.h> //system(); (if necessary)
 #include <stdint.h>
-#include "cheaders/atmhal.h" //extern HAL definitions
 #include <sys/sysinfo.h>
-#include "cheaders/AtmDrv_G2D.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include "cheaders/atmhal.h" //extern HAL definitions
+#include <libswscale/swscale.h>
+#include <libavutil/imgutils.h>
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#ifdef __cplusplus
+}
+#endif
 #include <unistd.h>
 #include <fcntl.h>
 #include <termios.h> // for serial configuration
@@ -22,16 +31,26 @@
 #include <linux/input-event-codes.h>
 #include <linux/rfkill.h> // for connection
 #include <dirent.h>
-#include <drm.h>
-#include <drm_mode.h>
+#include <libdrm/drm.h>
+#include <libdrm/drm_mode.h>
 #include <sys/mman.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <linux/fb.h>
+#include <termios.h>
 #define PWRBT_GPIO "117" // if device is Allwinner
 #define MODEM_RST_PIN "118" // if device is Allwinner
 int cam_fd = -1; // Is camera device exists?
 int input_fd = -1; // Is input device exists?
 bool external = false; // External modem or SIM800L?
 int g2d_fd = -1;
-int drm_fd = -1;
+int drms_fd = -1;
+#define AUTUMN_IPC_PATH "/tmp/autumn_conf/AutumnCore0.sock"
+#define AUTUMN_MS_PATH "/tmp/autumn_sock/AutumnMsP0.sock"
+static int ipc_fd = -1;
+static int mouse_fd = -1;
+int cl_soc_fd = -1;       // Client
+int mouse_cl_fd = -1;
 #if defined(ARCH_SUN4I)
 	#define HALCONF_PATH "/etc/DRV_CONF/riscv/allwinner/hw_extdrv.conf"
 #elif defined(ARCH_STARFIVE)
@@ -151,89 +170,71 @@ void atmsys_safe_volume(uint8_t volume) {
         atmexecve(amixer_argv);
 }
 
-void playaudio(const char *path) {
-	if (access(path, F_OK) != 0) {
-		return;
+void atmsys_serial_raw(int fd) {
+	if (fd < 0) return;
+	struct termios toptions;
+	if (tcgetattr(fd, &toptions) < 0) return;
+
+    	toptions.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL | ICANON | ISIG);
+    	toptions.c_iflag &= ~(INPCK | ISTRIP | IGNCR | ICRNL | INLCR | IXON | IXOFF);
+    	toptions.c_oflag &= ~(OPOST);
+    	toptions.c_cflag &= ~PARENB;
+    	toptions.c_cflag &= ~CSTOPB;
+    	toptions.c_cflag &= ~CSIZE;
+    	toptions.c_cflag |= CS8;
+    
+    	toptions.c_cc[VMIN] = 1;
+    	toptions.c_cc[VTIME] = 0;
+    	tcsetattr(fd, TCSANOW, &toptions);
+}
+
+void atmsys_set_res(void) {
+	int fb_fd = open("/dev/fb0", O_RDWR);
+	int width = 480;
+	int height = 800;
+	if (fb_fd >= 0) {
+		struct fb_var_screeninfo vinfo;
+		if (ioctl(fb_fd, FBIOGET_VSCREENINFO, &vinfo) == 0) {
+			width = vinfo.xres;
+			height = vinfo.yres;
+		}
+		close(fb_fd);
 	}
-	char* const aplay_argv[] = {
-		(char*)"/usr/bin/aplay",
-		(char*)"-q",
-		(char*)"-N",
-		(char*)path,
-		NULL
-	};
-	atmexecve(aplay_argv);
+	else {
+		printf("Fallback to 480x800!\n");
+	}
+
+	FILE *fp = fopen("/tmp/atmres0", "w");
+    	if (fp != NULL) {
+        	fprintf(fp, "%d %d", width, height);
+        	fclose(fp);
+        } 
+	else { }
 }
 
-void atmsys_g2d_blit(uintptr_t src, uintptr_t dst, int w, int h, int rotate) {
-        AtmDrv_G2D_Blit(src, dst, w, h, rotate);
-}
 
-int atmsys_g2d(uintptr_t src, uintptr_t dst, int w, int h, int rotate) {
+int atmsys_g2d() {
 	if (g2d_fd < 0) {
 		g2d_fd = open("/dev/g2d", O_RDWR);
 	}
 	if (g2d_fd < 0) {
 		slog("[G2D-Log]: No G2D device found");
 		return -1;
+	}
 	else {
 		slog("[G2D-Log]: G2D device is ready for blit!");
 		return 0;
 	}
 }
-void atmsys_drm_drw(uintptr_t src, uint32_t width, uint32_t height) {
-	struct drm_mode_create_dumb creq;
-	struct drm_mode_map_dumb mreq;
-	uint32_t *map_address = NULL;
-
-	creq.height = height;
-        creq.width = width;
-        creq.bpp = 32;
-        creq.flags = 0;
-        creq.handle = 0;
-        creq.pitch = 0;
-        creq.size = 0;
-
-	if (ioctl(drm_fd, DRM_IOCTL_MODE_CREATE_DUMB, &creq) < 0) {
-                slog("[DRM-Log]: DRM_IOCTL_MODE_CREATE_DUMB failed!");
-                return;
-        }
-
-        mreq.handle = creq.handle;
-        mreq.pad = 0;
-        mreq.offset = 0;
-
-        if (ioctl(drm_fd, DRM_IOCTL_MODE_MAP_DUMB, &mreq) < 0) {
-                slog("[DRM-Log]: In/Out control failed!");
-                return;
-        }
-
-        map_address = (uint32_t*)mmap(0, creq.size, PROT_READ | PROT_WRITE, MAP_SHARED, drm_fd, mreq.offset);
-        if (map_address == MAP_FAILED) {
-                slog("[DRM-Log]: mmap failed!");
-                return;
-        }
-
-        uint32_t *source = (uint32_t*)src;
-        int total_pixels = width * height;
-        for (int i = 0; i < total_pixels; i++) {
-                map_address[i] = source[i];
-        }
-
-        munmap(map_address, creq.size);
-        struct drm_mode_destroy_dumb dreq = { creq.handle };
-        ioctl(drm_fd, DRM_IOCTL_MODE_DESTROY_DUMB, &dreq);
-}
 
 void atmsys_drm_init(uintptr_t src, uint32_t width, uint32_t height) {
-	if (drm_fd < 0) {
-		drm_fd = open("/dev/dri/card0", O_RDWR | O_CLOEXEC);
+	if (drms_fd < 0) {
+		drms_fd = open("/dev/dri/card0", O_RDWR | O_CLOEXEC);
 	}
 	else {
 
 	}	
 	slog("[DRM-Log]: KMS scanout triggered.");
-	atmsys_drm_drw(src, width, height);
 }
 	
 int atmsys_is_hdmi(void) {
@@ -243,13 +244,13 @@ int atmsys_is_hdmi(void) {
 	res.connector_id_ptr = (uint64_t)(uintptr_t)conn_ids;
 	res.count_connectors = 32;
 	
-	if (ioctl(drm_fd, DRM_IOCTL_MODE_GETRESOURCES, &res) < 0) return false;
+	if (ioctl(drms_fd, DRM_IOCTL_MODE_GETRESOURCES, &res) < 0) return false;
 	
 	for (uint32_t i = 0; i < res.count_connectors; i++) {
 		struct drm_mode_get_connector conn = {0};
 		conn.connector_id = conn_ids[i];
 		
-		if (ioctl(drm_fd, DRM_IOCTL_MODE_GETCONNECTOR, &conn) < 0) continue;
+		if (ioctl(drms_fd, DRM_IOCTL_MODE_GETCONNECTOR, &conn) < 0) continue;
 		
 		if (conn.connection == 1 && conn.connector_type == 11) {
 			slog("[HDMI-Log]: HDMI screen detected");
@@ -257,39 +258,74 @@ int atmsys_is_hdmi(void) {
 		}
 	}
 	return false;
-]
+
 }
 int  atmsys_camera_init(void) {
-	cam_fd = open("/dev/video0", O_RDWR | O_NONBLOCK); //V4L device
-	if (cam_fd < 0) {
-		slog("[CamDev-Log]: Could not init camera device!");
-		return -1;
-	}
+	char dev_path[32];
 	struct v4l2_capability cap;
-	if (ioctl(cam_fd, VIDIOC_QUERYCAP, &cap) < 0) return -2;
+	bool found_camera = false;
 	
-	struct v4l2_format fmt = {0};
-    	fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-	// Set pixel format according to HAL config
-	if (strcmp(AutumnHardwareID_t.pixel_format, "YUYV") == 0) {
-        	fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV; // ARM
-    	} 
-	else if (strcmp(AutumnHardwareID_t.pixel_format, "MJPEG") == 0) {
-        	fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_MJPEG; // Starfive
-    	} 
-	else if (strcmp(AutumnHardwareID_t.pixel_format, "NV21") == 0) {
-        	fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_NV21; // Allwinner
-    	} 
-	else {
-        	fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV; // Default camera pixel format
-    	}
-    	fmt.fmt.pix.field = V4L2_FIELD_NONE;
+	for (int i = 0; i < 6; i++) {
+		snprintf(dev_path, sizeof(dev_path), "/dev/video%d", i);
+		cam_fd = open(dev_path, O_RDWR | O_NONBLOCK);
+		if (cam_fd < 0) {
+			continue;
+		}
+		if (ioctl(cam_fd, VIDIOC_QUERYCAP, &cap) >= 0) {
+			if (strcmp((const char *)cap.driver, "cedrus") == 0) {
+                close(cam_fd);
+                cam_fd = -1;
+                continue;
+            }
 
-    	if (ioctl(cam_fd, VIDIOC_S_FMT, &fmt) < 0) {
-       		 return -3;
-    	}
-	return 0;
-} 
+            if (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE) {
+                slog("[CamDev-Log]: Real camera device found");
+                found_camera = true;
+                break;
+            }
+        }
+        
+        close(cam_fd);
+        cam_fd = -1;
+    }
+
+    if (!found_camera || cam_fd < 0) {
+        slog("[CamDev-Log]: Could not init camera device! No capture device found.");
+        return -1;
+    }
+
+    if (ioctl(cam_fd, VIDIOC_QUERYCAP, &cap) < 0) {
+        close(cam_fd);
+        cam_fd = -1;
+        return -2;
+    }
+
+    struct v4l2_format fmt = {0};
+    fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    
+    if (strcmp(AutumnHardwareID_t.pixel_format, "YUYV") == 0) {
+        fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV; // ARM
+    }
+    else if (strcmp(AutumnHardwareID_t.pixel_format, "MJPEG") == 0) {
+        fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_MJPEG; // Starfive
+    }
+    else if (strcmp(AutumnHardwareID_t.pixel_format, "NV21") == 0) {
+        fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_NV21; // Allwinner
+    }
+    else {
+        fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV; // Default camera pixel format
+    }
+    fmt.fmt.pix.field = V4L2_FIELD_NONE;
+
+    if (ioctl(cam_fd, VIDIOC_S_FMT, &fmt) < 0) {
+        close(cam_fd);
+        cam_fd = -1;
+        return -3;
+    }
+
+    return 0;
+}
+ 
 
 void atmsys_indev_init(const char *suggested_path) {
 	if (input_fd >= 0) {
@@ -422,7 +458,7 @@ void atmsys_pwroff(void) {
 }
 
 void atmsys_emergency_pwroff(void) {
-	char *const argv[] = {"/sbin/poweroff", "-f", NULL}; //Forcing system to power off
+	char *const argv[] = {(char*)"/sbin/poweroff", (char*)"-f", NULL};
 	atmexecve(argv);
     	system("echo o > /proc/sysrq-trigger"); //If the system frozen, force kernel to power off
 	_exit(1);
@@ -656,55 +692,6 @@ void atmsys_get_sim_operator_name(int fd, char *provider_name, size_t max_len) {
     strncpy(provider_name, "Servis yok - Yalnızca acil aramalar.", max_len); //No service.
 }
 
-void atmsys_modem_answer(int serial_fd) {
-	write(serial_fd, "ATA\r\n", 5); //AT Answer
-}
-
-void atmsys_modem_reject(int serial_fd) {
-	write(serial_fd, "ATH\r\n", 5); //AT Hang
-}
-
-int atmhal_crt_ipcsrv(const char *socket_path) {
-	int server_fd;
-	struct sockaddr_un addr;
-	unlink(socket_path);
-	server_fd = socket(AF_UNIX, SOCK_STREAM, 0);
-	if (server_fd < 0) return -1;
-	memset(&addr, 0, sizeof(addr));
-	addr.sun_family = AF_UNIX;
-	strncpy(addr.sun_path, socket_path, sizeof(addr.sun_path) - 1);
-	if (bind(server_fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-       		close(server_fd);
-        	return -1;
-    	}
-
-    	if (listen(server_fd, 5) < 0) {
-        	close(server_fd);
-        	return -1;
-    	}
-
-    	return server_fd;
-}
-
-int atmhal_ipc_read_cmd(int server_fd, int *client_fd, char *buffer, size_t max_len) {
-	if (*client_fd < 0) {
-		*client_fd = accept(server_fd, NULL, NULL);
-        if (*client_fd < 0) return -1;
-        	printf("New client connected.\n");
-    	}
-
-    	memset(buffer, 0, max_len);
-    	ssize_t read_bytes = read(*client_fd, buffer, max_len - 1);
-
-    	if (read_bytes <= 0) {
-        	printf("Client ended connection.\n");
-        	close(*client_fd);
-        	*client_fd = -1;
-        	return -1;
-    	}
-
-    	return read_bytes;
-}
 //Performance and storage status (Memory stat)
 long atmsys_uptime(void) {
 	struct  sysinfo s_info; // We pull uptime, RAM info from sysinfo
