@@ -127,7 +127,6 @@ ________________
 ------------
 and;
 _______________
-
 ramfs(Low battery)->Boot->Drivers->Core->dlsym->Subsystem->UI->CoreUtils
 ________________                 
 # **Easter eggs**
