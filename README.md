@@ -100,7 +100,8 @@ Originally started as a general OS research on r/osdev, AutumnOS has undergone a
 .
 ___________________________
 The schematic of how our OS works
-       ``**The layered struct**
+________________
+       **The layered struct**
                  |
                  ¥
              Autumn UI
@@ -121,7 +122,7 @@ The schematic of how our OS works
             Linux Kernel
                  |
                  ¥
-             Hardware``
+             Hardware
 
 ------------                 
 # **Easter eggs**
