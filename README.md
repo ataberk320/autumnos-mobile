@@ -104,9 +104,9 @@ ________________
        **The layered struct**
                  |
                  ¥
-             Autumn UI
-                 |
-                 ¥
+      Autumn UI/CoreUtils
+      |
+      ¥
       API (.so) -> Other APIs
                             |
                             ¥
