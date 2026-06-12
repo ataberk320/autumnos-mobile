@@ -34,10 +34,10 @@ void AutumnAPI_Receive_From_Friend(ChatSock *sock, char *buffer, int is_server) 
 
 void AutumnAPI_Send_Msg(ChatSock *sock, const char *data, int is_server) {
     if (is_server) {
-        strcpy(sock->to_client, data);
-        sock->status = 2; 
+        strcpy(sock->to_client, data, MSG_SIZE - 1);
+        atomic_store(&sock->status = 2); 
     } else {
-        strcpy(sock->to_server, data);
-        sock->status = 1; 
+        strcpy(sock->to_server, data, MSG_SIZE - 1);
+        atomic_store(&sock->status = 1); 
     }
 }
