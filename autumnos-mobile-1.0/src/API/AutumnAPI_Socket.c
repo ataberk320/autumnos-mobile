@@ -5,13 +5,14 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <stdatomic.h>
 
 #define MSG_SIZE 512
 
 typedef struct {
 	char to_server[MSG_SIZE];
 	char to_client[MSG_SIZE];
-	int status;
+	atomic_int status;
 } ChatSock;
 
 ChatSock* AutumnAPI_Sock_Create(const char* name, int is_server) {
