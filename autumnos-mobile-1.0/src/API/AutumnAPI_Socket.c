@@ -13,6 +13,7 @@ typedef struct {
 	char to_server[MSG_SIZE];
 	char to_client[MSG_SIZE];
 	atomic_int status;
+	atomic_flag lock;
 } ChatSock;
 
 ChatSock* AutumnAPI_Sock_Create(const char* name, int is_server) {
@@ -21,6 +22,14 @@ ChatSock* AutumnAPI_Sock_Create(const char* name, int is_server) {
 	int fd = shm_open(path, O_CREAT | O_RDWR, 0666);
 	if (is_server) ftruncate(fd, sizeof(ChatSock));
 	return mmap(NULL, sizeof(ChatSock), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+}
+
+void AutumnAPI_LockSock(ChatSock *sock) {
+    while (atomic_flag_test_and_set(&sock->lock));
+}
+
+void AutumnAPI_UnlockSock(ChatSock *sock) {
+    atomic_flag_clear(&sock->lock);
 }
 
 int AutumnAPI_Listen_Friend(ChatSock *sock) {
@@ -33,11 +42,13 @@ void AutumnAPI_Receive_From_Friend(ChatSock *sock, char *buffer, int is_server) 
 }
 
 void AutumnAPI_Send_Msg(ChatSock *sock, const char *data, int is_server) {
-    if (is_server) {
+    AutumnAPI_LockSock(sock);
+	if (is_server) {
         strncpy(sock->to_client, data, MSG_SIZE - 1);
-        atomic_store(&sock->status = 2); 
+        atomic_store(&sock->status, 2); 
     } else {
         strncpy(sock->to_server, data, MSG_SIZE - 1);
-        atomic_store(&sock->status = 1); 
+        atomic_store(&sock->status, 1); 
     }
+	AutumnAPI_UnlockSock(sock);
 }
