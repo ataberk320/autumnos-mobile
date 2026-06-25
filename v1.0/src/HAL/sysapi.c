@@ -7,7 +7,7 @@
 #define ATM_VOLUP 0x01
 #define ATM_VOLDOWN 0x02
 
-long syslinux_syscall(long num, long a0, long a1, long a2, long a3, long a4, long a5) {
+long hal_linux_syscall(long num, long a0, long a1, long a2, long a3, long a4, long a5) {
 	long ret;
 	register long r8 asm("x8") = num;
 	register long r0 asm("x0") = a0;
@@ -26,7 +26,7 @@ long syslinux_syscall(long num, long a0, long a1, long a2, long a3, long a4, lon
 	return r0;
 }
 
-void syslinux_abiconnectionstatus(uint8_t rf_type, bool block) {
+void hal_connectionstatus(uint8_t rf_type, bool block) {
         int rfk_fd = open("/dev/rfkill", O_WRONLY | O_NONBLOCK);
         if (rfk_fd < 0) {
                 printf("[AUTUMNOS]: No rfkill device found. Network unavailable!");
@@ -41,7 +41,7 @@ void syslinux_abiconnectionstatus(uint8_t rf_type, bool block) {
         close(rfk_fd);
 }
 
-void syslinux_abivolumesetting(int dir) {
+void hal_volumesetting(int dir) {
 	int fd = open("/dev/snd/controlC0", O_RDWR);
 	if (fd < 0) return;
 	
