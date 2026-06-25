@@ -15,6 +15,6 @@
 #define SYS_REBOOT 142
 #define SYS_SETUID 146
 
-long AutumnSys_Syscall(long num, long a0, long a1, long a2, long a3, long a4, long a5);
+long hal_linux_syscall(long num, long a0, long a1, long a2, long a3, long a4, long a5);
 
 #endif
