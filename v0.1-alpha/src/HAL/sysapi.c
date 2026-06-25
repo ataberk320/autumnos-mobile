@@ -1,4 +1,4 @@
-#include "AutumnSyscall.h"
+#include "syscall.h"
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <linux/asound.h>
