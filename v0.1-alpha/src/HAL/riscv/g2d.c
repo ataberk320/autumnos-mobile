@@ -2,12 +2,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
-#include "AtmDrv_G2D.h"
+#include "g2d.h"
 #include <stdlib.h>
-#include <libdrm/drm.h>
-#include <libdrm/drm_mode.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
 
 static int g2d_fd = -1;
 static int drms_fd = -1;
