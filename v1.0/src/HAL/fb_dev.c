@@ -22,8 +22,8 @@ void hal_fbreset(int fd, int mode) {
 	}
 }
 
-int hal_fbinit(FramebufferStruct* ctx) {
-        ctx->fd = open("/dev/fb0", O_RDWR);
+int hal_fbinit(FramebufferStruct* ctx, const char* dev_p) {
+        ctx->fd = open(dev_p, O_RDWR);
         if (ctx->fd < 0) return -1;
         struct fb_var_screeninfo vinfo;
         struct fb_fix_screeninfo finfo;
