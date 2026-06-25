@@ -68,4 +68,3 @@ void syslinux_abivolumesetting(int dir) {
 	ioctl(fd, SNDRV_CTL_IOCTL_ELEM_WRITE, &vol_val);
 	close(fd);
 }
-}
