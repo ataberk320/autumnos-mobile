@@ -28,7 +28,7 @@ ChatTunnel* AutumnAPI_Tunnel_Create(const char* name, int is_server) {
 	return tunnel;
 }
 
-void AutumnAPI_Tunnel_ReceiveFromFriend(ChatSock *sock, char *buffer, int is_server) {
+void AutumnAPI_Tunnel_ReceiveFromFriend(ChatTunnel *sock, char *buffer, int is_server) {
 	int current_head = atomic_load(&tunnel->head);
 	
 	if (current_head == atomic_load(&tunnel->tail)) return false;
@@ -38,13 +38,13 @@ void AutumnAPI_Tunnel_ReceiveFromFriend(ChatSock *sock, char *buffer, int is_ser
     	return true;
 }
 
-void AutumnAPI_Tunnel_Send_Msg(ChatSock *sock, const char *data, int is_server) {
+void AutumnAPI_Tunnel_Send_Msg(ChatTunnel *sock, const char *data, int is_server) {
 	int current_tail = atomic_load(&tunnel->tail);
 	int next_tail = (current_tail + 1) & TUNNEL_SIZE;
 	
 	if (next_tail == atomic_load(&tunnel->head)) return false;
 	
-	tunnel->buffee[current_tail] = data;
+	tunnel->buffer[current_tail] = data;
 	atomic_store(&tunnel->tail, next_tail);
 	return true;
 }
