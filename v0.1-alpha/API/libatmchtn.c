@@ -1,46 +1,60 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <sys/stat.h>
 #include <stdatomic.h>
 #include "libatmchtn.h"
-ChatTunnel* AutumnAPI_Tunnel_Create(const char* name, int is_server) {
-	char path[128];
-	sprintf(path, "/%s.tun", name);
-	int fd = shm_open(path, O_CREAT | O_RDWR, 0666);
-	if (is_server) ftruncate(fd, sizeof(ChatTunnel));
-	ChatTunnel* tunnel = (ChatTunnel*)mmap(NULL, sizeof(ChatTunnel), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-	if (is_server) {
-		atomic_init(&tunnel->head, 0);
-		atomic_init(&tunnel->tail, 0);
-	}
-	return tunnel;
+#include <stdio.h>    // sprintf için
+#include <string.h>
+ChatTunnel* AutumnAPI_Tunnel_Create(const char* name) {
+    char path[128];
+    sprintf(path, "/%s.tun", name);
+    int fd = shm_open(path, O_CREAT | O_RDWR, 0666);
+    if (fd == -1) return NULL;
+
+    ftruncate(fd, sizeof(ChatTunnel));
+    
+    ChatTunnel* tunnel = (ChatTunnel*)mmap(NULL, sizeof(ChatTunnel), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    close(fd);
+
+    if (tunnel != MAP_FAILED) {
+        atomic_init(&tunnel->head, 0);
+        atomic_init(&tunnel->tail, 0);
+    }
+    return tunnel;
 }
 
-bool AutumnAPI_Tunnel_ReceiveFromFriend(ChatTunnel *tunnel, char *buffer, int is_server) {
-	int current_head = atomic_load(&tunnel->head);
-	
-	if (current_head == atomic_load(&tunnel->tail)) return false;
+ChatTunnel* AutumnAPI_Tunnel_Connect(const char* name) {
+    char path[128];
+    sprintf(path, "/%s.tun", name);
+    int fd = shm_open(path, O_RDWR, 0666);
+    if (fd == -1) return NULL;
 
-	strcpy(buffer, tunnel->buffer[current_head]);
-    
-    	atomic_store(&tunnel->head, (current_head + 1) % TUNNEL_SIZE);
-    	return true;
+    ChatTunnel* tunnel = (ChatTunnel*)mmap(NULL, sizeof(ChatTunnel), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    close(fd);
+    return (tunnel == MAP_FAILED) ? NULL : tunnel;
 }
 
-bool AutumnAPI_Tunnel_Send_Msg(ChatTunnel *tunnel, const char *data, int is_server) {
-    int current_tail = atomic_load(&tunnel->tail);
-    int next_tail = (current_tail + 1) % TUNNEL_SIZE;
+bool AutumnAPI_Tunnel_ReceiveFromFriend(ChatTunnel *tunnel, char *buffer) {
+    int head = atomic_load_explicit(&tunnel->head, memory_order_acquire);
+    int tail = atomic_load_explicit(&tunnel->tail, memory_order_acquire);
 
-    if (next_tail == atomic_load(&tunnel->head)) return false;
+    if (head == tail) return false;
 
-    strncpy(tunnel->buffer[current_tail], data, TUNNEL_MSG_SIZE - 1);
+    memcpy(buffer, tunnel->buffer[head], MSG_LEN);
     
-    tunnel->buffer[current_tail][TUNNEL_MSG_SIZE - 1] = '\0'; 
+    atomic_store_explicit(&tunnel->head, (head + 1) % TUNNEL_SIZE, memory_order_release);
+    return true;
+}
 
+bool AutumnAPI_Tunnel_Send_Msg(ChatTunnel *tunnel, const char *data) {
+    int tail = atomic_load_explicit(&tunnel->tail, memory_order_acquire);
+    int head = atomic_load_explicit(&tunnel->head, memory_order_acquire);
+
+    int next_tail = (tail + 1) % TUNNEL_SIZE;
+    if (next_tail == head) return false;
+
+    memcpy(tunnel->buffer[tail], data, MSG_LEN - 1);
+    
     atomic_store_explicit(&tunnel->tail, next_tail, memory_order_release);
     return true;
 }

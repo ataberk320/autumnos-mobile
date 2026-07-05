@@ -16,42 +16,40 @@
 #include "AutumnImage.h"
 #include "libfbdev.h"
 #include "table.h"
-typedef struct {
-	int version;
-	int (*fbinit)(FramebufferStruct*, const char*);
-	void (*fbrefresh)(FramebufferStruct*);
-	void (*fbreset)(int, int);
-} HAL_FramebufferTable;
 
-HAL_FramebufferTable* hfbt;
+extern FBDEV_HAL* fbd;
 void* handle = NULL;
 void* font_h = NULL;
 
-int InitHardwareFunc() {
-	hfbt = malloc(sizeof(HAL_FramebufferTable));
-	handle = dlopen("/usr/lib/libfbdhal.so", RTLD_LAZY); //	Loading the HAL library is important for fb0
-	font_h = dlopen("/usr/lib/libatmnls.so", RTLD_LAZY);
-	if (!handle || !font_h) {
-		return -1; // File not found
-	}
-	
-	hfbt->fbinit = dlsym(handle, "hal_fbinit"); // Loading function from library
-	hfbt->fbrefresh = dlsym(handle, "hal_fbrefresh");
-	hfbt->fbreset   = dlsym(handle, "hal_fbreset");
-    	if (!hfbt->fbinit || !hfbt->fbrefresh || !hfbt->fbreset) {
-        	return -1; // File not found
-    	}
-
-    return 0; // Success
-}
-
-//Framebuffer drawing functions
 void AutumnAPI_DrawPix(FbDev* fb, int x, int y, uint32_t color) {
-    if (x >= 0 && x < fb->w && y >= 0 && y < fb->h) {
-        fb->bk_bf[y * fb->stride + x] = color;
-    }
+	if (x >= 0 && x < fb->w && y >= 0 && y < fb->h) {
+        	uint8_t* row_start = ((uint8_t*)fb->bk_bf) + (y * fb->stride);
+        	((uint32_t*)row_start)[x] = color;
+    	}
 }
 
+void AutumnAPI_DrawLine(FbDev* fb, int x0, int y0, int x1, int y1, uint32_t color) {
+	int dx = abs(x1 - x0);
+	int dy = -abs(y1 - y0);
+	int sx = x0 < x1 ? 1 : -1;
+	int sy = y0 < y1 ? 1 : -1;
+	int err = dx + dy;
+	int e2;
+
+	while (1) {
+		AutumnAPI_DrawPix(fb, x0, y0, color);
+		if (x0 == x1 && y0 == y1) break;
+		e2 = 2 * err;
+		if (e2 >= dy) {
+            		err += dy;
+            		x0 += sx;
+        	}
+        	if (e2 <= dx) {
+            		err += dx;
+            		y0 += sy;
+        	}
+    	}
+}
 
 void AutumnAPI_DrawImg(FbDev* fb, AutumnImage* img, int x, int y) {
     if (!img || !img->buffer) return;
@@ -61,35 +59,33 @@ void AutumnAPI_DrawImg(FbDev* fb, AutumnImage* img, int x, int y) {
         if (target_y < 0 || target_y >= fb->h) continue;
 
         uint32_t* src_row = &img->buffer[i * img->w];
-        uint32_t* target_row = fb->bk_bf + (target_y * fb->stride);
+        uint32_t* target_row = fb->bk_bf + (target_y * (fb->stride / 4));
 
         for (int j = 0; j < img->w; j++) {
             int target_x = x + j;
             if (target_x < 0 || target_x >= fb->w) continue;
 
             uint32_t pixel = src_row[j];
-            
-            uint8_t r = (pixel >> 0)  & 0xFF;
-            uint8_t g = (pixel >> 8)  & 0xFF;
-            uint8_t b = (pixel >> 16) & 0xFF;
             uint8_t a = (pixel >> 24) & 0xFF;
 
             if (a == 0) continue;
 
-            if (a == 255) {
-                target_row[target_x] = (r << fb->r_off) | (g << fb->g_off) | (b << fb->b_off);
-            } else {
+            uint8_t r = (pixel >> 0)  & 0xFF;
+            uint8_t g = (pixel >> 8)  & 0xFF;
+            uint8_t b = (pixel >> 16) & 0xFF;
+
+            if (a < 255) {
                 uint32_t dest = target_row[target_x];
                 uint8_t dr = (dest >> fb->r_off) & 0xFF;
                 uint8_t dg = (dest >> fb->g_off) & 0xFF;
                 uint8_t db = (dest >> fb->b_off) & 0xFF;
 
-                uint8_t out_r = (r * a + dr * (255 - a)) >> 8;
-                uint8_t out_g = (g * a + dg * (255 - a)) >> 8;
-                uint8_t out_b = (b * a + db * (255 - a)) >> 8;
-
-                target_row[target_x] = (out_r << fb->r_off) | (out_g << fb->g_off) | (out_b << fb->b_off);
+                r = (r * a + dr * (255 - a)) / 255;
+                g = (g * a + dg * (255 - a)) / 255;
+                b = (b * a + db * (255 - a)) / 255;
             }
+
+            target_row[target_x] = (r << fb->r_off) | (g << fb->g_off) | (b << fb->b_off);
         }
     }
 }
@@ -145,20 +141,20 @@ void AutumnAPI_DrawString(FbDev* fb, FT_Face face, const char* text, int x, int 
                 if (alpha == 0) continue;
 
                 if (alpha == 255) {
-                    fb->bk_bf[py * fb->stride + px] = color;
+                    fb->bk_bf[py * (fb->stride / 4) + px] = (tr << fb->r_off) | (tg << fb->g_off) | (tb << fb->b_off);
                 }
 		else {
-                    uint32_t bg_pixel = fb->bk_bf[py * fb->stride + px];
+                    uint32_t bg_pixel = fb->bk_bf[py * (fb->stride / 4) + px];
                     
-                    uint8_t br = (bg_pixel >> 16) & 0xFF;
-                    uint8_t bg = (bg_pixel >> 8) & 0xFF;
-                    uint8_t bb = bg_pixel & 0xFF;
+                    uint8_t br = (bg_pixel >> fb->r_off) & 0xFF;
+                    uint8_t bg = (bg_pixel >> fb->g_off) & 0xFF;
+                    uint8_t bb = (bg_pixel >> fb->b_off) & 0xFF;
 
-                    uint8_t fr = (tr * alpha + br * (255 - alpha)) >> 8;
-                    uint8_t fg = (tg * alpha + bg * (255 - alpha)) >> 8;
-                    uint8_t fb_val = (tb * alpha + bb * (255 - alpha)) >> 8;
-
-                    fb->bk_bf[py * fb->stride + px] = (fr << 16) | (fg << 8) | fb_val;
+                    uint8_t fr = (tr * alpha + br * (255 - alpha)) / 255;
+                    uint8_t fg = (tg * alpha + bg * (255 - alpha)) / 255;
+                    uint8_t fb_val = (tb * alpha + bb * (255 - alpha)) / 255;
+			
+		    fb->bk_bf[py * (fb->stride / 4) + px] = (fr << fb->r_off) | (fg << fb->g_off) | (fb_val << fb->b_off);
                 }
             }
         }
@@ -232,7 +228,7 @@ void AutumnAPI_DrawGifAni(FbDev* fb, GifFileType* gif, int x, int y, int idx) {
 		int target_y = y + desc->Top + i;
 		if (target_y < 0 || target_y >= fb->h) continue;
 	
-		uint32_t* target_row = fb->bk_bf + (target_y * fb->stride);
+		uint32_t* target_row = fb->bk_bf + (target_y * (fb->stride / 4));
 		
 		for (int j = 0; j < desc->Width; j++) {
 			int target_x = x + desc->Left + j;
@@ -243,33 +239,45 @@ void AutumnAPI_DrawGifAni(FbDev* fb, GifFileType* gif, int x, int y, int idx) {
 			if (pixel_idx == trans_idx) continue;
 
             		GifColorType color = cmap->Colors[pixel_idx];
-            		target_row[target_x] = (color.Red << fb->r_off) |
-                                   	       (color.Green << fb->g_off) |
-                                               (color.Blue << fb->b_off);
+			uint8_t r = color.Red;
+			uint8_t g = color.Green;
+			uint8_t b = color.Blue;
+
+			target_row[target_x] = (r << fb->r_off) | (g << fb->g_off) | (b << fb->b_off);
+
         	}
     	}
 }
 
 
-//Framebuffer device test functions
 int AutumnAPI_Init(FbDev* fb, const char *path) {
-    if (hfbt == NULL) {
-        if (InitHardwareFunc() != 0) return -1;
+    fb->hal_ctx = malloc(sizeof(DRMStruct));
+    if (!fb->hal_ctx) return -1;
+
+    if (fbd->InitFbCard(fb->hal_ctx, "/dev/dri/card0") != 0) {
+        printf("Turning to terminal.");
+	free(fb->hal_ctx);
+	return -1;
     }
-    
-    FramebufferStruct hal_ctx;
-    if (hfbt->fbinit(&hal_ctx, "/dev/fb0") != 0) return -1;     
-    fb->fd     = hal_ctx.fd;
-    fb->w      = hal_ctx.width;
-    fb->h      = hal_ctx.height;
-    fb->stride = hal_ctx.stride;
-    fb->fb_ptr = (uint32_t*)hal_ctx.ptr;
-    fb->r_off = hal_ctx.r_off;
-    fb->g_off = hal_ctx.g_off;
-    fb->b_off = hal_ctx.b_off;
-    fb->bk_bf = malloc(fb->h * fb->stride * sizeof(uint32_t));
+
+    fb->fd     = fb->hal_ctx->fd;
+    fb->w      = fb->hal_ctx->width;
+    fb->h      = fb->hal_ctx->height;
+    fb->fb_ptr = (uint32_t*)fb->hal_ctx->ptr;
+    fb->stride = fb->hal_ctx->stride;
+    fb->r_off = 16;
+    fb->g_off = 8;
+    fb->b_off = 0;
+    printf("R:%d, G:%d, B:%d\n", fb->r_off, fb->g_off, fb->b_off);
+    printf("height: %d, stride: %d, malloc size: %lu\n", fb->h, fb->stride, (size_t)fb->h * fb->stride);    
+    fb->bk_bf = malloc((size_t)fb->h * fb->stride);
+    if (!fb->bk_bf) {
+    	free(fb->hal_ctx);
+    	return -1;
+    }
     return 0;
 }
+
 
 void AutumnAPI_URandom(FbDev* fb) {
 	int ur_fd = open("/dev/urandom", O_RDONLY); //Glitch test XD
@@ -287,31 +295,28 @@ void AutumnAPI_URandom(FbDev* fb) {
 void AutumnAPI_ClearFb(FbDev* fb, uint32_t color) {
 	for (int y = 0; y < fb->h; y++) {
 		for (int x = 0; x < fb->w; x++) {
-			fb->bk_bf[y * fb->stride + x] = color;
+			fb->bk_bf[y * (fb->stride / 4) + x] = color;
 		}
 	}
 }
 
-void AutumnAPI_FbHwRefresh(FbDev* fb) {
-	if (hfbt->fbrefresh) {
-		FramebufferStruct ctx;
-		ctx.fd = fb->fd;
-		hfbt->fbrefresh(&ctx);
-	}
-}
-
 int AutumnAPI_FbRefresh(FbDev* fb) {
-	if (!fb->fb_ptr || !fb->bk_bf) return -1;
+	if (!fb || !fb->hal_ctx || !fb->bk_bf || !fb->hal_ctx->ptr) {
+		printf("NULL screen pointer\n");
+		return -1;
+	}
+
+	uint32_t* src = fb->bk_bf;
+	uint32_t* dst = (uint32_t*)fb->hal_ctx->ptr;
+
 	for (int y = 0; y < fb->h; y++) {
-		uint32_t* dest = fb->fb_ptr + (y * fb->stride);
-		uint32_t* src = fb->bk_bf + (y * fb->stride);
-		memcpy(dest, src, fb->w * sizeof(uint32_t));
-	}    
+		memcpy(dst + (y * (fb->stride / 4)), src + (y * (fb->stride / 4)), fb->w * sizeof(uint32_t));
+	}
+
+	fbd->FbFlip(fb->hal_ctx);
     	return 0;
 }
 
-void AutumnAPI_FbReset(FbDev* fb) {
-    	if (hfbt->fbreset) {
-        	hfbt->fbreset(fb->fd, 1); 
-    	}
+void AutumnAPI_FbReset(DRMStruct* fb) {
+        	fbd->ResetFbCard(fb, 1); 
 }
