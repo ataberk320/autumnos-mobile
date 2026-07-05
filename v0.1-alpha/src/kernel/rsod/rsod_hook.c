@@ -32,9 +32,9 @@ static struct notifier_block rsod_notif = {
 };
 
 static int __init init_rsod(void) {
-	void *target = (void *)0x80500000;
+	    void *target = (void *)0x80500000;
     	memcpy(target, rsod_bin, rsod_bin_len);
-	atomic_notifier_chain_register(&panic_notifier_list, &rsod_notif);
+	    atomic_notifier_chain_register(&panic_notifier_list, &rsod_notif);
     	pr_info("AutumnOS rSOD hook actived.\n");
     	return 0;
 }
