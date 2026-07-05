@@ -1,29 +1,43 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <linux/kernel.h>
+#include <linux/notifier.h>
+#include <linux/panic_notifier.h>
+#include <linux/init.h>
+#include <linux/io.h>
+#include <asm/setup.h>
+#include <linux/module.h>
+#include <linux/string.h>
+#include "rsod_bin.h"
+#include <linux/console.h>
+#include <linux/fb.h>
 
-#define THERM_DEV "/sys/class/thermal/thermal_zone0/temp"
+static int rsod(struct notifier_block *nb, unsigned long code, void *data)
+{
+    extern struct fb_info *registered_fb[FB_MAX];
+    struct fb_info *info = registered_fb[0];
 
-static char current_dev[128] = THERM_DEV;
+    if (info && info->screen_base) {
+        uint32_t *fb = (uint32_t *)info->screen_base;
+        int pixels = info->var.xres * info->var.yres;
+        
+	int i;
+        for (i = 0; i < pixels; i++) {
+            fb[i] = 0x00FF0000; 
+        }
+    }
+    return NOTIFY_DONE;
+}
 
-int SRV_thermDevInit(const char* path) {
-	if (path != NULL && strlen(path) > 0) {
-		strncpy(current_therm_path, custom_path, sizeof(current_therm_path) - 1);
-    	}
+static struct notifier_block rsod_notif = {
+	.notifier_call = rsod,
+};
+
+static int __init init_rsod(void) {
+	void *target = (void *)0x80500000;
+    	memcpy(target, rsod_bin, rsod_bin_len);
+	atomic_notifier_chain_register(&panic_notifier_list, &rsod_notif);
+    	pr_info("AutumnOS rSOD hook actived.\n");
     	return 0;
 }
 
-int SRV_thermGetStat() {
-	FILE* fp = fopen(current_dev, "r");
-	if (!fp) return -1;
-	
-	char buffer[16];
-	int temp = -1;
-	
-	if (fgets(buffer, sizeof(buffer), fp) != NULL) {
-		temp = atoi(buffer) / 1000;
-	}
+module_init(init_rsod);
 
-	fclose(fp);
-	return temp;
-}
