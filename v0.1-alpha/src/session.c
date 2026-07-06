@@ -8,69 +8,128 @@
 #include <ft2build.h>
 #include "table.h"
 #include <stdbool.h>
+#include "libatmchtn.h"
+#include <pthread.h>
+#include "button.h"
+#include <stdlib.h>
+#include "timer.h"
+#include "sigf.h"
+#include <sys/stat.h>
 
-extern GFX_API *gfx;
-extern IMG_API *img;
+bool is_alsa;
+bool is_ui = false;
+int loadanim_frame = 0;
+FbDev screen;
+GifFileType* load;
+ChatTunnel* tunn = NULL;
+int mouse_x = 100;
+int mouse_y = 100;
+int mouse_btn1 = 0;
+extern GFX_API* gfx;
+extern IMG_API* img;
+extern void* inputd_main(void* arg);
+extern void* AutumnUI(void* arg);
+pthread_mutex_t mouse_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-int UI_SetFont(FT_Library *library, FT_Face *face) {
-	if (FT_Init_FreeType(library)) {
-		perror("FreeType");
-		return -1;
+void _setup_Dir(void) {
+	const char *dirs[] = {
+		"/home/autumnuser0",
+		"/home/autumnuser0/audio"
+	};
+	
+	for (int i = 0; i < 2; i++) {
+		chown(dirs[i], 1000, 1000);
 	}
+}
 
-	if (FT_New_Face(*library, "/usr/share/fonts/DroidSans.ttf", 0, face)) {
-    		perror("DroidSans.ttf");
-    		return -1;
+void _userspace_StartSrv() {
+	pthread_t tid;
+	if (pthread_create(&tid, NULL, inputd_main, NULL) != 0) {
+		perror("input-daemon");
+		return;
 	}
+}
 
-	FT_Set_Pixel_Sizes(*face, 0, 16);
-	return 0;
+void _userspace_StartUI() {
+	pthread_t uid;
+	pthread_attr_t attr;
+
+	pthread_attr_init(&attr);
+	pthread_attr_setstacksize(&attr, 128 * 1024);
+
+	if (pthread_create(&uid, &attr, AutumnUI, NULL) != 0) {
+                perror("System UI");
+		pthread_attr_destroy(&attr);
+                return;
+        }
+
+	pthread_attr_destroy(&attr);
+	pthread_detach(uid);
 }
 
 int main() {
-	FT_Library lib;
-	FT_Face face;
-	get_mod();
-	FbDev screen;
-	if (gfx->InitFb(&screen, "/dev/fb0") != 0) {
-        	perror("UI");
-        	return -1;
-    	}
-	if (UI_SetFont(&lib, &face) == 0) {	
-
+	set_sig();
+	if (access("/dev/snd/pcmC0D0p", F_OK) == 0) {
+		is_alsa = true;
 	}
 	else {
-		perror("UI");
+		is_alsa = false;
 	}
-
 	
+	ldinit();
+	
+	tunn = AutumnAPI_Tunnel_Create("mouse_pipe");
+        if (tunn == NULL) {
+                perror("inputd - ChatTunnel");
+                return 1;
+        }
 
-	AutumnImage* bg = img->LdImg("/usr/share/test.png");
-	if (!bg) {
-        	perror("LoadImage");
+	if (gfx->InitFb(&screen, "/dev/dri/card0") != 0) {
+        	perror("FbInit");
         	return 1;
     	}
-	gfx->DrawImage(&screen, bg, 0, 0);
-	GifFileType* my_gif = img->LdGif("/usr/share/wp.gif");
-        GifFileType* bird = img->LdGif("/usr/share/test.gif");
-    	if (!my_gif) {
-        	perror("LoadGif");
-        	return -1;
+
+	usleep(100000);
+
+	load = img->LdGif("/usr/share/loading.gif");
+        if (!load) {
+                perror("LoadGif");
+                return 1;
+        }
+
+        int load_count = img->CountGif(load);
+	
+        _userspace_StartSrv();
+	_userspace_StartUI();
+	
+	while (!is_ui) {
+                gfx->Clear(&screen, 0x00000000);
+                gfx->DrawGif(&screen, load, (480 - 256) / 2, (800 - 256) / 2, loadanim_frame);
+                gfx->RefreshScreen(&screen);
+                loadanim_frame++;
+                
+		if (loadanim_frame >= load_count) {
+                        loadanim_frame = 0;
+                }
+        }	
+
+    	while (1) {
+		char m_buffer[64];
+
+        	int ret = AutumnAPI_Tunnel_ReceiveFromFriend(tunn, m_buffer);
+		if (ret > 0) {
+			if (strncmp(m_buffer, "TOUCH_EVENT", 11) == 0) {
+				pthread_mutex_lock(&mouse_mutex);
+				sscanf(m_buffer, "TOUCH_EVENT X:%d Y:%d T:%d", &mouse_x, &mouse_y, &mouse_btn1);
+				pthread_mutex_unlock(&mouse_mutex);
+                	}
+
+            		if (mouse_x < 0) mouse_x = 0;
+            		if (mouse_x > 479) mouse_x = 479;
+            		if (mouse_y < 0) mouse_y = 0;
+            		if (mouse_y > 799) mouse_y = 799;
+        	}
+		usleep(1000);
     	}
-    
-    	int frame_count = img->CountGif(my_gif);
-	int bird_count = img->CountGif(bird);
-	while (1) { 
-		for (int i = 0; i < frame_count; i++) {
-
-        		gfx->DrawGif(&screen, my_gif, 0, 0, i);
-
-			gfx->Text(&screen, face, "Ennerci", 10, 40, 0xFFFFFFFF);
-        		gfx->DrawButton(&screen, face, 200, 150, 180, 50, 15, 0xFFD3D3D3, "bedava para", 0x00000000);
-			gfx->RefreshScreen(&screen);
-        
-        		usleep(16666);
-		}
-	}
     	return 0;
 }
