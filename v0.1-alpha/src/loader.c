@@ -3,7 +3,7 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <stdlib.h>  // <-- 1. Bunu kesin ekle (malloc/free/exit için)
+#include <stdlib.h>
 #include <stdio.h>
 
 
