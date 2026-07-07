@@ -20,7 +20,7 @@
     } while(0)
 
 
-static int hal_ethinterfacectl(const char *ifname, unsigned int flag_mask, int set) {
+int hal_ethinterfacectl(const char *ifname, unsigned int flag_mask, int set) {
 	int sock = socket(AF_INET, SOCK_DGRAM, 0);
 	struct ifreq ifr;
 	
