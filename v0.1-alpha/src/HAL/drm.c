@@ -9,9 +9,6 @@
 #include <unistd.h>
 
 static void pfhandler(int fd, unsigned int frame, unsigned int tv_sec, unsigned int tv_usec, void *data) {
-    // Kanka, burası boş kalsın. 
-    // Kernel buraya girdiği an, o flip için tuttuğu "event queue" yu boşaltır.
-    // Senin tek yapman gereken kernel'a "sinyali okudum" demek.
 }
 
 int DRMinit(DRMStruct* ctx, const char* path) {
