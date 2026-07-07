@@ -33,6 +33,7 @@ extern GFX_API* gfx;
 extern IMG_API* img;
 extern WIDGET_API* wid;
 extern MP3_PLAYER_API* mp3p;
+extern SYSPOWER_HAL* pwr;
 extern void _userspace_SetUserAccess();
 extern void _setup_Dir();
 
@@ -75,7 +76,7 @@ void AutumnUI_LoadResources() {
 }
 
 void AutumnUI_Prepare() {
-	wid->SetBtnEnv(&btn, 250, 20, 180, 50, 0xFFD3D3D3, 0xFFE6A23C, "Apps");
+	wid->SetBtnEnv(&btn, 250, 20, 180, 50, 0xFFD3D3D3, 0xFFE6A23C, "Reboot");
 }
 
 
@@ -111,23 +112,32 @@ void* AutumnUI(void* arg) {
         	unsigned int indicator_color = mouse_btn1 ? 0xFF00FF00 : 0xFFFFFFFF;
 
         	char coord_text[64];
+		char bat[32];
 
         	snprintf(coord_text, sizeof(coord_text), "X: %d  Y: %d %s", mouse_x, mouse_y, mouse_btn1 ? "[TOUCHED]" : "");
         	gfx->Text(&screen, face, coord_text, 10, 20, 0xFFFFFFFF);
         	gfx->Text(&screen, face, "No GSM device", 10, 40, 0xFFFFFFFF);
+		
+		int batper = pwr->BatPercent();
+		if (batper >= 0) {
+			sprintf(bat, "%d%%", batper);
+		}
+		else {
+			sprintf(bat, "%N/A");
+		}
+
+		gfx->Text(&screen, face, bat, 10, 80, 0xFFFFFFFF);
+		
         	wid->SpawnButton(&screen, face, &btn);
 		mp3p->GetFileTime(&tm.elapsed, &tm.total);
                 wid->SpawnElTimer(&screen, face, &tm);
 		if (wid->IsTouchEvent(&btn, mouse_x, mouse_y, mouse_btn1)) {
-			virus = true;
+			pwr->Reboot();
         	}
 	
     			
 		gfx->Text(&screen, face, "A", mouse_x, mouse_y, indicator_color);
 		gfx->RefreshScreen(&screen);
-
-		if (virus) {
-		}
 
         	current_frame++;
         	if (current_frame >= frame_count) {

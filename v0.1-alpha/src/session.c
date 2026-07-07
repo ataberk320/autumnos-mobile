@@ -27,6 +27,7 @@ int mouse_y = 100;
 int mouse_btn1 = 0;
 extern GFX_API* gfx;
 extern IMG_API* img;
+extern CONNECTION_API* conn;
 extern void* inputd_main(void* arg);
 extern void* AutumnUI(void* arg);
 pthread_mutex_t mouse_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -89,14 +90,20 @@ int main() {
         	return 1;
     	}
 
-	usleep(100000);
+	int ret = conn->On("eth0");
+	if (ret < 0) {
+		perror("Connection");
+	}
+	else {
+		printf("[SYSTEM]: Internet connection enabled.");
+	}
 
 	load = img->LdGif("/usr/share/loading.gif");
         if (!load) {
                 perror("LoadGif");
                 return 1;
         }
-
+	
         int load_count = img->CountGif(load);
 	
         _userspace_StartSrv();

@@ -16,6 +16,11 @@ __attribute__((visibility("default"))) MOUSE_HAL* mshal = NULL;
 __attribute__((visibility("default"))) SOUND_HAL* snd = NULL;
 __attribute__((visibility("default"))) FBDEV_HAL* fbd = NULL;
 __attribute__((visibility("default"))) MP3_PLAYER_API* mp3p = NULL;
+__attribute__((visibility("default"))) SYSPOWER_HAL* pwr = NULL;
+__attribute__((visibility("default"))) ETHERNET_HAL* eth = NULL;
+__attribute__((visibility("default"))) CONNECTION_API* conn = NULL;
+__attribute__((visibility("default"))) UART_HAL* uart = NULL;
+__attribute__((visibility("default"))) MODEM_HAL* modem = NULL;
 
 static void *fb_handle = NULL;
 static void *io_handle = NULL;
@@ -24,6 +29,11 @@ static void *wid_handle = NULL;
 static void *snd_handle = NULL;
 static void *ply_handle = NULL;
 static void *screen_handle = NULL;
+static void *power_handle = NULL;
+static void *ethernet_handle = NULL;
+static void *connection_handle = NULL;
+static void *uart_handle = NULL;
+static void *modem_handle = NULL;
 
 void check_align(void* ptr, const char* name) {
 	if (ptr == NULL) {
@@ -45,6 +55,11 @@ void cleanup() {
 	if (snd_handle) dlclose(snd_handle);
 	if (ply_handle) dlclose(ply_handle);
 	if (screen_handle) dlclose(screen_handle);
+	if (power_handle) dlclose(power_handle);
+	if (ethernet_handle) dlclose(ethernet_handle);
+	if (connection_handle) dlclose(connection_handle);
+	if (uart_handle) dlclose(uart_handle);
+	if (modem_handle) dlclose(modem_handle);
 
         if (gfx) { free(gfx); gfx = NULL; }
         if (img) { free(img); img = NULL; }
@@ -53,6 +68,11 @@ void cleanup() {
 	if (snd) { free(snd); snd = NULL; }
 	if (mp3p) { free(mp3p); mp3p = NULL; }
 	if (fbd) { free(fbd); fbd = NULL; }
+	if (pwr) { free(pwr); pwr = NULL; }
+	if (eth) { free(eth); eth = NULL; }
+	if (conn) { free(conn); conn = NULL; }
+	if (uart) { free(uart); uart = NULL; }
+	if (modem) { free(modem); modem = NULL; }
 }
 
 void ins_lib() {
@@ -70,6 +90,20 @@ void ins_lib() {
 		exit(1);
         }
 
+	modem_handle = dlopen("/usr/lib/hal/ethernet/libsimhal.so", RTLD_GLOBAL | RTLD_NOW);
+        if (!modem_handle) {
+                printf("libsimhal.so - Could not load library: %s\n", dlerror());
+                cleanup();
+                exit(1);
+        }
+
+	uart_handle = dlopen("/usr/lib/hal/con/libuarthal.so", RTLD_GLOBAL | RTLD_NOW);
+        if (!uart_handle) {
+                printf("libuarthal.so - Could not load library: %s\n", dlerror());
+                cleanup();
+                exit(1);
+        }
+
 	mshal_handle = dlopen("/usr/lib/hal/mouse/libmshal.so", RTLD_GLOBAL | RTLD_NOW);
         if (!mshal_handle) {
                 printf("libmshal.so - Could not load library: %s\n", dlerror());
@@ -80,6 +114,20 @@ void ins_lib() {
 	screen_handle = dlopen("/usr/lib/hal/screen/libfbdhal.so", RTLD_GLOBAL | RTLD_NOW);
         if (!screen_handle) {
                 printf("libfbdhal.so - Could not load library: %s\n", dlerror());
+                cleanup();
+                exit(1);
+        }
+
+	power_handle = dlopen("/usr/lib/hal/system/libpwrhal.so", RTLD_GLOBAL | RTLD_NOW);
+        if (!power_handle) {
+                printf("libpwrhal.so - Could not load library: %s\n", dlerror());
+                cleanup();
+                exit(1);
+        }
+
+	ethernet_handle = dlopen("/usr/lib/hal/ethernet/libethal.so", RTLD_GLOBAL | RTLD_NOW);
+        if (!ethernet_handle) {
+                printf("libethal.so - Could not load library: %s\n", dlerror());
                 cleanup();
                 exit(1);
         }
@@ -104,6 +152,13 @@ void ins_lib() {
                 cleanup();
                 exit(1);
         }
+
+	connection_handle = dlopen("/usr/lib/api/ui/libatmeth.so", RTLD_GLOBAL | RTLD_NOW);
+        if (!connection_handle) {
+                printf("libatmeth.so - Could not load library: %s\n", dlerror());
+                cleanup();
+                exit(1);
+        }
 }
 
 void modalloc() {
@@ -114,6 +169,10 @@ void modalloc() {
 	snd = (SOUND_HAL*)calloc(1, sizeof(SOUND_HAL));
 	fbd = (FBDEV_HAL*)calloc(1, sizeof(FBDEV_HAL));
 	mp3p = (MP3_PLAYER_API*)calloc(1, sizeof(MP3_PLAYER_API));
+	eth = (ETHERNET_HAL*)calloc(1, sizeof(ETHERNET_HAL));
+	pwr = (SYSPOWER_HAL*)calloc(1, sizeof(SYSPOWER_HAL));
+	conn = (CONNECTION_API*)calloc(1, sizeof(CONNECTION_API));
+	uart = (UART_HAL*)calloc(1, sizeof(UART_HAL));
 }
 
 void get_hal() {
@@ -144,7 +203,49 @@ void get_hal() {
 	fbd->FreeFbMem = (ScreenFree_t)dlsym(screen_handle, "hal_fbexit");
 	fbd->FbFlip = (PageFlip_t)dlsym(screen_handle, "hal_drmpgflip");
 	check_align(fbd, "FBDEV_HAL");
+
 	if (!fbd->RefreshFbCard || !fbd->ResetFbCard || !fbd->InitFbCard || !fbd->FreeFbMem || !fbd->FbFlip) {
+                cleanup();
+                exit(1);
+        }
+
+	pwr->Reboot = (Reboot_t)dlsym(power_handle, "hal_reboot");
+	pwr->Shutdown = (PowerOff_t)dlsym(power_handle, "hal_pwroff");
+	pwr->EmergencyShutdown = (EmergencyButton_t)dlsym(power_handle, "hal_emergency_pwroff");
+	pwr->BatPercent = (GetPSupplyPercent_t)dlsym(power_handle, "hal_getcpc");
+	check_align(pwr, "SYSPOWER_HAL");
+
+	if (!pwr->Reboot || !pwr->Shutdown || !pwr->EmergencyShutdown || !pwr->BatPercent) {
+                cleanup();
+                exit(1);
+        }
+
+	eth->InterfaceSetup = (EthernetIntCtl_t)dlsym(ethernet_handle, "hal_ethinterfacectl");
+	eth->SetGateway = (EthernetSetGateway_t)dlsym(ethernet_handle, "hal_setgateway");
+
+	if (!eth->InterfaceSetup || !eth->SetGateway) {
+                cleanup();
+                exit(1);
+        }
+
+	uart->Connect = (UartInit_t)dlsym(uart_handle, "hal_uartconnect");
+	uart->Send = (UartSendCmd_t)dlsym(uart_handle, "hal_uartsend");
+        uart->Read = (UartReadBuf_t)dlsym(uart_handle, "hal_uartrd");
+
+	if (!uart->Connect || !uart->Send || !uart->Read) {
+                cleanup();
+                exit(1);
+        }
+	
+	modem->Test = (ModemTest_t)dlsym(modem_handle, "hal_modemok");
+	modem->Init = (ModemInit_t)dlsym(modem_handle, "hal_modeminit");
+	modem->SendM = (SendMsg_t)dlsym(modem_handle, "hal_sendsms");
+	modem->Dial = (Dial_t)dlsym(modem_handle, "hal_modemcall");
+	modem->Answer = (Answer_t)dlsym(modem_handle, "hal_callanswer");
+	modem->Decline = (Decline_t)dlsym(modem_handle, "hal_callreject");
+	modem->PinCheck = (IsPin_t)dlsym(modem_handle, "hal_modemcheckpin");
+	
+	if (!modem->Test || !modem->Init || !modem->SendM || !modem->Dial || !modem->Answer || !modem->Decline || !modem->PinCheck) {
                 cleanup();
                 exit(1);
         }
@@ -208,6 +309,16 @@ void get_mod() {
                 cleanup();
                 exit(1);
         }
+
+	conn->On = (EthOn_t)dlsym(connection_handle, "AutumnAPI_EthOn");
+	conn->Off = (EthOff_t)dlsym(connection_handle, "AutumnAPI_EthOff");
+	
+	if (!conn->On || !conn->Off) {
+                perror("dlsym - libwidget.so");
+                cleanup();
+                exit(1);
+        }
+
 	return;
 }
         
