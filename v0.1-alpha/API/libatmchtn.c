@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <stdatomic.h>
 #include "libatmchtn.h"
-#include <stdio.h>    // sprintf için
+#include <stdio.h>
 #include <string.h>
 ChatTunnel* AutumnAPI_Tunnel_Create(const char* name) {
     char path[128];
