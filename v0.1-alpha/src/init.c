@@ -34,7 +34,7 @@ void sys_mnt() {
 		printf("init: tmpfs mounted successfully!\n");
 	}
 	
-	mkdir("/dev/shm", 0755); // Klasör yoksa oluştur!
+	mkdir("/dev/shm", 0755);
 	if (mount("tmpfs", "/dev/shm", "tmpfs", 0, NULL) < 0 && errno != EBUSY) {
     		perror("init: Couldn't mount /dev/shm");
 	}
