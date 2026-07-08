@@ -28,13 +28,13 @@ void* inputd_main(void* arg) {
 
     	struct input_event ev;
     
-	static int current_x = 240;  
-	static int current_y = 400;
-	static int current_touch = 0;
+		static int current_x = 240;  
+		static int current_y = 400;
+		static int current_touch = 0;
 
-	char buffer[128];
+		char buffer[128];
 
-	while (1) {
+		while (1) {
     		if (mshal->ReadMouse(fd, &ev) == sizeof(struct input_event)) {
 
         		if (ev.type == EV_ABS) {
@@ -55,8 +55,8 @@ void* inputd_main(void* arg) {
             			sprintf(buffer, "TOUCH_EVENT X:%d Y:%d T:%d", current_x, current_y, current_touch);
             			AutumnAPI_Tunnel_Send_Msg(tunn, buffer);
         		}
+			}
 		}
-	}
     	close(fd);
     	return NULL;
 }
