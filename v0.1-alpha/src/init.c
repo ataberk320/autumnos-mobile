@@ -60,31 +60,31 @@ int main() {
 			int con = open("/dev/console", O_RDWR);
 			dup2(con, 1);
 			dup2(con, 2);
-                        execl("/usr/bin/session", "AutumnOS UI Session Layer", NULL);
-                  	_exit(1);
+            execl("/usr/bin/session", "AutumnOS UI Session Layer", NULL);
+            _exit(1);
 		}
 	}	
 
 	int tty = open("/dev/console", O_RDWR);
 
 	pid_t shell_pid = fork();
-        if (shell_pid == 0) {
+    if (shell_pid == 0) {
         	setsid();
-                ioctl(tty, TIOCSCTTY, 1);
-                dup2(tty, 0);
-                dup2(tty, 1);
-                dup2(tty, 2);
-                execl("/bin/mksh", "Terminal", NULL);
-                _exit(1);
-        }
+            ioctl(tty, TIOCSCTTY, 1);
+            dup2(tty, 0);
+            dup2(tty, 1);
+            dup2(tty, 2);
+            execl("/bin/mksh", "Terminal", NULL);
+            _exit(1);
+    }
 
-    	while (1) {
+    while (1) {
 		int status;
 		pid_t wpid = wait(&status);
 
 		if (wpid > 0 && WIFSIGNALED(status)) {
 			printf("Process %d crashed with signal %d\n", wpid, WTERMSIG(status));
 		}
-    	}
+    }
     	return 0;
 }
