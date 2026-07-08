@@ -9,12 +9,13 @@
 #include <unistd.h>
 
 static void pfhandler(int fd, unsigned int frame, unsigned int tv_sec, unsigned int tv_usec, void *data) {
+    //page flip waits event from us. (NOTE:i hadn't configured it before, then i got allocation error)
 }
 
 int DRMinit(DRMStruct* ctx, const char* path) {
     ctx->fd = open(path, O_RDWR);
-    if (ctx->fd < 0) return -1;
-
+    if (ctx->fd < 0) return -1; //no card :(
+    // screen resolution
     drmModeRes* res = drmModeGetResources(ctx->fd);
     if (!res) {
         close(ctx->fd);
@@ -34,7 +35,7 @@ int DRMinit(DRMStruct* ctx, const char* path) {
         close(ctx->fd);
         return -1;
     }
-
+    //setting framebuffer modes
     ctx->width = conn->modes[0].hdisplay;
     ctx->height = conn->modes[0].vdisplay;
     ctx->mode = conn->modes[0];
@@ -51,18 +52,18 @@ int DRMinit(DRMStruct* ctx, const char* path) {
     ctx->stride = creq.pitch;
     ctx->size = creq.size;
     uint32_t handle = creq.handle;
-
+    // fb not
     if (drmModeAddFB(ctx->fd, ctx->width, ctx->height, 24, 32, ctx->stride, handle, &ctx->fb_id) < 0) {
         drmModeFreeConnector(conn);
         drmModeFreeResources(res);
         close(ctx->fd);
         return -1;
     }
-
+    // dumb buffer
     struct drm_mode_map_dumb mreq = { .handle = handle };
     ioctl(ctx->fd, DRM_IOCTL_MODE_MAP_DUMB, &mreq);
     ctx->ptr = mmap(NULL, ctx->size, PROT_WRITE, MAP_SHARED, ctx->fd, mreq.offset);
-
+    // freeing the resources (FREEDOM...)
     if (ctx->ptr == MAP_FAILED) {
         drmModeFreeConnector(conn);
         drmModeFreeResources(res);
