@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include "sigf.h"
 
-sigjmp_buf jump_buffer;
+sigjmp_buf jump_buffer; //safe area
 
 const char* get_sig_name(int sig, char* buffer) {
     const char* name;
@@ -37,19 +37,19 @@ const char* get_sig_name(int sig, char* buffer) {
     buffer[i++] = ')';
     buffer[i] = '\0';
 
-    return buffer;
+    return buffer; //return to current value
 }
 
 
 
 void atmsig_handle(int sig, siginfo_t *si, void *unused) {
 	static int crash_count = 0;
-    	crash_count++;
+    	crash_count++; //timer for disable aggressive logs
         
 	printf("Critical error handled: Signal %d\n", sig, crash_count);
 
 	if (crash_count >= 10) {
-        	printf("Too many crashes. Halting process.\n");
+        	printf("Too many crashes. Halting process.\n"); //we dont want to aggressive logging :)
         	sync();
         	_exit(1);
     	}
@@ -63,15 +63,15 @@ void atmsig_handle(int sig, siginfo_t *si, void *unused) {
         }
 
 
-        siglongjmp(jump_buffer, sig);
+        siglongjmp(jump_buffer, sig); //we want to run program to current safe area
 }
 
 int set_sig() {
         struct sigaction sa;
         sa.sa_flags = SA_SIGINFO;
         sigemptyset(&sa.sa_mask);
-        sa.sa_sigaction = atmsig_handle;
-
+        sa.sa_sigaction = atmsig_handle; //our handle
+		//critical signals!!!
         sigaction(SIGSEGV, &sa, NULL);
         sigaction(SIGFPE,  &sa, NULL);
         sigaction(SIGILL,  &sa, NULL);
