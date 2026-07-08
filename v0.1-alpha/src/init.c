@@ -45,15 +45,15 @@ void sys_mnt() {
 
 
 int main() {
-	sys_mnt();
+	sys_mnt(); //mounting system paths
 	set_sig();
-
+    //retry
 	for (int i = 0; i < 5; i++) {
 		if (access("/dev/dri/card0", F_OK) == 0) break;
 		sleep(1);
 	}
 	
-
+	// if DRM exists, run UI
 	if (access("/dev/dri/card0", F_OK) == 0) {
 		if (fork() == 0) {
 			setsid();
@@ -65,15 +65,15 @@ int main() {
 		}
 	}	
 
-	int tty = open("/dev/console", O_RDWR);
+	int tty = open("/dev/console", O_RDWR); //our console device
 
 	pid_t shell_pid = fork();
     if (shell_pid == 0) {
         	setsid();
             ioctl(tty, TIOCSCTTY, 1);
-            dup2(tty, 0);
-            dup2(tty, 1);
-            dup2(tty, 2);
+            dup2(tty, 0); //stdin
+            dup2(tty, 1); //stdout
+            dup2(tty, 2); //stderr
             execl("/bin/mksh", "Terminal", NULL);
             _exit(1);
     }
@@ -83,7 +83,7 @@ int main() {
 		pid_t wpid = wait(&status);
 
 		if (wpid > 0 && WIFSIGNALED(status)) {
-			printf("Process %d crashed with signal %d\n", wpid, WTERMSIG(status));
+			printf("Process %d crashed with signal %d\n", wpid, WTERMSIG(status)); 
 		}
     }
     	return 0;
