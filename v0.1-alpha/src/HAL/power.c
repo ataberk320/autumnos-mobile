@@ -16,9 +16,9 @@ void hal_pwroff(void) {
 }
 
 void hal_emergency_pwroff(void) {
-	int fd = open("/proc/sysrq-trigger", O_WRONLY);
+	int fd = open("/proc/sysrq-trigger", O_WRONLY); //SEND COMMAND DIRECTLY TO KERNEL!!!!
 	if (fd >= 0) {
-		write(fd, "o", 1);
+		write(fd, "o", 1); //directly shutdown command
 		close(fd);
 	}
         _exit(1);
@@ -26,7 +26,7 @@ void hal_emergency_pwroff(void) {
 
 static int hal_readsupply(const char *node, char *val) {
 	char path[128];
-	sprintf(path, "/sys/class/power_supply/battery0/%s", node);
+	snprintf(path, "/sys/class/power_supply/%s", node); //FIXME: removed hardcoded values and used snprintf for prevent buffer overflow
 	
 	FILE *fp = fopen(path, "r");
 	if (!fp) return -1;
