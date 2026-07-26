@@ -1,0 +1,3 @@
+[submodule "v0.1-alpha/minicraft-sdl"]
+	path = v0.1-alpha/minicraft-sdl
+	url = git@github.com:TheBigEye/minicraft-sdl.git
