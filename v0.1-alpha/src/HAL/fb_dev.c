@@ -14,6 +14,29 @@
 #include <sys/time.h>   // struct timeval
 #include <unistd.h>     // select()
 
+
+int screen_width = 0;
+int screen_height = 0;
+//FIXME: added resolution function for prevent hardcoded values and unsupported resolution
+void hal_drmres(int fd) {
+        drmModeRes *res = drmModeGetResources(fd);
+        if (!res) return;
+
+        for (int i = 0; i < res->count_connectors; i++) {
+                drmModeConnector *conn = drmModeGetConnector(fd, res->connectors[i]);
+                if (!conn) continue;
+
+                if (conn->connection == DRM_MODE_CONNECTED && conn->count_modes > 0) {
+                        screen_width = conn->modes[0].hdisplay;
+                        screen_height = conn->modes[0].vdisplay;
+
+                        drmModeFreeConnector(conn);
+                        break;
+                }
+                drmModeFreeConnector(conn);
+        }
+        drmModeFreeResources(res);
+}
 static void pfhandler(int fd, unsigned int frame, unsigned int tv_sec, unsigned int tv_usec, void *data) {
     // Event for page flip for prevent allocate error.
 }
