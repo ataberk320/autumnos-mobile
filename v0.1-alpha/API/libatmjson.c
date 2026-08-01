@@ -31,7 +31,7 @@ int AutumnAPI_JSONParseResp(const char *str, char *out_stat, int max_len) {
 	}
 
 	else {
-		strncpy(out_status, "UNKNOWN", max_len);
+		strncpy(out_stat, "UNKNOWN", max_len);
 	}
 
 	cJSON *code = cJSON_GetObjectItemCaseSensitive(root, "code");
