@@ -133,12 +133,12 @@ static int _RSOD_panic_ev(struct notifier_block *this, unsigned long event, void
         u32 start_x = 40;
         u32 start_y = fb_height / 2 - 30;
 
-        draw_string(start_x, start_y, "!!!KERNEL PANIC!!!", white_color);
+        _RSOD_drawstr(start_x, start_y, "!!!KERNEL PANIC!!!", white_color);
 
         if (ptr) {
-            draw_string(start_x, start_y + 40, (char *)ptr, white_color);
+            _RSOD_drawstr(start_x, start_y + 40, (char *)ptr, white_color);
         } else {
-            draw_string(start_x, start_y + 40, "REASON: UNKNOWN EXCEPTION", white_color);
+            _RSOD_drawstr(start_x, start_y + 40, "REASON: UNKNOWN EXCEPTION", white_color);
         }
 
         wmb(); //memory barrier
