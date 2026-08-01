@@ -199,6 +199,41 @@ void AutumnAPI_DrawButton(FbDev* fb, FT_Face face, int x, int y, int w, int h, i
     AutumnAPI_DrawString(fb, face, text, tx, ty, text_color);
 }
 
+void AutumnAPI_DrawTextbox(FbDev* fb, FT_Face face, int x, int y, int w, int h, int r, const char* text, const char* placeholder, uint32_t text_color) {
+    uint32_t border_color = 0xFFFFFFFF; // white
+    uint32_t box_bg_color = 0xFF2A2A2A; // gray
+
+    for (int i = 0; i < h; i++) {
+        for (int j = 0; j < w; j++) {
+            int dx = (j < r) ? (r - j) : ((j > w - 1 - r) ? (j - (w - 1 - r)) : 0);
+            int dy = (i < r) ? (r - i) : ((i > h - 1 - r) ? (i - (h - 1 - r)) : 0);
+            
+            if (dx * dx + dy * dy < r * r) {
+                int dist_sq = dx * dx + dy * dy;
+                if (dist_sq >= (r - 1) * (r - 1) || i == 0 || i == h - 1 || j == 0 || j == w - 1) {
+                    AutumnAPI_DrawRect(fb, x + j, y + i, 1, 1, border_color, 1);
+                } else {
+                    AutumnAPI_DrawRect(fb, x + j, y + i, 1, 1, box_bg_color, 1);
+                }
+            }
+        }
+    }
+
+    int has_text = (text != NULL && text[0] != '\0');
+    const char* display_str = has_text ? text : placeholder;
+    
+    uint32_t final_text_color = has_text ? text_color : 0xFF888888;
+
+    int padding_x = 10;
+    int ascender  = face->size->metrics.ascender >> 6;
+    int descender = face->size->metrics.descender >> 6;
+
+    int tx = x + padding_x;
+    int ty = y + (h / 2) + ((ascender + descender) >> 1);
+
+    AutumnAPI_DrawString(fb, face, display_str, tx, ty, final_text_color);
+}
+
 void AutumnAPI_DrawGifAni(FbDev* fb, GifFileType* gif, int x, int y, int idx) {
 	if (!gif || idx < 0 || idx >= gif->ImageCount) return;
 
