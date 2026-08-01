@@ -67,6 +67,7 @@ static void _RSOD_drawpix(u32 x, u32 y, u32 color) {
 		writel_relaxed(color, dest);
 }
 
+//we will directly write to FBDEV!
 static void _RSOD_drawch(u32 start_x, u32 start_y, char c, u32 color) {
 	int i, j;
     	unsigned char ch = (unsigned char)c;
@@ -108,7 +109,7 @@ static int _RSOD_fb_notifier_callback(struct notifier_block *nb, unsigned long a
     }
     return NOTIFY_DONE;
 }
-
+//for panic notifier list.
 static struct notifier_block fb_notif = {
     .notifier_call = _RSOD_fb_notifier_callback,
 };
@@ -140,7 +141,8 @@ static int _RSOD_panic_ev(struct notifier_block *this, unsigned long event, void
             draw_string(start_x, start_y + 40, "REASON: UNKNOWN EXCEPTION", white_color);
         }
 
-        wmb();
+        wmb(); //memory barrier
+		
     }
 
     return NOTIFY_DONE;
