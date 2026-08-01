@@ -31,7 +31,7 @@ void AutumnVM_Alloc(size_t size) {
 typedef enum {
 	TASK_Z_CP_PR = 0x01, // Zero copy parse,
 	TASK_H_MATH = 0x02 // Heavy math process
-} task_t
+} task_t;
 
 typedef struct {
 	uint8_t task_type;
@@ -39,7 +39,7 @@ typedef struct {
 	uint8_t payload[MSG_LEN - 9];
 } __attribute__((packed)) task_pack;
 
-void AutumnVM_Proc_Z_CpPayload(int memfd, size_t size) {
+void* AutumnVM_Proc_Z_CpPayload(int memfd, size_t size) {
 	void *mapped = mmap(NULL, size, PROT_READ, MAP_SHARED, memfd, 0);
     	if (mapped == MAP_FAILED) return;
 	
@@ -75,7 +75,7 @@ void* avm(void *args) {
                 		fcntl(memfd, F_ADD_SEALS, F_SEAL_WRITE | F_SEAL_SHRINK);
 
                 		if (t->task_type == TASK_Z_CP_PR) {
-                    			AutumnVM_Proc_Z_CpPayload(memfd, task->data_len);
+                    			AutumnVM_Proc_Z_CpPayload(memfd, t->data_len);
                 		}
 
                 		close(memfd); 
