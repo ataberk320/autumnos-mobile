@@ -60,7 +60,7 @@ int main() {
 			int con = open("/dev/console", O_RDWR);
 			dup2(con, 1);
 			dup2(con, 2);
-            execl("/usr/bin/session", "AutumnOS UI Session Layer", NULL);
+            execl("/bin/session", "AutumnOS UI Session Layer", NULL); // FIXME: to correct the boundary between userspace and init process layers, the /usr directory was removed.
             _exit(1);
 		}
 	}	
