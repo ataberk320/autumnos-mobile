@@ -18,8 +18,11 @@
 #include "table.h"
 
 extern FBDEV_HAL* fbd;
+extern PALETTE_API* plt; //added missing API table.
 void* handle = NULL;
 void* font_h = NULL;
+bool eye_shield = false;
+static bool invert_colors = false; //added new feature bools
 
 void AutumnAPI_DrawPix(FbDev* fb, int x, int y, uint32_t color) {
 	if (x >= 0 && x < fb->w && y >= 0 && y < fb->h) {
@@ -173,7 +176,7 @@ void AutumnAPI_DrawButton(FbDev* fb, FT_Face face, int x, int y, int w, int h, i
             int dy = (i < r) ? (r - i) : ((i > h - 1 - r) ? (i - (h - 1 - r)) : 0);
             
             if (dx * dx + dy * dy < r * r) {
-                uint32_t color = GetGradientColor(bg_color, y + i, y, h);
+                uint32_t color = plt->ApplyGrad(bg_color, y + i, y, h);
                 AutumnAPI_DrawRect(fb, x + j, y + i, 1, 1, color, 1);
                 
                 int dist_sq = dx * dx + dy * dy;
@@ -327,21 +330,55 @@ void AutumnAPI_ClearFb(FbDev* fb, uint32_t color) {
 }
 
 int AutumnAPI_FbRefresh(FbDev* fb) {
-	if (!fb || !fb->hal_ctx || !fb->bk_bf || !fb->hal_ctx->ptr) {
-		printf("NULL screen pointer\n");
-		return -1;
-	}
+    if (!fb || !fb->hal_ctx || !fb->bk_bf || !fb->hal_ctx->ptr) {
+        return -1;
+    }
 
-	uint32_t* src = fb->bk_bf;
-	uint32_t* dst = (uint32_t*)fb->hal_ctx->ptr;
+    uint32_t* src = fb->bk_bf;
+    uint32_t* dst = (uint32_t*)fb->hal_ctx->ptr;
 
-	for (int y = 0; y < fb->h; y++) {
-		memcpy(dst + (y * (fb->stride / 4)), src + (y * (fb->stride / 4)), fb->w * sizeof(uint32_t));
-	}
+    for (int y = 0; y < fb->h; y++) {
+        for (int x = 0; x < fb->w; x++) {
+            int i = y * (fb->stride / 4) + x;
+            uint32_t p = src[i];
 
-	fbd->FbFlip(fb->hal_ctx);
-    	return 0;
-}
+            uint8_t r = (p >> fb->r_off) & 0xFF;
+            uint8_t g = (p >> fb->g_off) & 0xFF;
+            uint8_t b = (p >> fb->b_off) & 0xFF;
+
+            if (invert_colors) {
+                r = 255 - r;
+                g = 255 - g;
+                b = 255 - b;
+            }
+
+            if (eye_shield) {
+                uint8_t sr = (p >> fb->r_off) & 0xFF;
+                uint8_t sg = (p >> fb->g_off) & 0xFF;
+                uint8_t sb = (p >> fb->b_off) & 0xFF;
+
+                int alpha = 30;
+
+                uint8_t r = (sr * (255 - alpha) + 255 * alpha) / 255;
+                uint8_t g = (sg * (255 - alpha) + 180 * alpha) / 255;
+                uint8_t b = (sb * (255 - alpha) + 100 * alpha) / 255;
+
+                dst[i] = (r << fb->r_off) | (g << fb->g_off) | (b << fb->b_off);
+            }
+            else {
+                dst[i] = p;
+            }
+        }
+    }
+
+    fbd->FbFlip(fb->hal_ctx);
+	return 0;
+} //UPDATE: added color invert feature
+
+bool AutumnAPI_EyeShield(FbDev* fb) {
+        eye_shield = !eye_shield; //toggle
+        return eye_shield;
+} //FIXME: added missing function
 
 void AutumnAPI_FbReset(DRMStruct* fb) {
         	fbd->ResetFbCard(fb, 1); 
