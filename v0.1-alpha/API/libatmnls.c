@@ -42,8 +42,8 @@ uint32_t AutumnAPI_UnicodeTF8(const char** s, hb_font_t *hb_font) {
 void AutumnAPI_ShapeCompx(hb_font_t *hb_font, const char *txt) {
 	hb_buffer_t *buf = hb_buffer_create(); //adding buffer for adding text data.
 	if (!buf) return;
-
-	hb_buffer_add_utf8(buf, utf8_text, -1, 0, -1); //adding text to buffer (*buf)
+    // sorry syntax error (changed utf8_text to text)
+	hb_buffer_add_utf8(buf, txt, -1, 0, -1); //adding text to buffer (*buf)
 	hb_buffer_guess_segment_properties(buf); //detecting auto language and script data on UTF8 format
 	
 	hb_shape(hb_font, buf, NULL, 0); //shaping the font
