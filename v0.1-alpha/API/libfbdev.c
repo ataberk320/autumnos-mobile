@@ -380,6 +380,11 @@ bool AutumnAPI_EyeShield(FbDev* fb) {
         return eye_shield;
 } //FIXME: added missing function
 
+bool AutumnAPI_InvertColors(FbDev* fb) {
+    invert_colors = !invert_colors;
+    return invert_colors;
+} //NEW FEATURE TOGGLE!
+
 void AutumnAPI_FbReset(DRMStruct* fb) {
         	fbd->ResetFbCard(fb, 1); 
 }
