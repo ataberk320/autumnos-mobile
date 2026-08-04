@@ -3,7 +3,7 @@
 
 typedef struct {
     int w, h;
-    uint32_t* buffer; // Tüm pikseller burada tek parça (flat) duracak
+    uint32_t* buffer; // pixel buffer
 } AutumnImage;
 
 
