@@ -1,6 +1,7 @@
 #ifndef API_H
 #define API_H
 
+
 #include "libfbdev.h"
 #include <gif_lib.h>
 #include "AutumnImage.h"
@@ -11,7 +12,7 @@
 #include "timer.h"
 #include "window.h"
 #include <hb.h>
-
+//working for implementing TLS etc. functions...
 typedef void (*DrawLine_t)(FbDev*, int, int, int, int, uint32_t);
 typedef void (*DrawImage_t)(FbDev*, AutumnImage*, int, int);
 typedef void (*DrawButton_t)(FbDev*, FT_Face, int, int, int, int, int, uint32_t, const char*, uint32_t, AutumnImage*);
