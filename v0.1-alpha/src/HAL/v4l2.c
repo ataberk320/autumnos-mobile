@@ -4,7 +4,7 @@
 #include <string.h>
 #include <dirent.h>
 
-int sys_scanv4l2dev_sysfs(const char *target_name, char *out_dev_path, size_t max_len) {
+int sys_scanv4l2dev(const char *target_name, char *out_dev_path, size_t max_len) {
     DIR *dir = opendir("/sys/class/video4linux");
     if (!dir) return -1;
 
