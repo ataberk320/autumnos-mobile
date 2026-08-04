@@ -4,7 +4,6 @@
 #include <stdint.h>
 #include <sys/ioctl.h>
 
-/* --- Hata Kodları (Debugging için hayat kurtarır) --- */
 #define G2D_SUCCESS       0
 #define G2D_ERR_INIT     -1
 #define G2D_ERR_IOCTL    -2
