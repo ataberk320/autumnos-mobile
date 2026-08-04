@@ -22,7 +22,5 @@ typedef struct {
     uint32_t b_off;
 } __attribute__((aligned(8))) DRMStruct;
 
-int DRMinit(DRMStruct* ctx, const char* path);
-void DRMpgFlip(DRMStruct* ctx);
 
 #endif
