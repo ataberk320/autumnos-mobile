@@ -17,7 +17,7 @@ int sys_scanv4l2dev(const char *name) {
 	
 		struct v4l2_capability cap;
 		if (ioctl(fd, VIDIOC_QUERYCAP, &cap) == 0) {
-			if (strstr((char*)cap.driver, target_name) || strstr((char*)cap.card, target_name)) {
+			if (strstr((char*)cap.driver, name) || strstr((char*)cap.card, name)) {
                 		return fd;
             		}
         	}
