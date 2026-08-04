@@ -18,7 +18,4 @@ typedef struct ButtonWidget {
     AutumnImage* icon;
 } ButtonWidget;
 
-void Button_Set(ButtonWidget* btn, int x, int y, int w, int h, unsigned int n_color, unsigned int p_color, const char* txt);
-void CreateButton(FbDev* screen, FT_Face face, ButtonWidget* btn);
-
 #endif
