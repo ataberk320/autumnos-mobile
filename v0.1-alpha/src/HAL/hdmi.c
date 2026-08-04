@@ -20,18 +20,18 @@ void hal_hdmiact(void) {
 
 	uint32_t connector_id = 0;
 	drmModeConnector *connector = NULL;
-
-	for (int i = 0; i < resources->count_connectors; i++) { //devices
-		connector = drmModeGetConnector(fd, resources->connectors[i]);
-		if (connector) {
-			if (connector->connection == DRM_MODE_CONNECTED) { //if device is connected?
-                		connector_id = connector->connector_id;
-                		break;
-            		}
-            		drmModeFreeConnector(connector);
-            		connector = NULL;
-        	}
-    	}
+    //FIXME: repaired memory freeing.
+	for (int i = 0; i < resources->count_connectors; i++) {
+            drmModeConnector *temp_conn = drmModeGetConnector(fd, resources->connectors[i]);
+            if (temp_conn) {
+                if (temp_conn->connection == DRM_MODE_CONNECTED) {
+                    connector_id = temp_conn->connector_id;
+                    connector = temp_conn;
+                    break;
+                }
+                drmModeFreeConnector(temp_conn);
+            }
+        }
 
 	if (!connector_id || !connector) {
 		drmModeFreeResources(resources); //allocation
