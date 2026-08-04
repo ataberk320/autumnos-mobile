@@ -24,7 +24,7 @@ void AutumnAPI_DrawWindow(FbDev *fb, Window *win, FT_Face face, int an_speed) {
 
     int alpha = win->alpha;
     uint32_t dark_green_bg = 0xFF1B4D3E;
-
+    //rounding
     for (int py = 0; py < win->h; py++) {
         int start_offset = 0, end_offset = win->w;
         int current_y = win->y + py;
@@ -38,7 +38,7 @@ void AutumnAPI_DrawWindow(FbDev *fb, Window *win, FT_Face face, int an_speed) {
             int dx = win->r - (int)(sqrt((double)(win->r * win->r - dy * dy)) + 0.5);
             start_offset = dx; end_offset = win->w - dx;
         }
-
+		//gradient
         uint32_t grad_color = plt->ApplyGrad(dark_green_bg, py, 0, win->h);
 
         for (int px = start_offset; px < end_offset; px++) {
@@ -121,7 +121,7 @@ void AutumnAPI_DrawWindow(FbDev *fb, Window *win, FT_Face face, int an_speed) {
         gfx->Text(fb, face, win->labels[i], btn_x + (btn_w - tw) / 2, btn_y + (btn_h / 2) - 6, btn_text_c);
     }
 }
-
+//speed supported fade animations!
 void AutumnAPI_Anim_FadeIn(void* win_ptr, void* fb_ptr, int speed) {
 	Window* win = (Window*)win_ptr;
 
