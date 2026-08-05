@@ -24,9 +24,9 @@ int AutumnAPI_TLSSec() {
 		tls = NULL;
 		return -1;
 	}
-
-	SSL_CTX_set_verify(tls_ctx, SSL_VERIFY_PEER, NULL);
-    	SSL_CTX_set_min_proto_version(tls_ctx, TLS1_2_VERSION); //tls 1.2+!
+//i should be careful :)
+	SSL_CTX_set_verify(tls, SSL_VERIFY_PEER, NULL);
+    	SSL_CTX_set_min_proto_version(tls, TLS1_2_VERSION); //tls 1.2+!
 
     	return 0;
 }
