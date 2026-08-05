@@ -69,28 +69,28 @@ static long dioctl(struct file *file, unsigned int cmd, unsigned long arg) {
 static struct file_operations fops = {
 	.owner = THIS_MODULE,
 	.open = dopen,
-	.release = drelease,
+	.release = drel,
 	.read = dread,
 	.write = dwrite,
 	.unlocked_ioctl = dioctl,
 };
 
 static int __init devinit(void) {
-	major_num = register_chrdev(0, DEVICE_NAME, &fops);
+	major_num = register_chrdev(0, DEV_NAME, &fops);
 	if (major_num < 0) {
 		return major_num;
 	}
 
-	tabl_cls = class_create(THIS_MODULE, CLASS_NAME);
+	tabl_cls = class_create(THIS_MODULE, CLS_NAME);
     	if (IS_ERR(tabl_cls)) {
-        	unregister_chrdev(major_num, DEVICE_NAME);
+        	unregister_chrdev(major_num, DEV_NAME);
         	return PTR_ERR(tabl_cls);
     	}
 
     	tabl_dev = device_create(tabl_cls, NULL, MKDEV(major_num, 0), NULL, DEVICE_NAME);
     	if (IS_ERR(tabl_dev)) {
         	class_destroy(tabl_cls);
-        	unregister_chrdev(major_num, DEVICE_NAME);
+        	unregister_chrdev(major_num, DEV_NAME);
         	return PTR_ERR(tabl_dev);
     	}
 	return SUCCESS;
@@ -99,7 +99,7 @@ static int __init devinit(void) {
 static void __exit devexit(void) {
     	device_destroy(tabl_cls, MKDEV(major_num, 0));
     	class_destroy(tabl_cls);
-    	unregister_chrdev(major_num, DEVICE_NAME);
+    	unregister_chrdev(major_num, DEV_NAME);
 }
 
 module_init(devinit);
