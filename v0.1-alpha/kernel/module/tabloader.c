@@ -33,9 +33,8 @@ static int drel(struct inode *inode, struct file *file) {
 	return SUCCESS;
 }
 
-
-static int dread(struct file *filp, char __user *buf, size_t len, loff_t *offset) {
-	return 0;
+static ssize_t dread(struct file *filp, char __user *buf, size_t len, loff_t *offset) {
+    return 0;
 }
 
 static ssize_t dwrite(struct file *filp, const char __user *buffer, size_t length, loff_t *offset) {
@@ -81,7 +80,7 @@ static int __init devinit(void) {
 		return major_num;
 	}
 
-	tabl_cls = class_create(THIS_MODULE, CLS_NAME);
+	tabl_cls = class_create(CLS_NAME);
     	if (IS_ERR(tabl_cls)) {
         	unregister_chrdev(major_num, DEV_NAME);
         	return PTR_ERR(tabl_cls);
