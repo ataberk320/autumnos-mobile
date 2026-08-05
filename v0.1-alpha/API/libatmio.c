@@ -89,14 +89,14 @@ AutumnImage* AutumnAPI_LoadImg(const char* path) {
     //error controls
     png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     if (!png) {
-        _AutumnSys_ioClose(fd);
+        _AutumnSys_ioClose(fp);
         return NULL;
     }
 
     png_infop info = png_create_info_struct(png);
     if (!info) {
         png_destroy_read_struct(&png, NULL, NULL);
-        _AutumnSys_ioClose(fd);
+        _AutumnSys_ioClose(fp);
         return NULL;
     }
     //binding our callback :)
