@@ -23,7 +23,7 @@ static struct class *tabl_cls = NULL;
 static struct device *tabl_dev = NULL;
 
 static unsigned long reg_srv_data = 0;
-static pid_t session_pid = 0
+static pid_t session_pid = 0; // XD
 
 static int dopen(struct inode *inode, struct file *file) {
 	return SUCCESS;
