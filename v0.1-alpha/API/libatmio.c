@@ -82,11 +82,25 @@ GifFileType* AutumnAPI_LoadGif(const char* path) {
 }
 
 AutumnImage* AutumnAPI_LoadImg(const char* path) {
-    int fd = _AutumnSys_ioOpen(path, 0, 0); //AutumnIO implementation
+        
+AutumnImage* AutumnAPI_LoadImg(const char* path) {
+    int fp = _AutumnSys_ioOpen(path, 0, 0); //AutumnIO implementation
     if (!fp) return NULL;
-
+    //error controls
     png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if (!png) {
+        _AutumnSys_ioClose(fd);
+        return NULL;
+    }
+
     png_infop info = png_create_info_struct(png);
+    if (!info) {
+        png_destroy_read_struct(&png, NULL, NULL);
+        _AutumnSys_ioClose(fd);
+        return NULL;
+    }
+    //binding our callback :)
+    png_set_read_fn(png, (void*)(intptr_t)fd, AutumnPNG_ReadCallback);
     png_init_io(png, fp);
     png_read_info(png, info);
 
@@ -110,7 +124,7 @@ AutumnImage* AutumnAPI_LoadImg(const char* path) {
 
     free(rows);
     png_destroy_read_struct(&png, &info, NULL);
-    fclose(fp);
+    _AutumnSys_ioClose(fp);
 
     return img;
 }
