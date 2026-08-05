@@ -30,8 +30,8 @@ int AutumnAPI_TLSSec() {
 
     	return 0;
 }
-		
-void AutumnAPI_HostnameConf(SSL *ssl, const char *hname) {
+//FIXME: cleaned wrong function type	
+int AutumnAPI_HostnameConf(SSL *ssl, const char *hname) {
 	if (SSL_set_tlsext_host_name(ssl, hname) != 1) {
 		return;
 	}
