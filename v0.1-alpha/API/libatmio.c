@@ -100,7 +100,7 @@ AutumnImage* AutumnAPI_LoadImg(const char* path) {
         return NULL;
     }
     //binding our callback :)
-    png_set_read_fn(png, (void*)(intptr_t)fd, AutumnPNG_ReadCallback);
+    png_set_read_fn(png, (void*)(intptr_t)fp, _png_RdCallback);
     png_init_io(png, fp);
     png_read_info(png, info);
 
