@@ -33,16 +33,16 @@ int AutumnAPI_TLSSec() {
 //FIXME: cleaned wrong function type	
 int AutumnAPI_HostnameConf(SSL *ssl, const char *hname) {
 	if (SSL_set_tlsext_host_name(ssl, hname) != 1) {
-		return;
+		return 0;
 	}
 
 	X509_VERIFY_PARAM *param = SSL_get0_param(ssl); //controlling matching with hostname
 	if (!param) {
-		return;
+		return 0;
 	}
 
 	if (X509_VERIFY_PARAM_set1_host(param, hname, 0) != 1) { //my fault :)
-        	return;
+        	return 0;
     	}
 
     	return 0;
