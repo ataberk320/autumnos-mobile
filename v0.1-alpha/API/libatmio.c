@@ -1,8 +1,68 @@
+#define _GNU_SOURCE
+#include <stddef.h>
+#include <stdbool.h>
+#include <sys/types.h>
 #include <gif_lib.h>
 #include <stdint.h>
 #include <png.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <time.h>
+#include <unistd.h>
 #include "AutumnImage.h"
+//AutumnIO implemented PNG loader callback.
+extern void _png_RdCallback(png_structp png_ptr, png_bytep outBytes, png_size_t byteCountToRead);
+
+//added high level file functions
+int AutumnAPI_FCp(const char* src_p, const char* dst_p) {
+        int src_fd = _AutumnSys_ioOpen(src_p, 0, 0);
+        if (src_fd < 0) return -1;
+
+        int dst_fd = _AutumnSys_ioOpen(dst_p, 01101, 0644);
+        if (dst_fd < 0) {
+                _AutumnSys_ioClose(src_fd);
+                return -1;
+        }
+
+        char buffer[4096];
+        ssize_t bytes_read, bytes_written;
+
+        while ((bytes_read = _AutumnSys_ioRead(src_fd, buffer, sizeof(buffer))) > 0) {
+                char *ptr = buffer;
+                while (bytes_read > 0) {
+                        bytes_written = _AutumnSys_ioWrite(dst_fd, ptr, bytes_read);
+                        if (bytes_written < 0) {
+                                _AutumnSys_ioClose(src_fd);
+                                _AutumnSys_ioClose(dst_fd);
+                                return -1;
+                        }
+                        bytes_read -= bytes_written;
+                        ptr += bytes_written;
+                }
+        }
+
+        _AutumnSys_ioClose(src_fd);
+        _AutumnSys_ioClose(dst_fd);
+        return 0;
+}
+
+int AutumnAPI_FRename(const char* old_n, const char* new_n) {
+        return _AutumnSys_ioRename(old_n, new_n);
+}
+
+int AutumnAPI_FMv(const char* src_p, const char* dst_p) {
+        char full_dst_p[512];
+        const char* fname = strrchr(src_p, '/');
+        if (!fname) fname = src_p;
+        else fname++;
+
+        snprintf(full_dst_p, sizeof(full_dst_p), "%s/%s", dst_p, fname);
+        return _AutumnSys_ioRename(src_p, full_dst_p);
+}
+
+int AutumnAPI_Delete(const char* path) {
+    return _AutumnSys_ioUnlink(path);
+}
 
 GifFileType* AutumnAPI_LoadGif(const char* path) {
         int error;
@@ -16,7 +76,7 @@ GifFileType* AutumnAPI_LoadGif(const char* path) {
 }
 
 AutumnImage* AutumnAPI_LoadImg(const char* path) {
-    FILE* fp = fopen(path, "rb");
+    int fd = _AutumnSys_ioOpen(path, 0, 0); //AutumnIO implementation
     if (!fp) return NULL;
 
     png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
