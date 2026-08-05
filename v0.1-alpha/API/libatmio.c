@@ -10,6 +10,9 @@
 #include <time.h>
 #include <unistd.h>
 #include "AutumnImage.h"
+#include "io.h" //added missing headers
+#include <string.h>
+
 //AutumnIO implemented PNG loader callback.
 extern void _png_RdCallback(png_structp png_ptr, png_bytep outBytes, png_size_t byteCountToRead);
 
@@ -46,6 +49,9 @@ int AutumnAPI_FCp(const char* src_p, const char* dst_p) {
         return 0;
 }
 
+int AutumnAPI_FRename(const char* old_n, const char* new_n) {
+        return _AutumnSys_ioRename(old_n, new_n);
+}
 int AutumnAPI_FRename(const char* old_n, const char* new_n) {
         return _AutumnSys_ioRename(old_n, new_n);
 }
