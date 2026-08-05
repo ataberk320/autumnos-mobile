@@ -41,7 +41,7 @@ void AutumnAPI_HostnameConf(SSL *ssl, const char *hname) {
 		return;
 	}
 
-	if (X509_VERIFY_PARAM_set1_host(param, hostname, 0) != 1) {
+	if (X509_VERIFY_PARAM_set1_host(param, hname, 0) != 1) { //my fault :)
         	return;
     	}
 
