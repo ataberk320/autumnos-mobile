@@ -4,8 +4,8 @@
 #include <openssl/x509.h>
 
 SSL_CTX *tls = NULL;
-
-int AutumnAPI_TLSSec(const char *ca_p) {
+// we have an path already.
+int AutumnAPI_TLSSec() {
 	SSL_library_init();
 	OpenSSL_add_all_algorithms();
 	SSL_load_error_strings();
