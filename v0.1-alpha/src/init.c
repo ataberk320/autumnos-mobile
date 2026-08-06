@@ -104,6 +104,7 @@ static int chk_sndev(char *buf, size_t max_l) {
 }
 //for destroy hardcoded values
 int main() {
+	system("kexec -l /boot/rsod-Image --command-line=\"root=/dev/mmcblk0p2 console=ttyS0,115200\""); //panic mini kernel implementing
 	sys_mnt(); //mounting system paths
 	set_sig();
 	        char drm_targ[64];
