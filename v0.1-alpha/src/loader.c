@@ -214,13 +214,17 @@ void get_hal() {
 	snd->InitSound = (SoundInit_t)dlsym(snd_handle, "hal_sndinit");
         snd->WritePCM = (SoundWrite_t)dlsym(snd_handle, "hal_sndwrite");
         snd->CloseSound = (SoundClose_t)dlsym(snd_handle, "hal_sndcls");
-	snd->SetVol = (SoundVol_t)dlsym(snd_handle, "hal_setvol");
-	check_align(snd, "SOUND_HAL");
+	        snd->CompSndInit = (CompatibleSubsInit_t)dlsym(snd_handle, "hal_compsndinit");
+        snd->CompSndWrite = (CompatibleSubsWrite_t)dlsym(snd_handle, "hal_compsndwrite");
+        snd->CompSndCls = (CompatibleSubsCls_t)dlsym(snd_handle, "hal_compsndcls");
+        snd->SetVol = (SoundVol_t)dlsym(snd_handle, "hal_setvol");
+        check_align(snd, "SOUND_HAL");
 
-	if (!snd->InitSound || !snd->WritePCM || !snd->CloseSound || !snd->SetVol) {
+        if (!snd->InitSound || !snd->WritePCM || !snd->CloseSound || !snd->SetVol || !snd->CompSndInit || !snd->CompSndWrite || !snd->CompSndCls) {
                 cleanup();
                 exit(1);
-        }
+        } //added modern sound subsystem functions
+	
 
 	fbd->RefreshFbCard = (ScreenDev_Refresh_t)dlsym(screen_handle, "hal_fbrefresh");
         fbd->ResetFbCard = (ScreenDev_Reset_t)dlsym(screen_handle, "hal_fbreset");
