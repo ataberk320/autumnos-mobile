@@ -44,7 +44,7 @@ typedef int (*SoundWrite_t)(shw*, const short*, int);
 typedef void (*SoundVol_t)(shw*, int); 
 typedef void (*SoundClose_t)(shw*);
 typedef int (*LoadFile_t)(const char*);
-typedef int (*PlayAudio_t)(void);
+typedef int (*PlayAudio_t)(const char*);
 typedef int (*Pause_t)(void);
 typedef int (*Resume_t)(void);
 typedef int (*Replay_t)(void);
@@ -90,7 +90,9 @@ typedef int (*EnableTLS_t)();
 typedef void (*HostnameConf_t)(SSL *, const char *);
 typedef char* (*CreateRequest_t)(const char *, const char *, int);
 typedef int (*ParseResponse_t)(const char *, char *, int);
-
+typedef int (*CompatibleSubsInit_t)(shw* hw, int channels, int samp_r);
+typedef int (*CompatibleSubsWrite_t)(shw* hw, const short* buf, int samples);
+typedef void (*CompatibleSubsCls_t)(shw* hw);
 
 typedef struct {
 	UartInit_t Connect;
@@ -168,6 +170,9 @@ typedef struct {
 	SoundInit_t InitSound;
 	SoundWrite_t WritePCM;
 	SoundClose_t CloseSound;
+	CompatibleSubsInit_t CompSndInit;
+	CompatibleSubsWrite_t CompSndWrite;
+	CompatibleSubsCls_t CompSndCls;
 	SoundVol_t SetVol;
 } __attribute__((aligned(8))) SOUND_HAL;
 
