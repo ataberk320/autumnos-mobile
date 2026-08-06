@@ -14,8 +14,7 @@
 #include <setjmp.h>
 #include <linux/fb.h>
 #include "sigf.h"
-
-
+#include <dirent.h>
 
 void sys_mnt() {
 	if (mount("proc", "/proc", "proc", 0, NULL) < 0 && errno != EBUSY) perror("init: Couldn't mount proc");
@@ -42,28 +41,99 @@ void sys_mnt() {
 		printf("init: '/dev/shm' mounted successfully!\n");
 	}
 }
+//for destroy hardcoded values
+static int chkdrm(char *buf, size_t max_l) {
+        DIR *dir = opendir("/dev/dri");
+        if (!dir) return 0;
 
+        struct dirent *entry;
+        int found = 0;
 
+        while ((entry = readdir(dir)) != NULL) {
+                if (strncmp(entry->d_name, "card", 4) == 0) {
+                snprintf(buf, max_l, "/dev/dri/%s", entry->d_name);
+                found = 1;
+                break;
+                }
+        }
+    closedir(dir);
+    return found;
+}
+
+static int chk_ethint(char *buf, size_t max_l) {
+        DIR *dir = opendir("/sys/class/net");
+        if (!dir) return 0;
+
+        struct dirent *entry;
+        int found = 0;
+
+        while ((entry = readdir(dir)) != NULL) {
+                if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0 && strcmp(entry->d_name, "lo") != 0) {
+                        snprintf(buf, max_l, "%s", entry->d_name);
+                        found = 1;
+                        break;
+                }
+        }
+
+        closedir(dir);
+        return found;
+}
+
+static int chk_sndev(char *buf, size_t max_l) {
+        struct stat st;
+        if (stat("/dev/dsp", &st) == 0) {
+                snprintf(buf, max_l, "/dev/dsp");
+                return 1;
+        }
+
+        DIR *dir = opendir("/dev/snd");
+        if (!dir) return 0;
+
+        struct dirent *entry;
+        int found = 0;
+
+        while ((entry = readdir(dir)) != NULL) {
+                if (strncmp(entry->d_name, "pcm", 3) == 0) {
+                        snprintf(buf, max_l, "/dev/snd/%s", entry->d_name);
+                        found = 1;
+                        break;
+                }
+        }
+        closedir(dir);
+        return found;
+}
+//for destroy hardcoded values
 int main() {
 	sys_mnt(); //mounting system paths
 	set_sig();
-    //retry
-	for (int i = 0; i < 5; i++) {
-		if (access("/dev/dri/card0", F_OK) == 0) break;
-		sleep(1);
-	}
-	
-	// if DRM exists, run UI
-	if (access("/dev/dri/card0", F_OK) == 0) {
-		if (fork() == 0) {
-			setsid();
-			int con = open("/dev/console", O_RDWR);
-			dup2(con, 1);
-			dup2(con, 2);
-            execl("/bin/session", "AutumnOS UI Session Layer", NULL); // FIXME: to correct the boundary between userspace and init process layers, the /usr directory was removed.
-            _exit(1);
-		}
-	}	
+	        char drm_targ[64];
+        char netint_targ[32];
+        char snd_targ[64];
+        if (!chk_ethint(netint_targ, sizeof(netint_targ))) {
+                snprintf(netint_targ, sizeof(netint_targ), "eth0");
+        }
+
+        if (!chk_sndev(snd_targ, sizeof(snd_targ))) {
+                snprintf(snd_targ, sizeof(snd_targ), "%s", "/dev/snd/pcmC0D0p");
+        }
+
+        if (chkdrm(drm_targ, sizeof(drm_targ))) {
+                if (fork() == 0) {
+                        setsid();
+                        int con = open("/dev/console", O_RDWR);
+                        if (con >= 0) {
+                                dup2(con, 1);
+                                dup2(con, 2);
+                                close(con);
+                        }
+                        execl("/bin/session", "AutumnOS UI Session Layer", drm_targ, netint_targ, snd_targ, NULL); //FIXME: sending drivers with arguments
+                        perror("init - session");
+                        _exit(1);
+                }
+        }
+        else {
+                printf("Fallback to mksh.\n");
+        }
 
 	int tty = open("/dev/console", O_RDWR); //our console device
 
