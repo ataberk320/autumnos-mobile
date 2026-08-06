@@ -51,5 +51,32 @@ void hal_setvol(shw* hw, int volume) {
 void hal_sndcls(shw* hw) {
 	if (hw->fd >= 0) close(hw->fd);
 }
+//added Modern Sound Subsystem support
+int hal_compsndinit(shw* hw, int channels, int samp_r) {
+        hw->fd = open("/dev/snd/pcmC0D0p", O_WRONLY); //modern sound device
+        if (hw->fd < 0) return -1;
+        return 0;
+}
+
+int hal_compsndwrite(shw* hw, const short* buf, int samples) {
+        if (hw->fd < 0) return 0;
+
+        int to_write = samples * sizeof(short);
+        int bytes_written = write(hw->fd, buf, to_write);
+
+        if (bytes_written < 0) {
+        if (errno == EAGAIN || errno == EWOULDBLOCK) return 0;
+        return -1;
+    }
+
+    return bytes_written / sizeof(short);
+}
+
+void hal_compsndcls(shw* hw) {
+        if (hw->fd >= 0) {
+                close(hw->fd);
+                hw->fd = -1;
+        }
+}
 
 
