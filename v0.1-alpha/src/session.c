@@ -67,15 +67,26 @@ void _userspace_StartUI() {
 	pthread_attr_destroy(&attr);
 	pthread_detach(uid);
 }
+//receiving driver parameters
+int main(int argc, char *argv[]) {
+        if (argc < 4) {
+                fprintf(stderr, "No required devices found.\n", argv[0]);
+        }
 
-int main() {
-	set_sig(); //sig handler
-	if (access("/dev/snd/pcmC0D0p", F_OK) == 0) {
-		is_alsa = true;
-	}
-	else {
-		is_alsa = false;
-	}
+        const char *drmcard = (argc > 1) ? argv[1] : "/dev/dri/card0";
+        const char *netiface = (argc > 2) ? argv[2] : "eth0";
+        const char *sndev    = (argc > 3) ? argv[3] : "/dev/snd/pcmC0D0p";
+
+
+        set_sig();
+        if (sndev && strncmp(sndev, "/dev/snd", 9) == 0) {
+                if (access(sndev, F_OK) == 0) {
+                        is_alsa = true;
+                }
+        }
+        else {
+                is_alsa = false;
+        }
 	
 	ldinit(); //filling pointers (GFX_API etc.)
 	
@@ -85,12 +96,12 @@ int main() {
                 return 1;
         }
 
-	if (gfx->InitFb(&screen, "/dev/dri/card0") != 0) {
+	if (gfx->InitFb(&screen, drmcard) != 0) { //using dynamic parameter
         	perror("FbInit");
         	return 1;
     	}
 
-	int ret = conn->On("eth0"); //change it as you wish
+	int ret = conn->On(netiface); //change it as you wish, now dont :)
 	if (ret < 0) {
 		perror("Connection");
 	}
