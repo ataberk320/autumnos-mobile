@@ -55,23 +55,29 @@ void AutumnAPI_PlayTime(int* elapsed, int* total) {
         	*total = 0;
     	}
 }
-
-int AutumnAPI_PlayAudio(void) {
+//Integrated *sndev parameter for double-compatible audio playing :)
+int AutumnAPI_PlayAudio(const char *sndev) {
     if (!ctx.playing || ctx.paused) return 0;
 
     if (ctx.samples_left > 0) {
-		
-		int written = snd->WritePCM(&hw, ctx.pcm_cursor, ctx.samples_left);
-		
-		if (written > 0) {
-			ctx.pcm_cursor += written;
-			ctx.samples_left -= written;
-			return 0;
-		} 
-		else {
-			return 0; 
-		}
-    } 
+                int written = 0;
+
+                if (sndev && strstr(sndev, "dsp") != NULL) {
+                        written = snd->WritePCM(&hw, ctx.pcm_cursor, ctx.samples_left);
+                }
+                else {
+                        written = snd->CompSndWrite(&hw, ctx.pcm_cursor, ctx.samples_left);
+                }
+
+                if (written > 0) {
+                        ctx.pcm_cursor += written;
+                        ctx.samples_left -= written;
+                        return 0;
+                }
+                else {
+                        return 0;
+                }
+    }
     else {
         ctx.playing = 0;
         printf("\nPlaying completed!\n");
