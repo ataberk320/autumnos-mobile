@@ -19,8 +19,8 @@ AutumnOS is an Linux-based operating system project developed for RV64 (RISC-V) 
 Working drivers on QEMU VM test:
 
 - DRM
-- Dual Audio Subsystem
-- Ethernet
+- Dual Audio Subsystem (I tested only OSS)
+- Ethernet (No exception but not sure)
 ---------------------
 # Linux Source Code:
 This system is based on Linux 6.1 now, To pull original tarball:<br>
