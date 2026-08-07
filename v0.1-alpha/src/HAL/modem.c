@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
+#include <unistd.h>
 #include "autumn_ioctl.h"
 #include "io.h"
 //Implementing AutumnOS local driver ioctl commands instead of UART HAL table.
