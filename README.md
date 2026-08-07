@@ -25,7 +25,7 @@ Working drivers on QEMU VM test:
 # Linux Source Code:
 This system is based on Linux 6.1 now, To pull original tarball:<br>
 <br>
-
-```wget [https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.tar.xz](https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.tar.xz)
+```bash
+wget [https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.tar.xz](https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.tar.xz)
 tar -xf linux-6.1.tar.xz
 cd linux-6.1```
