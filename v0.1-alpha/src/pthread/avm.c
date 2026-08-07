@@ -65,7 +65,7 @@ void* avm(void *args) {
 		if (AutumnAPI_Tunnel_ReceiveFromFriend(tunnel, raw_msg)) {
 			task_pack *t = (task_pack*)raw_msg;
 
-			void *a_ptr = AutumnVM_Alloc(task->data_len);
+			void *a_ptr = AutumnVM_Alloc(t->data_len); // ...
 			memcpy(a_ptr, t->payload, t->data_len);
 
 			int memfd = memfd_create("avm", MFD_CLOEXEC | MFD_ALLOW_SEALING);
