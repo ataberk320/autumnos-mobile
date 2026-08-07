@@ -29,7 +29,7 @@ extern GFX_API* gfx;
 extern IMG_API* img;
 extern CONNECTION_API* conn;
 extern void* inputd_main(void* arg);
-extern void* AutumnUI(void* arg);
+//extern void* AutumnUI(void* arg);
 pthread_mutex_t mouse_mutex = PTHREAD_MUTEX_INITIALIZER; //for prevent blocking
 
 void _setup_Dir(void) {
@@ -51,6 +51,7 @@ void _userspace_StartSrv() {
 	}
 }
 
+/*
 void _userspace_StartUI() {
 	pthread_t uid;
 	pthread_attr_t attr;
@@ -67,6 +68,27 @@ void _userspace_StartUI() {
 	pthread_attr_destroy(&attr);
 	pthread_detach(uid);
 }
+*/
+
+//Autumn Virtual Machine
+
+void _userspace_StartVM() {
+        pthread_t vmid;
+        pthread_attr_t attr;
+
+        pthread_attr_init(&attr);
+        pthread_attr_setstacksize(&attr, 128 * 1024);
+
+        if (pthread_create(&vmid, &attr, avm, NULL) != 0) {
+                perror("Autumn Virtual Machine");
+                pthread_attr_destroy(&attr);
+                return;
+        }
+
+        pthread_attr_destroy(&attr);
+        pthread_detach(vmid);
+}
+
 //receiving driver parameters
 int main(int argc, char *argv[]) {
         if (argc < 4) {
@@ -118,7 +140,8 @@ int main(int argc, char *argv[]) {
         int load_count = img->CountGif(load);
 	
         _userspace_StartSrv();
-	_userspace_StartUI(); //defined as pthread so UI can use /usr/bin/session's 
+		_userspace_StartVM();
+		//_userspace_StartUI(); 
 	
 	while (!is_ui) {
                 gfx->Clear(&screen, 0x00000000); //DARK
