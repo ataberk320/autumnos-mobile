@@ -6,6 +6,7 @@
 #include <linux/slab.h>
 #include <linux/ioctl.h>
 #include <linux/sched.h>
+#include <linux/device.h>
 
 #define DEV_NAME "tabldev"
 #define CLS_NAME "atabl"
@@ -16,14 +17,16 @@
 #define IOCTBLGETSRV _IOR(IOC_M, 2, unsigned long)
 
 MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Autix (ataberk320)");
 MODULE_DESCRIPTION("AutumnOS TableLoader driver");
+MODULE_VERSION("1.0");
 
 static int major_num;
 static struct class *tabl_cls = NULL;
 static struct device *tabl_dev = NULL;
 
 static unsigned long reg_srv_data = 0;
-static pid_t session_pid = 0; // XD
+static pid_t session_pid = 0;
 
 static int dopen(struct inode *inode, struct file *file) {
 	return SUCCESS;
@@ -80,13 +83,13 @@ static int __init devinit(void) {
 		return major_num;
 	}
 
-	tabl_cls = class_create(CLS_NAME);
+	tabl_cls = class_create(THIS_MODULE, CLS_NAME);
     	if (IS_ERR(tabl_cls)) {
         	unregister_chrdev(major_num, DEV_NAME);
         	return PTR_ERR(tabl_cls);
     	}
 
-    	tabl_dev = device_create(tabl_cls, NULL, MKDEV(major_num, 0), NULL, DEVICE_NAME);
+    	tabl_dev = device_create(tabl_cls, NULL, MKDEV(major_num, 0), NULL, DEV_NAME);
     	if (IS_ERR(tabl_dev)) {
         	class_destroy(tabl_cls);
         	unregister_chrdev(major_num, DEV_NAME);

@@ -1,169 +1,65 @@
-#include <linux/init.h>
-#include <linux/module.h>
 #include <linux/kernel.h>
+#include <linux/module.h>
 #include <linux/notifier.h>
-#include <linux/fb.h>
-#include <linux/io.h>
-#include <asm/barrier.h>
+#include <linux/panic_notifier.h>
+#include <linux/kexec.h>
 
+#define RSOD_ADDR  0x84000000
+#define RSOD_MSG_MAX 256
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Autix (ataberk320)");
 MODULE_DESCRIPTION("Red Screen Of Death (RSOD) Support driver.");
 MODULE_VERSION("0.1");
 
-static void __iomem *fb_base = NULL;
-static u32 fb_width = 0;
-static u32 fb_height = 0;
-static u32 fb_stride = 0;
-static u32 fb_bpp = 0;
-
-static const unsigned char font_8x8[128][8] = {
-    ['A'] = {0x18,0x24,0x42,0x42,0x7E,0x42,0x42,0x00},
-    ['B'] = {0x7C,0x42,0x42,0x7C,0x42,0x42,0x7C,0x00},
-    ['C'] = {0x3C,0x42,0x40,0x40,0x40,0x42,0x3C,0x00},
-    ['D'] = {0x78,0x44,0x42,0x42,0x42,0x44,0x78,0x00},
-    ['E'] = {0x7E,0x40,0x40,0x7C,0x40,0x40,0x7E,0x00},
-    ['F'] = {0x7E,0x40,0x40,0x7C,0x40,0x40,0x40,0x00},
-    ['G'] = {0x3C,0x42,0x40,0x4E,0x42,0x42,0x3C,0x00},
-    ['H'] = {0x42,0x42,0x42,0x7E,0x42,0x42,0x42,0x00},
-    ['I'] = {0x3E,0x08,0x08,0x08,0x08,0x08,0x3E,0x00},
-    ['K'] = {0x42,0x44,0x48,0x30,0x48,0x44,0x42,0x00},
-    ['L'] = {0x40,0x40,0x40,0x40,0x40,0x40,0x7E,0x00},
-    ['M'] = {0x63,0x55,0x49,0x41,0x41,0x41,0x41,0x00},
-    ['N'] = {0x42,0x62,0x52,0x4A,0x46,0x42,0x42,0x00},
-    ['O'] = {0x3C,0x42,0x42,0x42,0x42,0x42,0x3C,0x00},
-    ['P'] = {0x7C,0x42,0x42,0x7C,0x40,0x40,0x40,0x00},
-    ['R'] = {0x7C,0x42,0x42,0x7C,0x48,0x44,0x42,0x00},
-    ['S'] = {0x3C,0x42,0x40,0x3C,0x02,0x42,0x3C,0x00},
-    ['T'] = {0x7E,0x08,0x08,0x08,0x08,0x08,0x08,0x00},
-    ['U'] = {0x42,0x42,0x42,0x42,0x42,0x42,0x3C,0x00},
-    ['V'] = {0x42,0x42,0x42,0x42,0x24,0x24,0x18,0x00},
-    ['W'] = {0x41,0x41,0x41,0x49,0x49,0x55,0x63,0x00},
-    ['X'] = {0x42,0x24,0x18,0x18,0x24,0x42,0x42,0x00},
-    ['Y'] = {0x42,0x42,0x24,0x18,0x08,0x08,0x08,0x00},
-    ['Z'] = {0x7E,0x04,0x08,0x10,0x20,0x40,0x7E,0x00},
-    ['0'] = {0x3C,0x66,0x66,0x66,0x66,0x66,0x3C,0x00},
-    ['1'] = {0x18,0x38,0x18,0x18,0x18,0x18,0x7E,0x00},
-    ['2'] = {0x3C,0x66,0x06,0x1C,0x30,0x60,0x7E,0x00},
-    ['3'] = {0x3C,0x66,0x06,0x1C,0x06,0x66,0x3C,0x00},
-    ['4'] = {0x0C,0x1C,0x2C,0x4C,0x7E,0x0C,0x0C,0x00},
-    ['5'] = {0x7E,0x60,0x7C,0x06,0x06,0x66,0x3C,0x00},
-    ['6'] = {0x3C,0x60,0x7C,0x66,0x66,0x66,0x3C,0x00},
-    ['7'] = {0x7E,0x06,0x0C,0x18,0x30,0x30,0x30,0x00},
-    ['8'] = {0x3C,0x66,0x66,0x3C,0x66,0x66,0x3C,0x00},
-    ['9'] = {0x3C,0x66,0x66,0x3E,0x06,0x66,0x3C,0x00},
-    [':'] = {0x00,0x18,0x18,0x00,0x18,0x18,0x00,0x00},
-    ['-'] = {0x00,0x00,0x00,0xFE,0x00,0x00,0x00,0x00},
-    ['/'] = {0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x00},
-    [' '] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+struct shared_excinfo {
+	uint32_t magic;
+	uint32_t errcod;
+	char message[256];
 };
 
-static void _RSOD_drawpix(u32 x, u32 y, u32 color) {
-	if (x >= fb_width || y >= fb_height) return;
-	void __iomem *dest = fb_base + (y * fb_stride) + (x * (fb_bpp / 8));
-	if (fb_bpp == 16) {
-		writew_relaxed((u16)color, dest);
-	else {
-		writel_relaxed(color, dest);
-}
-
-//we will directly write to FBDEV!
-static void _RSOD_drawch(u32 start_x, u32 start_y, char c, u32 color) {
-	int i, j;
-    	unsigned char ch = (unsigned char)c;
-    	if (ch >= 'a' && ch <= 'z') ch -= 32;
-    	if (ch > 127 || !font_8x8[ch][0]) ch = ' ';
+static int RedFrog_Catch(struct notifier_block *this, unsigned long event, void *ptr) {
+	volatile struct shared_excinfo *shared = (volatile struct shared_excinfo *)RSOD_ADDR;
     
-    	for (i = 0; i < 8; i++) {
-        	unsigned char line = font_8x8[ch][i];
-        	for (j = 0; j < 8; j++) {
-            		if (line & (1 << (7 - j))) {
-                		draw_pixel(start_x + j, start_y + i, color);
-            		}
+    	shared->magic = 0x524F4F43; // "ROOC" (Red Frog)
+    	shared->errcod = 0xDEADBEEF; 
+
+    	if (ptr) {
+        	const char *panic_msg = (const char *)ptr;
+        	int i = 0;
+        	while (panic_msg[i] != '\0' && i < RSOD_MSG_MAX - 1) {
+            		shared->message[i] = panic_msg[i];
+            		i++;
         	}
+        	shared->message[i] = '\0';
+    	} 
+	else {
+        	const char *default_msg = "Unknown reason.";
+        	int i = 0;
+        	while (default_msg[i] != '\0') {
+            		shared->message[i] = default_msg[i];
+            		i++;
+        	}
+        	shared->message[i] = '\0';
     	}
+
+    	crash_kexec(NULL); //edit of unsupported function.
+
+    	return NOTIFY_DONE;
 }
 
-static void _RSOD_drawstr(u32 x, u32 y, const char *str, u32 color) {
-	while (*str) {
-		_RSOD_drawch(x, y, *str, color);
-		x += 8;
-		str++;
-	}
-}
-
-static int _RSOD_fb_notifier_callback(struct notifier_block *nb, unsigned long action, void *data) {
-    	struct fb_event *event = data;
-    struct fb_info *info;
-
-    	if (!event || !event->info)
-        return NOTIFY_DONE;
-
-    info = event->info;
-    if (action == FB_EVENT_FB_REGISTERED) {
-        fb_base = info->screen_base;
-        fb_width = info->var.xres;
-        fb_height = info->var.yres;
-        fb_stride = info->fix.line_length;
-        fb_bpp = info->var.bits_per_pixel;
-    }
-    return NOTIFY_DONE;
-}
-//for panic notifier list.
-static struct notifier_block fb_notif = {
-    .notifier_call = _RSOD_fb_notifier_callback,
-};
-
-static int _RSOD_panic_ev(struct notifier_block *this, unsigned long event, void *ptr) {
-    if (fb_base && fb_width > 0 && fb_height > 0) {
-        u32 x, y;
-        u32 red_color = (fb_bpp == 16) ? 0xF800 : 0x00FF0000; 
-        u32 white_color = (fb_bpp == 16) ? 0xFFFF : 0x00FFFFFF;
-
-        for (y = 0; y < fb_height; y++) {
-            void __iomem *row = fb_base + (y * fb_stride);
-            for (x = 0; x < fb_width; x++) {
-                if (fb_bpp == 16)
-                    writew_relaxed((u16)red_color, row + (x * 2));
-                else
-                    writel_relaxed(red_color, row + (x * 4));
-            }
-        }
-
-        u32 start_x = 40;
-        u32 start_y = fb_height / 2 - 30;
-
-        _RSOD_drawstr(start_x, start_y, "!!!KERNEL PANIC!!!", white_color);
-
-        if (ptr) {
-            _RSOD_drawstr(start_x, start_y + 40, (char *)ptr, white_color);
-        } else {
-            _RSOD_drawstr(start_x, start_y + 40, "REASON: UNKNOWN EXCEPTION", white_color);
-        }
-
-        wmb(); //memory barrier
-		
-    }
-
-    return NOTIFY_DONE;
-}
-
-
-static struct notifier_block rsod_pb = {
-	.notifier_call = _RSOD_panic_ev,
+static struct notifier_block rsod_bl = {
+	.notifier_call = RedFrog_Catch,
 	.priority = INT_MAX,
 };
 
-static int __init _RSOD_init(void) {
-	fb_register_client(&fb_notif);
-	atomic_notifier_chain_register(&panic_notifier_list, &rsod_pb);
-    return 0;
+static int __init RedFrog_Idle(void) {
+	atomic_notifier_chain_register(&panic_notifier_list, &rsod_bl);
+    	return 0;
 }
 
-static void __exit _RSOD_exit(void) {
-    atomic_notifier_chain_unregister(&panic_notifier_list, &rsod_pb);
-    fb_unregister_client(&fb_notif);
+static void __exit RedFrog_DSleep(void) {
+	atomic_notifier_chain_unregister(&panic_notifier_list, &rsod_bl);
 }
 
-module_init(_RSOD_init);
-module_exit(_RSOD_exit);
+module_init(RedFrog_Idle);
+module_exit(RedFrog_DSleep);
