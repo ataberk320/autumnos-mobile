@@ -22,8 +22,9 @@ Working drivers on QEMU VM test:
 - Dual Audio Subsystem
 
 # Linux Source Code:
-This system is based on Linux 6.1 now, To pull original tarball:
-**```bash
+This system is based on Linux 6.1 now, To pull original tarball:<br>
+<br>
+```bash
 wget [https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.tar.xz](https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.tar.xz)
 tar -xf linux-6.1.tar.xz
 cd linux-6.1```
