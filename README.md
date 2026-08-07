@@ -14,6 +14,7 @@ AutumnOS is an Linux-based operating system project developed for RV64 (RISC-V) 
 --------------------------------------------------------
 # Tested Hardwares 
 * Allwinner D1 - MangoPi MQ-Pro (Pink Variation/ v1.4): Stucks on Run /sbin/init as init process log.
+QEMU: Worked perfectly.
 --------------------------------------------------------
 Working drivers on QEMU VM test:
 ---------------------------------------------------------
