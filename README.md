@@ -4,8 +4,7 @@
 
 AutumnOS is an Linux-based operating system project developed for RV64 (RISC-V) architectures.
 
-# Technical Specifications
-----------------------------------------------------
+# Technical Features
 * **Dual Audio Subsystem**: An audio subsystem which supports OSS and ALSA
 * **ChatTunnel**: A SHM based IPC communication mechanism.
 * **AutixSurf**: Layer manager for window manager. (ON WORK)
@@ -13,8 +12,7 @@ AutumnOS is an Linux-based operating system project developed for RV64 (RISC-V) 
 * **Symbol loader**: An installer for API and HAL libraries before SysUI process.
 * **Autumn Virtual Machine**: A memfd based virtual machine for handling heavy processes.
 --------------------------------------------------------
-# Tested Hardwares
---------------------------------------------------------
+# Tested Hardwares 
 * Allwinner D1 - MangoPi MQ-Pro (Pink Variation/ v1.4): Stucks on Run /sbin/init as init process log.
 --------------------------------------------------------
 Working drivers on QEMU VM test:
