@@ -17,7 +17,7 @@ typedef struct {
 
 static MemoryAr global_a = { .offset = 0 };
 
-void AutumnVM_Alloc(size_t size) {
+void* AutumnVM_Alloc(size_t size) { // +
 	size = (size + 7) & ~7;
 	if (global_a.offset + size > ARENA_SIZE) {
 		global_a.offset = 0;
