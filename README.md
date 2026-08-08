@@ -37,3 +37,5 @@ cd linux-6.1
 * **U-Boot** - GPL-2.0-or-later
 * **libpng** — libpng License
 * **giflib** — MIT
+* **minimp3** — CC0-1.0
+* **minimp4** — CC0-1.0
