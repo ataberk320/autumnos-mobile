@@ -36,6 +36,7 @@ cd linux-6.1
 * **tinyalsa** — BSD-3 Clause
 * **U-Boot** — GPL-2.0-or-later
 * **libpng** — libpng License
+* **libjpeg** — JPEG License
 * **giflib** — MIT
 * **minimp3** — CC0-1.0
 * **minimp4** — CC0-1.0
