@@ -30,3 +30,5 @@ wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.tar.xz
 tar -xf linux-6.1.tar.xz
 cd linux-6.1
 ```
+--------------------
+**Licensing:** AutumnOS original components are licensed under GPL-3.0. The Linux kernel and kernel-derived components retain their respective original licenses, including GPL-2.0-only where applicable.
