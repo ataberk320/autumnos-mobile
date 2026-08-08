@@ -32,8 +32,8 @@ cd linux-6.1
 ```
 --------------------
 **Licensing:** AutumnOS original components are licensed under GPL-3.0. The Linux kernel (6.1.x) and kernel-derived components retain their respective original licenses, including GPL-2.0-only where applicable.
-**libdrm** - MIT
-**tinyalsa** - BSD-3 Clause
-**U-Boot** - GPL-2.0-or-later
-**libpng** — libpng License
-**giflib** — MIT
+* **libdrm** - MIT
+* **tinyalsa** - BSD-3 Clause
+* **U-Boot** - GPL-2.0-or-later
+* **libpng** — libpng License
+* **giflib** — MIT
