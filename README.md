@@ -47,3 +47,4 @@ cd linux-6.1
 * **freetype** - FTL
 * **wayland** - MIT
 * **OpenSSL 1.1.1:** This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit (http://www.openssl.org/). Licensed under the OpenSSL License and SSLeay License.
+* **harfbuzz** - Old MIT
