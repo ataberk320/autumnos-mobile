@@ -44,3 +44,6 @@ cd linux-6.1
 * **giflib** — MIT
 * **minimp3** — CC0-1.0
 * **minimp4** — CC0-1.0
+* **freetype** - FTL
+* **wayland** - MIT
+* **OpenSSL 1.1.1:** This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit (http://www.openssl.org/). Licensed under the OpenSSL License and SSLeay License.
