@@ -7,12 +7,14 @@
 #include <string.h>
 ChatTunnel* AutumnAPI_Tunnel_Create(const char* name) {
     char path[128];
-    sprintf(path, "/%s.tun", name);
-    int fd = shm_open(path, O_CREAT | O_RDWR, 0666);
-    if (fd == -1) return NULL;
-
-    ftruncate(fd, sizeof(ChatTunnel));
+    snprintf(path, sizeof(path), "/%s.tun", name); //fixed overflow
+    int fd = shm_open(path, O_CREAT | O_EXCL | O_RDWR, 0666);
     
+    if (ftruncate(fd, sizeof(ChatTunnel)) == -1) {
+        close(fd);
+        shm_unlink(path);
+        return NULL;
+    }
     ChatTunnel* tunnel = (ChatTunnel*)mmap(NULL, sizeof(ChatTunnel), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     close(fd);
 
@@ -25,7 +27,7 @@ ChatTunnel* AutumnAPI_Tunnel_Create(const char* name) {
 
 ChatTunnel* AutumnAPI_Tunnel_Connect(const char* name) {
     char path[128];
-    sprintf(path, "/%s.tun", name);
+    snprintf(path, sizeof(path), "/%s.tun", name);
     int fd = shm_open(path, O_RDWR, 0666);
     if (fd == -1) return NULL;
 
@@ -53,7 +55,8 @@ bool AutumnAPI_Tunnel_Send_Msg(ChatTunnel *tunnel, const char *data) {
     int next_tail = (tail + 1) % TUNNEL_SIZE;
     if (next_tail == head) return false;
 
-    memcpy(tunnel->buffer[tail], data, MSG_LEN - 1);
+    memset(tunnel->buffer[tail], 0, MSG_LEN);
+    strncpy(tunnel->buffer[tail], data, MSG_LEN - 1); //fixed \0 glitch
     
     atomic_store_explicit(&tunnel->tail, next_tail, memory_order_release);
     return true;
