@@ -1,10 +1,10 @@
 #include <string.h>
 #include <stdint.h>
 #include <ft2build.h>
-#include "FramebufferStruct.h"
-#include "table.h"
-#include "window.h"
-#include "libfbdev.h"
+#include "../include/HAL/FramebufferStruct.h"
+#include "../include/SymbolTable/table.h"
+#include "../include/item_ui/window.h"
+#include "../include/libfbdev.h"
 #include <math.h>
 extern GFX_API* gfx;
 extern WIDGET_API* wid;
