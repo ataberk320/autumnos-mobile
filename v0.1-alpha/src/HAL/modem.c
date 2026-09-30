@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include "autumn_ioctl.h"
-#include "io.h"
+#include "../../include/HAL/autumn_ioctl.h"
+#include "../../include/HAL/io.h"
 //Implementing AutumnOS local driver ioctl commands instead of UART HAL table.
 
 static int modem_fd = -1;
