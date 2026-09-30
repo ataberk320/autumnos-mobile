@@ -2,7 +2,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdatomic.h>
-#include "libatmchtn.h"
+#include "../include/libatmchtn.h"
 #include <stdio.h>
 #include <string.h>
 ChatTunnel* AutumnAPI_Tunnel_Create(const char* name) {
