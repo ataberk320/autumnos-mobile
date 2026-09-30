@@ -2,7 +2,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
-#include "g2d.h"
+#include "../../../include/HAL/sunxi/g2d.h"
 #include <stdlib.h>
 
 static int g2d_fd = -1;
