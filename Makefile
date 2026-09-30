@@ -1,4 +1,3 @@
-```make
 BR_ROOT := /home/ataberk/mangopi-mqpro-br
 OUTPUT := $(BR_ROOT)/output/mqpro
 
@@ -245,4 +244,3 @@ clean:
 	rm -f $(MODULE)/modules.order
 	rm -f $(MODULE)/Module.symvers
 	rm -f $(MODULE)/Kbuild
-```
