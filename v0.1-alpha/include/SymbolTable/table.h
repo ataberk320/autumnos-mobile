@@ -1,15 +1,15 @@
 #ifndef API_H
 #define API_H
 
-#include "libfbdev.h"
+#include "../libfbdev.h"
 #include <gif_lib.h>
-#include "AutumnImage.h"
-#include "libatmchtn.h"
+#include "../item_ui/AutumnImage.h"
+#include "../libatmchtn.h"
 #include <linux/input.h>
-#include "button.h"
-#include "sound.h"
-#include "timer.h"
-#include "window.h"
+#include "../item_ui/button.h"
+#include "../HAL/sound.h"
+#include "../item_ui/timer.h"
+#include "../item_ui/window.h"
 #include <hb.h>
 #include <openssl/ssl.h>
 
