@@ -85,7 +85,7 @@ typedef void (*ShapeCompx_t)(hb_font_t *, const char *);
 typedef uint32_t (*AlphaBlend_t)(FbDev *, int, int, uint32_t, int);
 typedef void (*Anim_FadeIn_t)(void*, void*, int);
 typedef void (*Anim_FadeOut_t)(void*, void*, int);
-typedef int (*SpawnLayer_t)(int *, uint32_t **, int, int, int, int, int);
+typedef int (*SpawnLayer_t)(int *, uint32_t **, int, int, int, int, int, int);
 typedef int (*EnableTLS_t)();
 typedef void (*HostnameConf_t)(SSL *, const char *);
 typedef char* (*CreateRequest_t)(const char *, const char *, int);
