@@ -145,7 +145,7 @@ int main(int argc, char *argv[]) {
 	
 	while (!is_ui) {
                 gfx->Clear(&screen, 0x00000000); //DARK
-                gfx->DrawGif(&screen, load, (480 - 256) / 2, (800 - 256) / 2, loadanim_frame); //boot animation
+                //gfx->DrawGif(&screen, load, (screen.w - 256) / 2, (screen.h - 256) / 2, loadanim_frame); //boot animation
                 gfx->RefreshScreen(&screen); // to write
                 loadanim_frame++;
                 
@@ -165,10 +165,11 @@ int main(int argc, char *argv[]) {
 				pthread_mutex_unlock(&mouse_mutex);
                 	}
 
-            		if (mouse_x < 0) mouse_x = 0; //hardcoded value!!
-            		if (mouse_x > 479) mouse_x = 479;
-            		if (mouse_y < 0) mouse_y = 0;
-            		if (mouse_y > 799) mouse_y = 799;
+					if (mouse_x < 0) mouse_x = 0;
+					if (mouse_x >= screen.w) mouse_x = screen.w - 1;
+
+					if (mouse_y < 0) mouse_y = 0;
+					if (mouse_y >= screen.h) mouse_y = screen.h - 1;
         	}
 		usleep(1000);
     	}
