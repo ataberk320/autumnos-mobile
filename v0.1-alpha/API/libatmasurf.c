@@ -10,9 +10,9 @@
 #include <sys/fcntl.h>
 #include <sys/types.h>
 
-#include "AutixSurf.h"
-#include "FramebufferStruct.h"
-#include "table.h"
+#include "../include/HAL/AutixSurf.h"
+#include "../include/HAL/FramebufferStruct.h"
+#include "../include/SymbolTable/table.h"
 
 #ifndef MAX_SURFACES
 #define MAX_SURFACES 32
