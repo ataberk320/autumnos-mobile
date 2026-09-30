@@ -10,7 +10,7 @@
 #include <time.h>
 #include <unistd.h>
 #include "AutumnImage.h"
-#include "io.h" //added missing headers
+#include "../include/HAL/io.h" //added missing headers
 #include <string.h>
 
 //AutumnIO implemented PNG loader callback.
