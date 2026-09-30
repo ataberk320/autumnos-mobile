@@ -3,17 +3,17 @@
 #include <dlfcn.h>
 #include <unistd.h>
 #include <gif_lib.h>
-#include "libfbdev.h"
-#include "AutumnImage.h"
+#include "../include/libfbdev.h"
+#include "../include/item_ui/AutumnImage.h"
 #include <ft2build.h>
-#include "table.h"
+#include "../include/SymbolTable/table.h"
 #include <stdbool.h>
-#include "libatmchtn.h"
+#include "../include/libatmchtn.h"
 #include <pthread.h>
-#include "button.h"
+#include "../include/item_ui/button.h"
 #include <stdlib.h>
-#include "timer.h"
-#include "sigf.h"
+#include "../include/item_ui/timer.h"
+#include "../include/sigf.h"
 #include <sys/stat.h>
 
 bool is_alsa;
