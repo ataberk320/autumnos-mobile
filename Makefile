@@ -8,13 +8,14 @@ MOD_CC := $(CROSS_COMPILE)
 
 KDIR ?= $(OUTPUT)/build/linux-custom
 
-PROJECT := $(CURDIR)
+PROJECT := $(CURDIR)/v0.1-alpha
 SRC := $(PROJECT)/src
 API := $(PROJECT)/API
 HAL := $(SRC)/HAL
 PTHREAD := $(HAL)/pthread
 ALLWINNER := $(HAL)/allwinner
 MODULE := $(PROJECT)/kernel/module
+
 
 OVERLAY := $(BR_ROOT)/br-external/board/mqpro/overlay
 
