@@ -1,4 +1,4 @@
-#include "table.h"
+#include "../include/SymbolTable/table.h"
 #include <dlfcn.h>
 #include <sys/mman.h>
 #include <sys/types.h>
