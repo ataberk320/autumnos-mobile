@@ -1,4 +1,4 @@
-#include "table.h"
+#include "../include/SymbolTable/table.h"
 
 extern MODEM_HAL* modem;
 
