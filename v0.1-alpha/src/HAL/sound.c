@@ -3,7 +3,7 @@
 #include <sys/ioctl.h>
 #include <sys/soundcard.h>
 #include <errno.h>
-#include "sound.h"
+#include "../../include/HAL/sound.h"
 #include <stdio.h>
 
 int hal_sndinit(shw* hw, int channels, int samp_r) {
