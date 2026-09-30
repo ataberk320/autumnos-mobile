@@ -12,10 +12,10 @@
 #include <dlfcn.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include "FramebufferStruct.h"
-#include "AutumnImage.h"
-#include "libfbdev.h"
-#include "table.h"
+#include "../include/HAL/FramebufferStruct.h"
+#include "../include/item_ui/AutumnImage.h"
+#include "../include/libfbdev.h"
+#include "../include/SymbolTable/table.h"
 
 extern FBDEV_HAL* fbd;
 extern PALETTE_API* plt; //added missing API table.
