@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #define MINIMP3_IMPLEMENTATION
-#include "minimp3_ex.h"
-#include "sound.h"
-#include "table.h"
+#include "../include/minimp3_ex.h"
+#include "../include/HAL/sound.h"
+#include "../include/SymbolTable/table.h"
 #include <tinyalsa/mixer.h>
 
 static struct mixer *mixer = NULL;
