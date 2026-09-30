@@ -2,7 +2,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "table.h"
-#include "libatmchtn.h"
+#include "../include/libatmchtn.h"
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <sys/types.h>
