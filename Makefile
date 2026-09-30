@@ -1,4 +1,3 @@
-```make
 BR_ROOT := /home/ataberk/mangopi-mqpro-br
 OUTPUT  := $(BR_ROOT)/output/mqpro
 
@@ -457,4 +456,3 @@ clean:
 		*.mod.o \
 		*.mod \
 		*.o
-```
