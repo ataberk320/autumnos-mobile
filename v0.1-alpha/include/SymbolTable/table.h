@@ -93,6 +93,15 @@ typedef int (*ParseResponse_t)(const char *, char *, int);
 typedef int (*CompatibleSubsInit_t)(shw* hw, int channels, int samp_r);
 typedef int (*CompatibleSubsWrite_t)(shw* hw, const short* buf, int samples);
 typedef void (*CompatibleSubsCls_t)(shw* hw);
+typedef void (*Icon_Set_t)(IconWidget*, int, int, int, int, AutumnImage*, const char*);
+typedef int (*ChkIcTouchEv_t)(IconWidget* icon, int touch_x, int touch_y, int is_touched);
+typedef void (*CreateIcon_t)(FbDev* screen, FT_Face face, IconWidget* icon);
+typedef void (*Grid_Set_t)(GridWidget*, int, int, int, int, int);
+typedef int (*AddGrid_t)( GridWidget* grid, IconWidget* icon ); 
+typedef void (*Grid_Layout_t)(GridWidget*);
+typedef void (*CreateGrid_t)(FbDev*, FT_Face, GridWidget*);
+typedef int (*ChkGridTouchEv_t)(GridWidget*, int, int, int);
+
 
 typedef struct {
 	UartInit_t Connect;
@@ -189,6 +198,14 @@ typedef struct {
 	CreateButton_t SpawnButton;
 	ChkTouchEv_t IsTouchEvent;
 	CreateElapsedTimer_t SpawnElTimer;
+	Icon_Set_t SetIconEnv;
+	ChkIcTouchEv IsTouchEvent_Icon;
+	CreateIcon_t SpawnIcon;
+	Grid_Set_t SetGridEnv;
+	AddGrid_t AddGrid;
+	Grid_Layout_t SetGLayout;
+	CreateGrid_t SpawnGrid;
+	ChkGridTouchEv_t IsTouchEvent_Grid;
 } __attribute__((aligned(8))) WIDGET_API;
 
 typedef struct {
