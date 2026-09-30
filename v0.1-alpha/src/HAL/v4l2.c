@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <linux/videodev2.h>
-#include "io.h"
+#include "../../include/HAL/io.h"
 
 int sys_scanv4l2dev(const char *name) {
 	char dev_path[32];
