@@ -2,7 +2,7 @@
 #include "../include/item_ui/button.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include "../include/table.h"
+#include "../include/SymbolTable/table.h"
 #include "../include/item_ui/timer.h"
 extern GFX_API* gfx;
 
