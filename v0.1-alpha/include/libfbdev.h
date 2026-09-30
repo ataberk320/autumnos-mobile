@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include "AutumnImage.h"
-#include "FramebufferStruct.h"
+#include "item_ui/AutumnImage.h"
+#include "HAL/FramebufferStruct.h"
 
 typedef struct {
 	int fd;
