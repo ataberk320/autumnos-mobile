@@ -20,7 +20,7 @@ typedef struct {
 	bool active;
 } Layer;
 
-int AutumnAPI_SpawnLayer(int *memfd_out, uint32_t **pixels_out, int x, int y, int w, int h, int z_order) {
+int AutumnAPI_SpawnLayer(int *memfd_out, uint32_t **pixels_out, int x, int y, int w, int h, int z_order, int type) {
     size_t size = w * h * sizeof(uint32_t);
 
     int fd = memfd_create("as_layer", MFD_CLOEXEC | MFD_ALLOW_SEALING);
