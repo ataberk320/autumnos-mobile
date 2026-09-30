@@ -1,5 +1,6 @@
+```make
 BR_ROOT := /home/ataberk/mangopi-mqpro-br
-OUTPUT  := $(BR_ROOT)/output/mqpro
+OUTPUT := $(BR_ROOT)/output/mqpro
 
 CROSS_COMPILE := $(OUTPUT)/host/bin/riscv64-buildroot-linux-gnu-
 CC := $(CROSS_COMPILE)gcc
@@ -9,450 +10,239 @@ MOD_CC := $(CROSS_COMPILE)
 KDIR ?= $(OUTPUT)/build/linux-custom
 
 PROJECT := $(CURDIR)
-
-SRC       := $(PROJECT)/src
-API       := $(PROJECT)/API
-HAL       := $(SRC)/HAL
-PTHREAD   := $(HAL)/pthread
+SRC := $(PROJECT)/src
+API := $(PROJECT)/API
+HAL := $(SRC)/HAL
+PTHREAD := $(HAL)/pthread
 ALLWINNER := $(HAL)/allwinner
-MODULE    := $(PROJECT)/kernel/module
+MODULE := $(PROJECT)/kernel/module
 
 OVERLAY := $(BR_ROOT)/br-external/board/mqpro/overlay
 
-OVERLAY_API     := $(OVERLAY)/usr/lib/api
-OVERLAY_HAL     := $(OVERLAY)/usr/lib/hal
-OVERLAY_AUTUMN  := $(OVERLAY)/usr/lib/autumn
-OVERLAY_BIN     := $(OVERLAY)/bin
-OVERLAY_SBIN    := $(OVERLAY)/sbin
-OVERLAY_USRBIN  := $(OVERLAY)/usr/bin
-OVERLAY_MODULES := $(OVERLAY)/lib/modules
-OVERLAY_FONTS   := $(OVERLAY)/usr/share/autumncfonts
-OVERLAY_GAMES   := $(OVERLAY)/usr/share/games
+CFLAGS := -O2 -Wall -fPIC --sysroot=$(SYSROOT)
+LDFLAGS := -shared
 
-TINYALSA_INC := $(BR_ROOT)/output/build/tinyalsa-2.0.0/include
+API_UI := $(OVERLAY)/usr/lib/api/ui
+API_NET := $(OVERLAY)/usr/lib/api/net
+API_IO := $(OVERLAY)/usr/lib/api/io
+API_IPC := $(OVERLAY)/usr/lib/api/ipc
+API_MEDIA := $(OVERLAY)/usr/lib/api/media
+API_SYSFUNC := $(OVERLAY)/usr/lib/api/sysfunc
+API_STAT := $(OVERLAY)/usr/lib/api/stat
 
-CFLAGS := \
-	-I$(SYSROOT)/usr/include \
-	-I$(SYSROOT)/usr/include/freetype2 \
-	-I$(SYSROOT)/usr/include/libpng16 \
-	-I$(SYSROOT)/usr/include/libdrm \
-	-I$(SYSROOT)/usr/include/SDL2 \
-	-I$(SYSROOT)/usr/include/harfbuzz \
-	-I$(SYSROOT)/usr/include/cjson \
-	-I$(TINYALSA_INC) \
-	-I$(SRC) \
-	-I$(API) \
-	-I$(HAL) \
-	-I$(PTHREAD) \
-	-I$(ALLWINNER) \
-	-I$(MODULE) \
-	-rdynamic \
-	-fPIC
+HAL_CON := $(OVERLAY)/usr/lib/hal/con
+HAL_SCREEN := $(OVERLAY)/usr/lib/hal/screen
+HAL_MOUSE := $(OVERLAY)/usr/lib/hal/mouse
+HAL_SOUND := $(OVERLAY)/usr/lib/hal/sound
+HAL_ETHERNET := $(OVERLAY)/usr/lib/hal/ethernet
+HAL_GSM := $(OVERLAY)/usr/lib/hal/ethernet/gsm
+HAL_SYSTEM := $(OVERLAY)/usr/lib/hal/system
 
-LDFLAGS := \
-	-L$(SYSROOT)/usr/lib \
-	-L. \
-	-rdynamic \
-	-Wl,-E
+AUTUMN_LIB := $(OVERLAY)/usr/lib/autumn
+BIN := $(OVERLAY)/bin
+SBIN := $(OVERLAY)/sbin
+TOOLS := $(OVERLAY)/sbin/autumn-tools
+USR_BIN := $(OVERLAY)/usr/bin
+MODULES := $(OVERLAY)/lib/modules
+FONTS := $(OVERLAY)/usr/share/autumncfonts
 
-obj-m += s800modem.o
-obj-m += avinput.o
+.PHONY: all prepare session init libs hal api daemons tools sysui modules install br_build clean
 
-obj-y += a_panicsod.o
-obj-y += tabloader.o
-obj-y += coder.o
+all: prepare session init libs hal api daemons tools sysui modules install
 
-all: modules hal init session api daemon autumn_lib autumn-tools sysui mkdir install br_build
+prepare:
+	mkdir -p $(API_UI) $(API_NET) $(API_IO) $(API_IPC) $(API_MEDIA) $(API_SYSFUNC) $(API_STAT)
+	mkdir -p $(HAL_CON) $(HAL_SCREEN) $(HAL_MOUSE) $(HAL_SOUND)
+	mkdir -p $(HAL_ETHERNET) $(HAL_GSM) $(HAL_SYSTEM)
+	mkdir -p $(AUTUMN_LIB) $(BIN) $(SBIN) $(TOOLS) $(USR_BIN) $(MODULES) $(FONTS)
+
+session:
+	$(CC) $(CFLAGS) $(SRC)/loader.c $(SRC)/tabldioctl.c $(SRC)/sigf.c $(SRC)/session.c $(SRC)/inputd.c $(SRC)/avm.c $(API)/libatmchtn.c -o session -lpthread
+
+init:
+	$(CC) $(SRC)/sigf.c $(SRC)/init.c -static -o init
+
+libfbdev.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmnls.c $(API)/lpngsysc.c $(API)/libfbdev.c -o libfbdev.so -lfreetype -lpng
+
+libatmvidec.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libmp4sysc.c $(API)/libatmvidec.c -o libatmvidec.so
+
+asurfd:
+	$(CC) $(CFLAGS) $(SRC)/asurfd.c -o asurfd
+
+modemd:
+	$(CC) $(CFLAGS) $(SRC)/modemd.c -o modemd
+
+AutumnGenericLowLMgr:
+	$(CC) $(CFLAGS) $(SRC)/AutumnGenericLowLMgr.c -o AutumnGenericLowLMgr
+
+sysui:
+	$(CC) $(CFLAGS) $(SRC)/loader.c $(SRC)/tabldioctl.c $(SRC)/pscrfont.c $(SRC)/sysui.c -o sysui -lpthread
+
+libconhal.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/console.c -o libconhal.so
+
+libfbdhal.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/fb_dev.c $(HAL)/drm.c -o libfbdhal.so
+
+libmshal.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/input.c -o libmshal.so
+
+libsndhal.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/sound.c -o libsndhal.so
+
+libethal.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/etht.c -o libethal.so
+
+libpwrhal.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/power.c -o libpwrhal.so
+
+libuarthal.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/uart.c -o libuarthal.so
+
+libsimhal.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/modem.c -o libsimhal.so
+
+libhdmihal.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/hdmi.c -o libhdmihal.so
+
+libwidget.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/widget.c -o libwidget.so
+
+libatmio.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmio.c -o libatmio.so
+
+libatmsndec.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmsndec.c -o libatmsndec.so
+
+libatmeth.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmeth.c -o libatmeth.so
+
+libatmdial.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmdial.c -o libatmdial.so
+
+libatmui.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmui.c -o libatmui.so
+
+libatmchtn.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmchtn.c -o libatmchtn.so
+
+libatmjson.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmjson.c -o libatmjson.so
+
+libatmnls.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmnls.c -o libatmnls.so
+
+libpalette.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libpalette.c -o libpalette.so
+
+libatmasurf.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmasurf.c -o libatmasurf.so
+
+libatmssl.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmtls.c -o libatmssl.so
+
+libatmvidec_api.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmvidec.c -o libatmvidec_api.so
+
+libaction.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libaction.c -o libaction.so
+
+libatmtask.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmtask.c -o libatmtask.so
+
+libwhike.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libwhike.c -o libwhike.so
+
+api: libwidget.so libatmio.so libatmsndec.so libatmeth.so libatmdial.so libatmui.so libatmchtn.so libatmjson.so libatmnls.so libpalette.so libatmasurf.so libatmssl.so libatmvidec_api.so libaction.so libatmtask.so
+
+libs: libfbdev.so libatmvidec.so libwhike.so
+
+hal: libconhal.so libfbdhal.so libmshal.so libsndhal.so libethal.so libpwrhal.so libuarthal.so libsimhal.so libhdmihal.so
+
+daemons: asurfd modemd AutumnGenericLowLMgr
+
+tools:
+	$(CC) $(CFLAGS) $(SRC)/autumn-kexec.c -o autumn-kexec
+	$(CC) $(CFLAGS) $(SRC)/autumn-atxdb.c -o autumn-atxdb
+	$(CC) $(CFLAGS) $(SRC)/autumn-sudo.c -o autumn-sudo
 
 modules:
-	$(MAKE) -C $(KDIR) \
+	@set -e; \
+	trap 'rm -f "$(MODULE)/Kbuild"' EXIT INT TERM; \
+	printf '%s\n' \
+		'obj-m += s800modem.o' \
+		'obj-m += avinput.o' \
+		'obj-m += a_panicsod.o' \
+		'obj-m += tabloader.o' \
+		'obj-m += coder.o' \
+		> "$(MODULE)/Kbuild"; \
+	$(MAKE) -C "$(KDIR)" \
 		ARCH=riscv \
-		CROSS_COMPILE=$(MOD_CC) \
-		M=$(MODULE) \
+		CROSS_COMPILE="$(MOD_CC)" \
+		M="$(MODULE)" \
 		modules
 
-hal: \
-	libconhal.so \
-	libfbdhal.so \
-	libmshal.so \
-	libsndhal.so \
-	libethal.so \
-	libpwrhal.so \
-	libuarthal.so \
-	libsimhal.so \
-	libhdmihal.so
+install:
+	cp -f init $(SBIN)/
+	cp -f session $(BIN)/
+	cp -f asurfd $(BIN)/
+	cp -f modemd $(BIN)/
+	cp -f AutumnGenericLowLMgr $(BIN)/
+	cp -f sysui $(USR_BIN)/
 
-libconhal.so: $(HAL)/console.c
-	$(CC) $(CFLAGS) -shared -fPIC \
-		$(HAL)/console.c \
-		-o $@ \
-		$(LDFLAGS)
+	cp -f autumn-kexec $(TOOLS)/
+	cp -f autumn-atxdb $(TOOLS)/
+	cp -f autumn-sudo $(TOOLS)/
 
-libfbdhal.so: $(HAL)/fb_dev.c $(HAL)/drm.c
-	$(CC) $(CFLAGS) -shared -fPIC \
-		$(HAL)/drm.c \
-		$(HAL)/fb_dev.c \
-		-o $@ \
-		$(LDFLAGS)
+	cp -f libfbdev.so $(API_UI)/
+	cp -f libatmnls.so $(API_UI)/
+	cp -f libatmasurf.so $(API_UI)/
+	cp -f libwidget.so $(API_UI)/
+	cp -f libatmdial.so $(API_UI)/
+	cp -f libatmui.so $(API_UI)/
+	cp -f libpalette.so $(API_UI)/
 
-libmshal.so: $(HAL)/input.c
-	$(CC) $(CFLAGS) -shared -fPIC \
-		$(HAL)/input.c \
-		-o $@ \
-		$(LDFLAGS)
+	cp -f libatmjson.so $(API_NET)/
+	cp -f libatmssl.so $(API_NET)/
+	cp -f libatmeth.so $(API_NET)/
 
-libsndhal.so: $(HAL)/sound.c
-	$(CC) $(CFLAGS) -shared -fPIC \
-		$(HAL)/sound.c \
-		-o $@ \
-		$(LDFLAGS)
+	cp -f libatmio.so $(API_IO)/
+	cp -f libatmchtn.so $(API_IPC)/
+	cp -f libatmsndec.so $(API_MEDIA)/
+	cp -f libatmvidec.so $(API_MEDIA)/
+	cp -f libaction.so $(API_SYSFUNC)/
+	cp -f libatmtask.so $(API_STAT)/
 
-libethal.so: $(HAL)/etht.c
-	$(CC) $(CFLAGS) -shared -fPIC -Wl,-E \
-		$(HAL)/etht.c \
-		-o $@ \
-		$(LDFLAGS)
+	cp -f libconhal.so $(HAL_CON)/
+	cp -f libuarthal.so $(HAL_CON)/
+	cp -f libfbdhal.so $(HAL_SCREEN)/
+	cp -f libhdmihal.so $(HAL_SCREEN)/
+	cp -f libmshal.so $(HAL_MOUSE)/
+	cp -f libsndhal.so $(HAL_SOUND)/
+	cp -f libethal.so $(HAL_ETHERNET)/
+	cp -f libsimhal.so $(HAL_GSM)/
+	cp -f libpwrhal.so $(HAL_SYSTEM)/
 
-libpwrhal.so: $(HAL)/power.c
-	$(CC) $(CFLAGS) -shared -fPIC -Wl,-E \
-		$(HAL)/power.c \
-		-o $@ \
-		$(LDFLAGS)
+	cp -f libwhike.so $(AUTUMN_LIB)/
 
-libuarthal.so: $(HAL)/uart.c
-	$(CC) $(CFLAGS) -shared -fPIC -Wl,-E \
-		$(HAL)/uart.c \
-		-o $@ \
-		$(LDFLAGS)
+	find $(MODULE) -maxdepth 1 -type f -name '*.ko' -exec cp -f {} $(MODULES)/ \;
 
-libsimhal.so: $(HAL)/modem.c
-	$(CC) $(CFLAGS) -shared -fPIC -Wl,-E \
-		$(HAL)/modem.c \
-		-o $@ \
-		$(LDFLAGS)
-
-libhdmihal.so: $(HAL)/hdmi.c
-	$(CC) $(CFLAGS) -shared -fPIC \
-		$(HAL)/hdmi.c \
-		-o $@ \
-		$(LDFLAGS) \
-		-lrt -lm -ldrm
-
-api: \
-	libfbdev.so \
-	libatmio.so \
-	libwidget.so \
-	libatmsndec.so \
-	libatmeth.so \
-	libatmdial.so \
-	libatmui.so \
-	libatmchtn.so \
-	libatmjson.so \
-	libatmnls.so \
-	libpalette.so \
-	libatmasurf.so \
-	libatmssl.so \
-	libatmvidec.so \
-	libaction.so \
-	libatmtask.so
-
-libfbdev.so: $(API)/libfbdev.c $(API)/lpngsysc.c $(API)/libatmnls.c
-	$(CC) $(CFLAGS) -shared -fPIC \
-		-Wl,-E \
-		-Wl,-undefined,dynamic_lookup \
-		$(API)/libatmnls.c \
-		$(API)/lpngsysc.c \
-		$(API)/libfbdev.c \
-		-o $@ \
-		$(LDFLAGS) \
-		-lpng -lfreetype -ldl -lgif -ldrm -lharfbuzz
-
-libatmio.so: $(API)/libatmio.c
-	$(CC) $(CFLAGS) -shared -fPIC \
-		$(API)/libatmio.c \
-		-o $@ \
-		$(LDFLAGS) \
-		-lgif -lpng
-
-libwidget.so: $(API)/widget.c
-	$(CC) $(CFLAGS) -shared -fPIC \
-		$(API)/widget.c \
-		-o $@ \
-		$(LDFLAGS) \
-		-lfreetype
-
-libatmui.so: $(API)/libatmui.c
-	$(CC) $(CFLAGS) -shared -fPIC \
-		-Wl,-E \
-		-Wl,-undefined,dynamic_lookup \
-		$(API)/libatmui.c \
-		-o $@ \
-		$(LDFLAGS) \
-		-lpng -lfreetype -ldl -lgif -ldrm -lm
-
-libatmsndec.so: $(API)/libatmsndec.c
-	$(CC) $(CFLAGS) -shared -fPIC \
-		$(API)/libatmsndec.c \
-		-o $@ \
-		$(LDFLAGS) \
-		-lm -ltinyalsa
-
-libatmeth.so: $(API)/libatmeth.c
-	$(CC) $(CFLAGS) -shared -fPIC -Wl,-E \
-		$(API)/libatmeth.c \
-		-o $@ \
-		-lfreetype
-
-libatmdial.so: $(API)/libatmdial.c
-	$(CC) $(CFLAGS) -shared -fPIC -Wl,-E \
-		$(API)/libatmdial.c \
-		-o $@ \
-		$(LDFLAGS)
-
-libatmchtn.so: $(API)/libatmchtn.c
-	$(CC) $(CFLAGS) -shared -fPIC \
-		$(API)/libatmchtn.c \
-		-o $@ \
-		$(LDFLAGS)
-
-libatmjson.so: $(API)/libatmjson.c
-	$(CC) $(CFLAGS) -shared -fPIC \
-		$(API)/libatmjson.c \
-		-o $@ \
-		$(LDFLAGS) \
-		-lcjson
-
-libatmnls.so: $(API)/libatmnls.c
-	$(CC) $(CFLAGS) -shared -fPIC \
-		$(API)/libatmnls.c \
-		-o $@ \
-		$(LDFLAGS) \
-		-lharfbuzz
-
-libpalette.so: $(API)/libpalette.c
-	$(CC) $(CFLAGS) -shared -fPIC \
-		$(API)/libpalette.c \
-		-o $@ \
-		$(LDFLAGS) \
-		-ldrm
-
-libatmasurf.so: $(API)/libatmasurf.c
-	$(CC) $(CFLAGS) -shared -fPIC \
-		$(API)/libatmasurf.c \
-		-o $@ \
-		$(LDFLAGS) \
-		-ldrm
-
-libatmssl.so: $(API)/libatmtls.c
-	$(CC) $(CFLAGS) -shared -fPIC \
-		$(API)/libatmtls.c \
-		-o $@ \
-		$(LDFLAGS)
-
-libatmvidec.so: $(API)/libatmvidec.c $(API)/libmp4sysc.c
-	$(CC) $(CFLAGS) -shared -fPIC \
-		$(API)/libmp4sysc.c \
-		$(API)/libatmvidec.c \
-		-o $@ \
-		$(LDFLAGS)
-
-libaction.so: $(API)/libaction.c
-	$(CC) $(CFLAGS) -shared -fPIC \
-		$(API)/libaction.c \
-		-o $@ \
-		$(LDFLAGS) \
-		-lfreetype
-
-libatmtask.so: $(API)/libatmtask.c
-	$(CC) $(CFLAGS) -shared -fPIC \
-		$(API)/libatmtask.c \
-		-o $@ \
-		$(LDFLAGS)
-
-daemon: asurfd modemd AutumnGenericLowLMgr
-
-asurfd: $(SRC)/asurfd.c
-	$(CC) $(CFLAGS) \
-		$(SRC)/asurfd.c \
-		-o $@ \
-		$(LDFLAGS) \
-		-ldrm
-
-modemd: $(SRC)/modemd.c
-	$(CC) $(CFLAGS) \
-		$(SRC)/modemd.c \
-		-o $@ \
-		$(LDFLAGS) \
-		-ldrm
-
-AutumnGenericLowLMgr: $(SRC)/AutumnGenericLowLMgr.c
-	$(CC) $(CFLAGS) \
-		-rdynamic \
-		-Wl,-E \
-		-Wl,-undefined,dynamic_lookup \
-		$(SRC)/AutumnGenericLowLMgr.c \
-		-o $@ \
-		$(LDFLAGS) \
-		-ldrm -lfreetype
-
-session: \
-	$(SRC)/session.c \
-	$(SRC)/loader.c \
-	$(SRC)/tabldioctl.c \
-	$(SRC)/sigf.c \
-	$(SRC)/inputd.c \
-	$(SRC)/avm.c \
-	$(API)/libatmchtn.c
-
-	$(CC) $(CFLAGS) \
-		-rdynamic \
-		$(SRC)/loader.c \
-		$(SRC)/tabldioctl.c \
-		$(SRC)/sigf.c \
-		$(SRC)/inputd.c \
-		$(SRC)/avm.c \
-		$(API)/libatmchtn.c \
-		$(SRC)/session.c \
-		-o $@ \
-		$(LDFLAGS) \
-		-lgif -ldl -lfreetype -lpthread
-
-init: $(SRC)/init.c $(SRC)/sigf.c
-	$(CC) -static \
-		$(SRC)/sigf.c \
-		$(SRC)/init.c \
-		-o $@
-
-autumn_lib: libwhike.so
-
-libwhike.so: $(SRC)/libwhike.c
-	$(CC) -shared -fPIC \
-		$(SRC)/libwhike.c \
-		-o $@ \
-		$(LDFLAGS)
-
-autumn-tools: autumn-kexec autumn-atxdb autumn-sudo
-
-autumn-kexec: $(SRC)/autumn-kexec.c
-	$(CC) $(CFLAGS) \
-		$(SRC)/autumn-kexec.c \
-		-o $@ \
-		$(LDFLAGS)
-
-autumn-atxdb: $(SRC)/autumn-atxdb.c
-	$(CC) $(CFLAGS) \
-		$(SRC)/autumn-atxdb.c \
-		-o $@ \
-		$(LDFLAGS) \
-		-lutil
-
-autumn-sudo: $(SRC)/autumn-sudo.c
-	$(CC) $(CFLAGS) \
-		$(SRC)/autumn-sudo.c \
-		-o $@ \
-		$(LDFLAGS)
-
-sysui: \
-	$(SRC)/sysui.c \
-	$(SRC)/loader.c \
-	$(SRC)/tabldioctl.c \
-	$(SRC)/pscrfont.c
-
-	$(CC) $(CFLAGS) \
-		-rdynamic \
-		-Wl,-E \
-		-Wl,-undefined,dynamic_lookup \
-		$(SRC)/loader.c \
-		$(SRC)/tabldioctl.c \
-		$(SRC)/pscrfont.c \
-		$(SRC)/sysui.c \
-		-o $@ \
-		$(LDFLAGS) \
-		-ldrm
-
-mkdir:
-	mkdir -p $(OVERLAY_API)
-	mkdir -p $(OVERLAY_HAL)
-	mkdir -p $(OVERLAY_API)/ipc
-	mkdir -p $(OVERLAY_AUTUMN)
-	mkdir -p $(OVERLAY_API)/ui
-	mkdir -p $(OVERLAY_API)/media
-	mkdir -p $(OVERLAY_API)/io
-	mkdir -p $(OVERLAY_API)/net
-	mkdir -p $(OVERLAY_API)/sysfunc
-	mkdir -p $(OVERLAY_API)/stat
-	mkdir -p $(OVERLAY_HAL)/mouse
-	mkdir -p $(OVERLAY_HAL)/sound
-	mkdir -p $(OVERLAY_HAL)/screen
-	mkdir -p $(OVERLAY_HAL)/ethernet
-	mkdir -p $(OVERLAY_HAL)/ethernet/gsm
-	mkdir -p $(OVERLAY_HAL)/system
-	mkdir -p $(OVERLAY_HAL)/con
-	mkdir -p $(OVERLAY_GAMES)
-	mkdir -p $(OVERLAY)/usr/bin
-	mkdir -p $(OVERLAY)/bin
-	mkdir -p $(OVERLAY)/sbin
-	mkdir -p $(OVERLAY)/sbin/autumn-tools
-	mkdir -p $(OVERLAY_MODULES)
-	mkdir -p $(OVERLAY_FONTS)
-
-install: mkdir
-	cp init $(OVERLAY_SBIN)/
-	cp session $(OVERLAY_BIN)/
-	cp autumn-kexec $(OVERLAY_SBIN)/autumn-tools/
-	cp autumn-atxdb $(OVERLAY_SBIN)/autumn-tools/
-	cp autumn-sudo $(OVERLAY_SBIN)/autumn-tools/
-	cp libfbdev.so $(OVERLAY_API)/ui/
-	cp libatmnls.so $(OVERLAY_API)/ui/
-	cp libatmasurf.so $(OVERLAY_API)/ui/
-	cp libwidget.so $(OVERLAY_API)/ui/
-	cp libatmdial.so $(OVERLAY_API)/ui/
-	cp libatmui.so $(OVERLAY_API)/ui/
-	cp libpalette.so $(OVERLAY_API)/ui/
-	cp libatmio.so $(OVERLAY_API)/io/
-	cp libatmjson.so $(OVERLAY_API)/net/
-	cp libatmssl.so $(OVERLAY_API)/net/
-	cp libatmeth.so $(OVERLAY_API)/net/
-	cp libatmchtn.so $(OVERLAY_API)/ipc/
-	cp libatmsndec.so $(OVERLAY_API)/media/
-	cp libatmvidec.so $(OVERLAY_API)/media/
-	cp libaction.so $(OVERLAY_API)/sysfunc/
-	cp libatmtask.so $(OVERLAY_API)/stat/
-	cp libconhal.so $(OVERLAY_HAL)/con/
-	cp libuarthal.so $(OVERLAY_HAL)/con/
-	cp libfbdhal.so $(OVERLAY_HAL)/screen/
-	cp libhdmihal.so $(OVERLAY_HAL)/screen/
-	cp libmshal.so $(OVERLAY_HAL)/mouse/
-	cp libsndhal.so $(OVERLAY_HAL)/sound/
-	cp libethal.so $(OVERLAY_HAL)/ethernet/
-	cp libsimhal.so $(OVERLAY_HAL)/ethernet/gsm/
-	cp libpwrhal.so $(OVERLAY_HAL)/system/
-	cp libwhike.so $(OVERLAY_AUTUMN)/
-	cp asurfd $(OVERLAY_BIN)/
-	cp modemd $(OVERLAY_BIN)/
-	cp AutumnGenericLowLMgr $(OVERLAY_BIN)/
-	cp sysui $(OVERLAY_USRBIN)/
-	cp $(MODULE)/*.ko $(OVERLAY_MODULES)/
-	cp $(PROJECT)/Lat38-VGA32x16.psf $(OVERLAY_FONTS)/
+	@if [ -f Lat38-VGA32x16.psf ]; then cp -f Lat38-VGA32x16.psf $(FONTS)/; fi
 
 br_build:
-	@bash -c 'cd $(BR_ROOT)/br-external && source envsetup.sh && set_target mqpro && m all'
+	bash -c 'cd $(BR_ROOT)/br-external && source envsetup.sh && set_target mqpro && m all'
 
 clean:
-	rm -rf \
-		session \
-		init \
-		modemd \
-		asurfd \
-		AutumnGenericLowLMgr \
-		autumn-atxdb \
-		autumn-sudo \
-		autumn-kexec \
-		sysui \
-		*.so \
-		*.atm \
-		*.ko \
-		*.mod.c \
-		*.mod.o \
-		*.mod \
-		*.o
+	rm -f session init sysui asurfd modemd AutumnGenericLowLMgr
+	rm -f *.so
+	rm -f autumn-kexec autumn-atxdb autumn-sudo
+	rm -f $(MODULE)/*.ko
+	rm -f $(MODULE)/*.o
+	rm -f $(MODULE)/*.mod
+	rm -f $(MODULE)/*.mod.c
+	rm -f $(MODULE)/modules.order
+	rm -f $(MODULE)/Module.symvers
+	rm -f $(MODULE)/Kbuild
+```
