@@ -6,7 +6,7 @@
 #include <sys/mman.h>
 #include <linux/fb.h>
 #include <stdint.h>
-#include "FramebufferStruct.h"
+#include "../../include/HAL/FramebufferStruct.h"
 #include <xf86drm.h>
 #include <string.h>
 #include <xf86drmMode.h>
