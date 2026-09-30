@@ -3,7 +3,7 @@
 #include <asm/termios.h>
 #include <sys/ioctl.h>
 #include <string.h>
-#include "table.h"
+#include "../../include/SymbolTable/table.h"
 
 static int current_fd = -1;
 
