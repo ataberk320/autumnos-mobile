@@ -1,5 +1,5 @@
 #include <linux/if.h>
-#include "table.h"
+#include "../include/SymbolTable/table.h"
 
 extern ETHERNET_HAL* eth;
 
