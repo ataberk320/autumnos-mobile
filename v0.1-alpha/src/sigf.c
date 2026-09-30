@@ -8,7 +8,7 @@
 #include <linux/fb.h> 
 #include <stdint.h>
 #include <stdio.h>
-#include "sigf.h"
+#include "../include/sigf.h"
 
 sigjmp_buf jump_buffer; //safe area
 
