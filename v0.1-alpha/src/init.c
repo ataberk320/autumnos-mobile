@@ -13,7 +13,7 @@
 #include <signal.h>
 #include <setjmp.h>
 #include <linux/fb.h>
-#include "sigf.h"
+#include "../include/sigf.h"
 #include <dirent.h>
 
 void sys_mnt() {
