@@ -5,7 +5,7 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 #include <drm/drm_mode.h>
-#include "FramebufferStruct.h"
+#include "../../include/HAL/FramebufferStruct.h"
 #include <unistd.h>
 
 static void pfhandler(int fd, unsigned int frame, unsigned int tv_sec, unsigned int tv_usec, void *data) {
