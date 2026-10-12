@@ -1,17 +1,28 @@
+
+#define _DEFAULT_SOURCE
+
 #include <sys/reboot.h>
 #include <unistd.h>
 #include <errno.h>
+#include <dirent.h>
+#include <stdio.h>
+#include <string.h>
+#include "../../include/libatmchtn.h"
 
-//converted to system service for prevent spaghetti code.
+#define POWER_ROOT "/sys/class/power_supply"
+#define REQUEST_TUNNEL "power_req"
+#define RESPONSE_TUNNEL "power_resp"
 
-void hal_reboot(void) {
-        sync();
-        return reboot(RB_AUTOBOOT) == 0 ? 0 : errno;
+int hal_reboot(void)
+{
+    sync();
+    return reboot(RB_AUTOBOOT) == 0 ? 0 : -errno;
 }
 
-void hal_pwroff(void) {
-        sync();
-        return reboot(RB_POWER_OFF) == 0 ? 0 : errno;
+int hal_pwroff(void)
+{
+    sync();
+    return reboot(RB_POWER_OFF) == 0 ? 0 : -errno;
 }
 
 int hal_getcpc(void)
@@ -24,12 +35,16 @@ int hal_getcpc(void)
     char path[256];
     int capacity = -1;
 
-    while ((entry = readdir(dir))) {
+    while ((entry = readdir(dir)) != NULL) {
         if (entry->d_name[0] == '.')
             continue;
 
-        snprintf(path, sizeof(path), "%s/%s/capacity",
-                 POWER_ROOT, entry->d_name);
+        int n = snprintf(path, sizeof(path),
+                         "%s/%s/capacity",
+                         POWER_ROOT, entry->d_name);
+
+        if (n < 0 || (size_t)n >= sizeof(path))
+            continue;
 
         FILE *fp = fopen(path, "r");
         if (!fp)
@@ -47,4 +62,40 @@ int hal_getcpc(void)
 
     closedir(dir);
     return capacity;
+}
+
+int main(void)
+{
+    ChatTunnel *request =
+        AutumnAPI_Tunnel_Connect(REQUEST_TUNNEL);
+    ChatTunnel *response =
+        AutumnAPI_Tunnel_Connect(RESPONSE_TUNNEL);
+
+    if (!request || !response)
+        return 1;
+
+    char command[MSG_LEN];
+    char result[MSG_LEN];
+
+    for (;;) {
+        if (!AutumnAPI_Tunnel_ReceiveFromFriend(request, command)) {
+            usleep(1000);
+            continue;
+        }
+
+        if (strcmp(command, "GET_CAPACITY") == 0) {
+            snprintf(result, sizeof(result), "%d", hal_getcpc());
+            AutumnAPI_Tunnel_Send_Msg(response, result);
+        } else if (strcmp(command, "REBOOT") == 0) {
+            snprintf(result, sizeof(result), "%d", hal_reboot());
+            AutumnAPI_Tunnel_Send_Msg(response, result);
+        } else if (strcmp(command, "POWEROFF") == 0) {
+            snprintf(result, sizeof(result), "%d", hal_pwroff());
+            AutumnAPI_Tunnel_Send_Msg(response, result);
+        } else {
+            AutumnAPI_Tunnel_Send_Msg(response, "UNKNOWN_COMMAND");
+        }
+    }
+
+    return 0;
 }
