@@ -1,47 +1,50 @@
 #include <sys/reboot.h>
-#include <fcntl.h>
 #include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <errno.h>
+
+//converted to system service for prevent spaghetti code.
 
 void hal_reboot(void) {
         sync();
-        reboot(RB_AUTOBOOT);
+        return reboot(RB_AUTOBOOT) == 0 ? 0 : errno;
 }
 
 void hal_pwroff(void) {
         sync();
-        reboot(RB_POWER_OFF);
+        return reboot(RB_POWER_OFF) == 0 ? 0 : errno;
 }
 
-void hal_emergency_pwroff(void) {
-	int fd = open("/proc/sysrq-trigger", O_WRONLY); //SEND COMMAND DIRECTLY TO KERNEL!!!!
-	if (fd >= 0) {
-		write(fd, "o", 1); //directly shutdown command
-		close(fd);
-	}
-        _exit(1);
+int hal_getcpc(void)
+{
+    DIR *dir = opendir(POWER_ROOT);
+    if (!dir)
+        return -1;
+
+    struct dirent *entry;
+    char path[256];
+    int capacity = -1;
+
+    while ((entry = readdir(dir))) {
+        if (entry->d_name[0] == '.')
+            continue;
+
+        snprintf(path, sizeof(path), "%s/%s/capacity",
+                 POWER_ROOT, entry->d_name);
+
+        FILE *fp = fopen(path, "r");
+        if (!fp)
+            continue;
+
+        int value;
+        int ok = fscanf(fp, "%d", &value) == 1;
+        fclose(fp);
+
+        if (ok && value >= 0 && value <= 100) {
+            capacity = value;
+            break;
+        }
+    }
+
+    closedir(dir);
+    return capacity;
 }
-
-static int hal_readsupply(const char *node, char *val) {
-	char path[128];
-	snprintf(path, "/sys/class/power_supply/%s", node); //FIXME: removed hardcoded values and used snprintf for prevent buffer overflow
-	
-	FILE *fp = fopen(path, "r");
-	if (!fp) return -1;
-	
-	fgets(val, 32, fp);
-	fclose(fp);
-	return 0;
-}
-
-int hal_getcpc(void) {
-	char buf[32];
-	if (hal_readsupply("capacity", buf) == 0) {
-		return atoi(buf);
-	}
-	return -1;
-}
-
-
