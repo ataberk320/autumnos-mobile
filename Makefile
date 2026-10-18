@@ -21,13 +21,6 @@ OVERLAY := $(BR_ROOT)/br-external/board/mqpro/overlay
 CFLAGS := -O2 -Wall -fPIC --sysroot=$(SYSROOT)
 LDFLAGS := -shared
 
-API_UI := $(OVERLAY)/usr/lib/api/ui
-API_NET := $(OVERLAY)/usr/lib/api/net
-API_IO := $(OVERLAY)/usr/lib/api/io
-API_IPC := $(OVERLAY)/usr/lib/api/ipc
-API_MEDIA := $(OVERLAY)/usr/lib/api/media
-API_SYSFUNC := $(OVERLAY)/usr/lib/api/sysfunc
-API_STAT := $(OVERLAY)/usr/lib/api/stat
 
 HAL_CON := $(OVERLAY)/usr/lib/hal/con
 HAL_SCREEN := $(OVERLAY)/usr/lib/hal/screen
@@ -56,7 +49,7 @@ prepare:
 	mkdir -p $(AUTUMN_LIB) $(BIN) $(SBIN) $(TOOLS) $(USR_BIN) $(MODULES) $(FONTS)
 
 session:
-	$(CC) $(CFLAGS) $(SRC)/loader.c $(SRC)/tabldioctl.c $(SRC)/sigf.c $(SRC)/session.c $(SRC)/inputd.c $(SRC)/avm.c $(API)/libatmchtn.c -o session -lpthread
+	$(CC) $(CFLAGS) $(SRC)/loader.c $(SRC)/tabldioctl.c $(SRC)/sigf.c $(SRC)/session.c $(SRC)/pthread/inputd.c $(SRC)/pthread/avm.c $(API)/libatmchtn.c -o session -lpthread
 
 init:
 	$(CC) $(SRC)/sigf.c $(SRC)/init.c -static -o init
@@ -73,7 +66,6 @@ AutumnGenericLowLMgr:
 sysui:
 	$(CC) $(CFLAGS) $(SRC)/loader.c $(SRC)/tabldioctl.c $(SRC)/pscrfont.c $(SRC)/sysui.c -o sysui -lpthread
 
-# --- HAL Kütüphaneleri (Donanım seviyesi bağımsız kalıyor) ---
 libconhal.so:
 	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/console.c -o libconhal.so
 
@@ -101,7 +93,6 @@ libsimhal.so:
 libhdmihal.so:
 	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/hdmi.c -o libhdmihal.so
 
-# --- TEK ÇATI ALTINDA BİRLEŞTİRİLEN BÜTÜN API KÜTÜPHANESİ (libfbdev ve libatmvidec dahil) ---
 libatmcore.so:
 	$(CC) $(CFLAGS) $(LDFLAGS) \
 		$(API)/libatmnls.c \
@@ -165,14 +156,7 @@ install:
 	cp -f autumn-atxdb $(TOOLS)/
 	cp -f autumn-sudo $(TOOLS)/
 
-	# Tek core API kütüphanesini ilgili klasörlere dağıtıyoruz
-	cp -f libatmcore.so $(API_UI)/
-	cp -f libatmcore.so $(API_NET)/
-	cp -f libatmcore.so $(API_IO)/
-	cp -f libatmcore.so $(API_IPC)/
-	cp -f libatmcore.so $(API_MEDIA)/
-	cp -f libatmcore.so $(API_SYSFUNC)/
-	cp -f libatmcore.so $(API_STAT)/
+	cp -f libatmcore.so $(API)/
 
 	cp -f libconhal.so $(HAL_CON)/
 	cp -f libuarthal.so $(HAL_CON)/
