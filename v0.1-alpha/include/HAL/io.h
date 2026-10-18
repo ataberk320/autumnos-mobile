@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <sys/types.h>
 
-// Ortak Syscall Numaraları ve Bayraklar
+// syscall numbers (generic for all)
 #define A_RDONLY   0x0000
 #define A_WRONLY   0x0001
 #define A_RDWR     0x0002
