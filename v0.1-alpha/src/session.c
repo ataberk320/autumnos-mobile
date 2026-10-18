@@ -25,9 +25,8 @@ ChatTunnel* tunn = NULL;
 int mouse_x = 100;
 int mouse_y = 100;
 int mouse_btn1 = 0;
-extern GFX_API* gfx;
-extern IMG_API* img;
-extern CONNECTION_API* conn;
+extern SYM_TAB* symb;
+
 extern void* inputd_main(void* arg);
 //extern void* AutumnUI(void* arg);
 pthread_mutex_t mouse_mutex = PTHREAD_MUTEX_INITIALIZER; //for prevent blocking
@@ -131,22 +130,22 @@ int main(int argc, char *argv[]) {
 		printf("[SYSTEM]: Internet connection enabled.");
 	}
 
-	load = img->LdGif("/usr/share/loading.gif");
+	load = symb->LdGif("/usr/share/loading.gif");
         if (!load) {
                 perror("LoadGif");
                 return 1;
         }
 	
-        int load_count = img->CountGif(load);
+        int load_count = symb->CountGif(load);
 	
         _userspace_StartSrv();
 		_userspace_StartVM();
 		//_userspace_StartUI(); 
 	
 	while (!is_ui) {
-                gfx->Clear(&screen, 0x00000000); //DARK
-                //gfx->DrawGif(&screen, load, (screen.w - 256) / 2, (screen.h - 256) / 2, loadanim_frame); //boot animation
-                gfx->RefreshScreen(&screen); // to write
+                symb->Clear(&screen, 0x00000000); //DARK
+                //symb->DrawGif(&screen, load, (screen.w - 256) / 2, (screen.h - 256) / 2, loadanim_frame); //boot animation
+                symb->RefreshScreen(&screen); // to write
                 loadanim_frame++;
                 
 		if (loadanim_frame >= load_count) {
