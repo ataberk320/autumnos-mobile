@@ -50,43 +50,7 @@ void _userspace_StartSrv() {
 	}
 }
 
-/*
-void _userspace_StartUI() {
-	pthread_t uid;
-	pthread_attr_t attr;
 
-	pthread_attr_init(&attr);
-	pthread_attr_setstacksize(&attr, 128 * 1024); //setting stack for prevent sigsegv
-
-	if (pthread_create(&uid, &attr, AutumnUI, NULL) != 0) {
-                perror("System UI");
-		pthread_attr_destroy(&attr);
-                return;
-        }
-
-	pthread_attr_destroy(&attr);
-	pthread_detach(uid);
-}
-*/
-
-//Autumn Virtual Machine
-
-void _userspace_StartVM() {
-        pthread_t vmid;
-        pthread_attr_t attr;
-
-        pthread_attr_init(&attr);
-        pthread_attr_setstacksize(&attr, 128 * 1024);
-
-        if (pthread_create(&vmid, &attr, avm, NULL) != 0) {
-                perror("Autumn Virtual Machine");
-                pthread_attr_destroy(&attr);
-                return;
-        }
-
-        pthread_attr_destroy(&attr);
-        pthread_detach(vmid);
-}
 
 //receiving driver parameters
 int main(int argc, char *argv[]) {
@@ -117,18 +81,10 @@ int main(int argc, char *argv[]) {
                 return 1;
         }
 
-	if (gfx->InitFb(&screen, drmcard) != 0) { //using dynamic parameter
+	if (symb->InitFb(&screen, drmcard) != 0) { //using dynamic parameter
         	perror("FbInit");
         	return 1;
     	}
-
-	int ret = conn->On(netiface); //change it as you wish, now dont :)
-	if (ret < 0) {
-		perror("Connection");
-	}
-	else {
-		printf("[SYSTEM]: Internet connection enabled.");
-	}
 
 	load = symb->LdGif("/usr/share/loading.gif");
         if (!load) {
