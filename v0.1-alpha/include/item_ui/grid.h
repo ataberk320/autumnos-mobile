@@ -1,7 +1,7 @@
 #ifndef GRID_H
 #define GRID_H
 
-#include "FramebufferStruct.h"
+#include "../HAL/FramebufferStruct.h"
 #include "icon.h"
 
 #define MAX_ITEM 64
