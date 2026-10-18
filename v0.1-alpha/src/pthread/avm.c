@@ -6,7 +6,7 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <stdint.h>
-#include "libatmchtn.h"
+#include "../../include/libatmchtn.h"
 
 #define ARENA_SIZE (1024 * 1024)
 
