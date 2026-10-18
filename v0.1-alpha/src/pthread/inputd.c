@@ -12,7 +12,7 @@ extern int mouse_x;
 extern int mouse_y;
 extern int mouse_btn1;
 extern int mouse_btn2;
-extern MOUSE_HAL* mshal; //added missing pointer struct
+extern SYM_TAB* symb; //added missing pointer struct
 extern ChatTunnel* tunn;
 
 void* inputd_main(void* arg) {
@@ -21,7 +21,7 @@ void* inputd_main(void* arg) {
         	printf("waiting for tunnel...\n"); //for prevent to sigsegv
     	}
 
-    	int fd = mshal->OpenMouse();
+    	int fd = symb->OpenMouse();
     	if (fd < 0) {
         	perror("inputd - OpenMouse");
         	return NULL;
@@ -36,7 +36,7 @@ void* inputd_main(void* arg) {
 		char buffer[128];
 
 		while (1) {
-    		if (mshal->ReadMouse(fd, &ev) == sizeof(struct input_event)) {
+    		if (symb->ReadMouse(fd, &ev) == sizeof(struct input_event)) {
 
         		if (ev.type == EV_ABS) {
             			if (ev.code == ABS_X) {
