@@ -21,6 +21,13 @@ OVERLAY := $(BR_ROOT)/br-external/board/mqpro/overlay
 CFLAGS := -O2 -Wall -fPIC --sysroot=$(SYSROOT)
 LDFLAGS := -shared
 
+API_UI := $(OVERLAY)/usr/lib/api/ui
+API_NET := $(OVERLAY)/usr/lib/api/net
+API_IO := $(OVERLAY)/usr/lib/api/io
+API_IPC := $(OVERLAY)/usr/lib/api/ipc
+API_MEDIA := $(OVERLAY)/usr/lib/api/media
+API_SYSFUNC := $(OVERLAY)/usr/lib/api/sysfunc
+API_STAT := $(OVERLAY)/usr/lib/api/stat
 
 HAL_CON := $(OVERLAY)/usr/lib/hal/con
 HAL_SCREEN := $(OVERLAY)/usr/lib/hal/screen
@@ -156,7 +163,13 @@ install:
 	cp -f autumn-atxdb $(TOOLS)/
 	cp -f autumn-sudo $(TOOLS)/
 
-	cp -f libatmcore.so $(API)/
+	cp -f libatmcore.so $(API_UI)/
+	cp -f libatmcore.so $(API_NET)/
+	cp -f libatmcore.so $(API_IO)/
+	cp -f libatmcore.so $(API_IPC)/
+	cp -f libatmcore.so $(API_MEDIA)/
+	cp -f libatmcore.so $(API_SYSFUNC)/
+	cp -f libatmcore.so $(API_STAT)/
 
 	cp -f libconhal.so $(HAL_CON)/
 	cp -f libuarthal.so $(HAL_CON)/
