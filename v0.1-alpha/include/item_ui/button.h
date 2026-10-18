@@ -3,8 +3,8 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include "libfbdev.h"
-#include "FramebufferStruct.h"
+#include "../libfbdev.h"
+#include "../HAL/FramebufferStruct.h"
 #include "AutumnImage.h"
 
 typedef struct ButtonWidget {
