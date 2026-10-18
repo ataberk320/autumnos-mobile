@@ -7,9 +7,9 @@
 #include <string.h>
 #include <gif_lib.h>
 #include "../include/libfbdev.h"
-#include "../item_ui/AutumnImage.h"
+#include "../include/item_ui/AutumnImage.h"
 #include <ft2build.h>
-#include "../SymbolTable/table.h"
+#include "../include/SymbolTable/table.h"
 #include <stdbool.h>
 #include "../include/libatmchtn.h"
 #include <pthread.h>
