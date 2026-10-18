@@ -1,4 +1,4 @@
-#include "alog.h"
+#include "../include/alog.h"
 #include <errno.h>
 #include <stdio.h>
 #include <dlfcn.h>
@@ -6,21 +6,21 @@
 #include <dirent.h>
 #include <string.h>
 #include <gif_lib.h>
-#include "libfbdev.h"
-#include "AutumnImage.h"
+#include "../include/libfbdev.h"
+#include "../item_ui/AutumnImage.h"
 #include <ft2build.h>
-#include "table_2.h"
+#include "../SymbolTable/table.h"
 #include <stdbool.h>
-#include "libatmchtn.h"
+#include "../include/libatmchtn.h"
 #include <pthread.h>
-#include "button.h"
+#include "../include/item_ui/button.h"
 #include <stdlib.h>
-#include "timer.h"
-#include "sigf.h"
+#include "../include/item_ui/timer.h"
+#include "../include/sigf.h"
 #include <sys/stat.h>
 #include <sys/utsname.h>
-#include "io.h"
-#include "autumn_ioctl.h"
+#include "../include/HAL/io.h"
+#include "../include/HAL/autumn_ioctl.h"
 
 static void *resolve_symbol(void *handle, const char *lib_name, const char *symbol_name) {
     if (!handle || !symbol_name) return NULL;
