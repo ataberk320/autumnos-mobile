@@ -18,8 +18,16 @@ MODULE := $(PROJECT)/kernel/module
 
 OVERLAY := $(BR_ROOT)/br-external/board/mqpro/overlay
 
-CFLAGS := -O2 -Wall -fPIC --sysroot=$(SYSROOT)
-LDFLAGS := -shared
+CFLAGS := -O2 -Wall -fPIC --sysroot=$(SYSROOT) \
+          -I$(SYSROOT)/usr/include/freetype2 \
+          -I$(SYSROOT)/usr/include/libpng16 \
+          -I$(SYSROOT)/usr/include \
+          -I$(SYSROOT)/usr/include/libdrm \
+          -I$(SYSROOT)/usr/include/harfbuzz \
+          -I$(SYSROOT)/usr/include/cjson \
+          -rdynamic
+
+LDFLAGS := -shared --sysroot=$(SYSROOT) -L$(SYSROOT)/usr/lib -rdynamic -Wl,-E
 
 API_DIR := $(OVERLAY)/usr/lib/api
 HAL_DIR := $(OVERLAY)/usr/lib/hal
@@ -42,28 +50,28 @@ prepare:
 	mkdir -p $(AUTUMN_LIB) $(BIN) $(SBIN) $(TOOLS) $(USR_BIN) $(MODULES) $(FONTS)
 
 session:
-	$(CC) $(CFLAGS) $(SRC)/loader.c $(SRC)/tabldioctl.c $(SRC)/sigf.c $(SRC)/session.c $(SRC)/pthread/inputd.c $(SRC)/pthread/avm.c $(API)/libatmchtn.c -o session -lpthread
+	$(CC) $(CFLAGS) $(SRC)/loader.c $(SRC)/tabldioctl.c $(SRC)/sigf.c $(SRC)/session.c $(SRC)/pthread/inputd.c $(SRC)/pthread/avm.c $(API)/libatmchtn.c -o session $(LDFLAGS) -lpthread -lgif -lfreetype -ldl
 
 init:
 	$(CC) $(SRC)/sigf.c $(SRC)/init.c -static -o init
 
 asurfd:
-	$(CC) $(CFLAGS) $(SRC)/asurfd.c -o asurfd
+	$(CC) $(CFLAGS) $(SRC)/asurfd.c -o asurfd $(LDFLAGS) -ldrm
 
 modemd:
-	$(CC) $(CFLAGS) $(SRC)/modemd.c -o modemd
+	$(CC) $(CFLAGS) $(SRC)/modemd.c -o modemd $(LDFLAGS) -ldrm
 
 AutumnGenericLowLMgr:
-	$(CC) $(CFLAGS) $(SRC)/AutumnGenericLowLMgr.c -o AutumnGenericLowLMgr
+	$(CC) $(CFLAGS) -Wl,-undefined,dynamic_lookup $(SRC)/AutumnGenericLowLMgr.c -o AutumnGenericLowLMgr $(LDFLAGS) -ldrm -lfreetype
 
 sysui:
-	$(CC) $(CFLAGS) $(SRC)/loader.c $(SRC)/tabldioctl.c $(SRC)/pscrfont.c $(SRC)/sysui.c -o sysui -lpthread
+	$(CC) $(CFLAGS) -Wl,-undefined,dynamic_lookup $(SRC)/loader.c $(SRC)/tabldioctl.c $(SRC)/pscrfont.c $(SRC)/sysui.c -o sysui $(LDFLAGS) -lpthread -ldrm
 
 libconhal.so:
 	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/console.c -o libconhal.so
 
 libfbdhal.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/fb_dev.c $(HAL)/drm.c -o libfbdhal.so
+	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/fb_dev.c $(HAL)/drm.c -o libfbdhal.so -ldrm
 
 libmshal.so:
 	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/input.c -o libmshal.so
@@ -84,10 +92,10 @@ libsimhal.so:
 	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/modem.c -o libsimhal.so
 
 libhdmihal.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/hdmi.c -o libhdmihal.so
+	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/hdmi.c -o libhdmihal.so -lrt -lm -ldrm
 
 libatmcore.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) \
+	$(CC) $(CFLAGS) $(LDFLAGS) -Wl,-undefined,dynamic_lookup \
 		$(API)/libatmnls.c \
 		$(API)/lpngsysc.c \
 		$(API)/libfbdev.c \
@@ -106,7 +114,7 @@ libatmcore.so:
 		$(API)/libatmtls.c \
 		$(API)/libaction.c \
 		$(API)/libatmtask.c \
-		-o libatmcore.so -lfreetype -lpng
+		-o libatmcore.so -lfreetype -lpng -ldl -lgif -ldrm -lharfbuzz -lm -lcjson
 
 libs: libwhike.so
 
@@ -117,9 +125,9 @@ api: libatmcore.so
 daemons: asurfd modemd AutumnGenericLowLMgr
 
 tools:
-	$(CC) $(CFLAGS) $(SRC)/autumn-kexec.c -o autumn-kexec
-	$(CC) $(CFLAGS) $(SRC)/autumn-atxdb.c -o autumn-atxdb
-	$(CC) $(CFLAGS) $(SRC)/autumn-sudo.c -o autumn-sudo
+	$(CC) $(CFLAGS) $(SRC)/autumn-kexec.c -o autumn-kexec $(LDFLAGS)
+	$(CC) $(CFLAGS) $(SRC)/autumn-atxdb.c -o autumn-atxdb $(LDFLAGS) -lutil
+	$(CC) $(CFLAGS) $(SRC)/autumn-sudo.c -o autumn-sudo $(LDFLAGS)
 
 modules:
 	@set -e; \
