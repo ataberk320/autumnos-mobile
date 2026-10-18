@@ -7,7 +7,7 @@
 #include <dirent.h>
 #include <stdio.h>
 #include <string.h>
-#include "../../include/libatmchtn.h"
+#include "../../../include/libatmchtn.h"
 
 #define POWER_ROOT "/sys/class/power_supply"
 #define REQUEST_TUNNEL "power_req"
