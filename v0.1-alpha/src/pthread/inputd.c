@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include "table.h"
+#include "../../include/SymbolTable/table.h"
 #include "../../include/libatmchtn.h"
 #include <sys/stat.h>
 #include <sys/mman.h>
