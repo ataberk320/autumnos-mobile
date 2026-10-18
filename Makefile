@@ -16,7 +16,6 @@ PTHREAD := $(HAL)/pthread
 ALLWINNER := $(HAL)/allwinner
 MODULE := $(PROJECT)/kernel/module
 
-
 OVERLAY := $(BR_ROOT)/br-external/board/mqpro/overlay
 
 CFLAGS := -O2 -Wall -fPIC --sysroot=$(SYSROOT)
@@ -62,12 +61,6 @@ session:
 init:
 	$(CC) $(SRC)/sigf.c $(SRC)/init.c -static -o init
 
-libfbdev.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmnls.c $(API)/lpngsysc.c $(API)/libfbdev.c -o libfbdev.so -lfreetype -lpng
-
-libatmvidec.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libmp4sysc.c $(API)/libatmvidec.c -o libatmvidec.so
-
 asurfd:
 	$(CC) $(CFLAGS) $(SRC)/asurfd.c -o asurfd
 
@@ -80,6 +73,7 @@ AutumnGenericLowLMgr:
 sysui:
 	$(CC) $(CFLAGS) $(SRC)/loader.c $(SRC)/tabldioctl.c $(SRC)/pscrfont.c $(SRC)/sysui.c -o sysui -lpthread
 
+# --- HAL Kütüphaneleri (Donanım seviyesi bağımsız kalıyor) ---
 libconhal.so:
 	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/console.c -o libconhal.so
 
@@ -107,59 +101,34 @@ libsimhal.so:
 libhdmihal.so:
 	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/hdmi.c -o libhdmihal.so
 
-libwidget.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/widget.c -o libwidget.so
+# --- TEK ÇATI ALTINDA BİRLEŞTİRİLEN BÜTÜN API KÜTÜPHANESİ (libfbdev ve libatmvidec dahil) ---
+libatmcore.so:
+	$(CC) $(CFLAGS) $(LDFLAGS) \
+		$(API)/libatmnls.c \
+		$(API)/lpngsysc.c \
+		$(API)/libfbdev.c \
+		$(API)/libmp4sysc.c \
+		$(API)/libatmvidec.c \
+		$(API)/widget.c \
+		$(API)/libatmio.c \
+		$(API)/libatmsndec.c \
+		$(API)/libatmeth.c \
+		$(API)/libatmdial.c \
+		$(API)/libatmui.c \
+		$(API)/libatmchtn.c \
+		$(API)/libatmjson.c \
+		$(API)/libpalette.c \
+		$(API)/libatmasurf.c \
+		$(API)/libatmtls.c \
+		$(API)/libaction.c \
+		$(API)/libatmtask.c \
+		-o libatmcore.so -lfreetype -lpng
 
-libatmio.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmio.c -o libatmio.so
-
-libatmsndec.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmsndec.c -o libatmsndec.so
-
-libatmeth.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmeth.c -o libatmeth.so
-
-libatmdial.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmdial.c -o libatmdial.so
-
-libatmui.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmui.c -o libatmui.so
-
-libatmchtn.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmchtn.c -o libatmchtn.so
-
-libatmjson.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmjson.c -o libatmjson.so
-
-libatmnls.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmnls.c -o libatmnls.so
-
-libpalette.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libpalette.c -o libpalette.so
-
-libatmasurf.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmasurf.c -o libatmasurf.so
-
-libatmssl.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmtls.c -o libatmssl.so
-
-libatmvidec_api.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmvidec.c -o libatmvidec_api.so
-
-libaction.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libaction.c -o libaction.so
-
-libatmtask.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libatmtask.c -o libatmtask.so
-
-libwhike.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(API)/libwhike.c -o libwhike.so
-
-api: libwidget.so libatmio.so libatmsndec.so libatmeth.so libatmdial.so libatmui.so libatmchtn.so libatmjson.so libatmnls.so libpalette.so libatmasurf.so libatmssl.so libatmvidec_api.so libaction.so libatmtask.so
-
-libs: libfbdev.so libatmvidec.so libwhike.so
+libs: libwhike.so
 
 hal: libconhal.so libfbdhal.so libmshal.so libsndhal.so libethal.so libpwrhal.so libuarthal.so libsimhal.so libhdmihal.so
+
+api: libatmcore.so
 
 daemons: asurfd modemd AutumnGenericLowLMgr
 
@@ -196,24 +165,14 @@ install:
 	cp -f autumn-atxdb $(TOOLS)/
 	cp -f autumn-sudo $(TOOLS)/
 
-	cp -f libfbdev.so $(API_UI)/
-	cp -f libatmnls.so $(API_UI)/
-	cp -f libatmasurf.so $(API_UI)/
-	cp -f libwidget.so $(API_UI)/
-	cp -f libatmdial.so $(API_UI)/
-	cp -f libatmui.so $(API_UI)/
-	cp -f libpalette.so $(API_UI)/
-
-	cp -f libatmjson.so $(API_NET)/
-	cp -f libatmssl.so $(API_NET)/
-	cp -f libatmeth.so $(API_NET)/
-
-	cp -f libatmio.so $(API_IO)/
-	cp -f libatmchtn.so $(API_IPC)/
-	cp -f libatmsndec.so $(API_MEDIA)/
-	cp -f libatmvidec.so $(API_MEDIA)/
-	cp -f libaction.so $(API_SYSFUNC)/
-	cp -f libatmtask.so $(API_STAT)/
+	# Tek core API kütüphanesini ilgili klasörlere dağıtıyoruz
+	cp -f libatmcore.so $(API_UI)/
+	cp -f libatmcore.so $(API_NET)/
+	cp -f libatmcore.so $(API_IO)/
+	cp -f libatmcore.so $(API_IPC)/
+	cp -f libatmcore.so $(API_MEDIA)/
+	cp -f libatmcore.so $(API_SYSFUNC)/
+	cp -f libatmcore.so $(API_STAT)/
 
 	cp -f libconhal.so $(HAL_CON)/
 	cp -f libuarthal.so $(HAL_CON)/
