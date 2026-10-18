@@ -21,21 +21,8 @@ OVERLAY := $(BR_ROOT)/br-external/board/mqpro/overlay
 CFLAGS := -O2 -Wall -fPIC --sysroot=$(SYSROOT)
 LDFLAGS := -shared
 
-API_UI := $(OVERLAY)/usr/lib/api/ui
-API_NET := $(OVERLAY)/usr/lib/api/net
-API_IO := $(OVERLAY)/usr/lib/api/io
-API_IPC := $(OVERLAY)/usr/lib/api/ipc
-API_MEDIA := $(OVERLAY)/usr/lib/api/media
-API_SYSFUNC := $(OVERLAY)/usr/lib/api/sysfunc
-API_STAT := $(OVERLAY)/usr/lib/api/stat
-
-HAL_CON := $(OVERLAY)/usr/lib/hal/con
-HAL_SCREEN := $(OVERLAY)/usr/lib/hal/screen
-HAL_MOUSE := $(OVERLAY)/usr/lib/hal/mouse
-HAL_SOUND := $(OVERLAY)/usr/lib/hal/sound
-HAL_ETHERNET := $(OVERLAY)/usr/lib/hal/ethernet
-HAL_GSM := $(OVERLAY)/usr/lib/hal/ethernet/gsm
-HAL_SYSTEM := $(OVERLAY)/usr/lib/hal/system
+API_DIR := $(OVERLAY)/usr/lib/api
+HAL_DIR := $(OVERLAY)/usr/lib/hal
 
 AUTUMN_LIB := $(OVERLAY)/usr/lib/autumn
 BIN := $(OVERLAY)/bin
@@ -50,9 +37,8 @@ FONTS := $(OVERLAY)/usr/share/autumncfonts
 all: prepare session init libs hal api daemons tools sysui modules install
 
 prepare:
-	mkdir -p $(API_UI) $(API_NET) $(API_IO) $(API_IPC) $(API_MEDIA) $(API_SYSFUNC) $(API_STAT)
-	mkdir -p $(HAL_CON) $(HAL_SCREEN) $(HAL_MOUSE) $(HAL_SOUND)
-	mkdir -p $(HAL_ETHERNET) $(HAL_GSM) $(HAL_SYSTEM)
+	mkdir -p $(API_DIR)
+	mkdir -p $(HAL_DIR)
 	mkdir -p $(AUTUMN_LIB) $(BIN) $(SBIN) $(TOOLS) $(USR_BIN) $(MODULES) $(FONTS)
 
 session:
@@ -163,23 +149,17 @@ install:
 	cp -f autumn-atxdb $(TOOLS)/
 	cp -f autumn-sudo $(TOOLS)/
 
-	cp -f libatmcore.so $(API_UI)/
-	cp -f libatmcore.so $(API_NET)/
-	cp -f libatmcore.so $(API_IO)/
-	cp -f libatmcore.so $(API_IPC)/
-	cp -f libatmcore.so $(API_MEDIA)/
-	cp -f libatmcore.so $(API_SYSFUNC)/
-	cp -f libatmcore.so $(API_STAT)/
+	cp -f libatmcore.so $(API_DIR)/
 
-	cp -f libconhal.so $(HAL_CON)/
-	cp -f libuarthal.so $(HAL_CON)/
-	cp -f libfbdhal.so $(HAL_SCREEN)/
-	cp -f libhdmihal.so $(HAL_SCREEN)/
-	cp -f libmshal.so $(HAL_MOUSE)/
-	cp -f libsndhal.so $(HAL_SOUND)/
-	cp -f libethal.so $(HAL_ETHERNET)/
-	cp -f libsimhal.so $(HAL_GSM)/
-	cp -f libpwrhal.so $(HAL_SYSTEM)/
+	cp -f libconhal.so $(HAL_DIR)/
+	cp -f libuarthal.so $(HAL_DIR)/
+	cp -f libfbdhal.so $(HAL_DIR)/
+	cp -f libhdmihal.so $(HAL_DIR)/
+	cp -f libmshal.so $(HAL_DIR)/
+	cp -f libsndhal.so $(HAL_DIR)/
+	cp -f libethal.so $(HAL_DIR)/
+	cp -f libsimhal.so $(HAL_DIR)/
+	cp -f libpwrhal.so $(HAL_DIR)/
 
 	cp -f libwhike.so $(AUTUMN_LIB)/
 
