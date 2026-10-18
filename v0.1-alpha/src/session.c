@@ -95,8 +95,6 @@ int main(int argc, char *argv[]) {
         int load_count = symb->CountGif(load);
 	
         _userspace_StartSrv();
-		_userspace_StartVM();
-		//_userspace_StartUI(); 
 	
 	while (!is_ui) {
                 symb->Clear(&screen, 0x00000000); //DARK
