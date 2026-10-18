@@ -61,10 +61,6 @@ static void bind_runtime_apis(void) {
     symb->GetProc = (GetProcess_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_GetProc");
     symb->CheckStat = (CheckProcessStat_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_CheckProcess");
 
-    symb->Action = (SystemAction_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_Reboot");
-    symb->EmergencyShutdown = (EmergencyButton_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_PowerOff");
-    symb->BatPercent = (GetPSupplyPercent_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_GetBatPercent");
-
     symb->DrawLine = (DrawLine_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_DrawLine");
     symb->DrawImage = (DrawImage_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_DrawImg");
     symb->DrawTriangle = (DrawTriangle_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_DrawTriangle");
@@ -153,16 +149,8 @@ static void bind_runtime_apis(void) {
     symb->UartSend = (UartSendCmd_t)resolve_symbol(uart_handle, "/usr/lib/hal/libuarthal.so", "hal_uartsend");
     symb->UartRead = (UartReadBuf_t)resolve_symbol(uart_handle, "/usr/lib/hal/libuarthal.so", "hal_uartrd");
 
-    symb->Reboot = (Reboot_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_Reboot");
-    symb->Shutdown = (PowerOff_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_PowerOff");
-    symb->Sleep = (SleepMode_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_SleepMode");
-    symb->GetBatPercent = (GetBPercent_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_GetBatPercent");
-
     symb->ConvertToUTF = (UnicodeTF8_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_UnicodeTF8");
     symb->HarfbuzzShape = (ShapeCompx_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_ShapeCompx");
-
-    symb->ListRF = (RfkillList_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_RfkillList");
-    symb->SetBlocked = (RfkillSetBlk_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_RfkillSetBlk");
 }
 
 extern bool is_alsa;
