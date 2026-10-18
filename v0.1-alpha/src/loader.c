@@ -1,372 +1,275 @@
-#include "../include/SymbolTable/table.h"
-#include <dlfcn.h>
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <stdlib.h>
+#include "alog.h"
+#include <errno.h>
 #include <stdio.h>
+#include <dlfcn.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <string.h>
+#include <gif_lib.h>
+#include "libfbdev.h"
+#include "AutumnImage.h"
+#include <ft2build.h>
+#include "table_2.h"
+#include <stdbool.h>
+#include "libatmchtn.h"
+#include <pthread.h>
+#include "button.h"
+#include <stdlib.h>
+#include "timer.h"
+#include "sigf.h"
+#include <sys/stat.h>
+#include <sys/utsname.h>
+#include "io.h"
+#include "autumn_ioctl.h"
 
+static void *resolve_symbol(void *handle, const char *lib_name, const char *symbol_name) {
+    if (!handle || !symbol_name) return NULL;
+
+    dlerror();
+    void *symbol = dlsym(handle, symbol_name);
+    const char *err = dlerror();
+    if (err != NULL) {
+        fprintf(stderr, "Could not resolve %s from %s: %s\n", symbol_name, lib_name, err);
+        return NULL;
+    }
+
+    return symbol;
+}
+
+static void bind_runtime_apis(void) {
+    static bool bound = false;
+    if (bound) return;
+    bound = true;
+
+    void *core_handle = dlopen("/usr/lib/api/libatmcore.so", RTLD_NOW | RTLD_GLOBAL);
+    void *mouse_handle = dlopen("/usr/lib/hal/libmshal.so", RTLD_NOW | RTLD_GLOBAL);
+    void *sound_handle = dlopen("/usr/lib/hal/libsndhal.so", RTLD_NOW | RTLD_GLOBAL);
+    void *eth_handle = dlopen("/usr/lib/hal/libethal.so", RTLD_NOW | RTLD_GLOBAL);
+    void *modem_handle = dlopen("/usr/lib/hal/libsimhal.so", RTLD_NOW | RTLD_GLOBAL);
+    void *uart_handle = dlopen("/usr/lib/hal/libuarthal.so", RTLD_NOW | RTLD_GLOBAL);
+    void *scr_handle = dlopen("/usr/lib/hal/libfbdhal.so", RTLD_NOW | RTLD_GLOBAL);
+
+    if (!symb) return;
+
+    // Tek tablo üzerinden tüm fonksiyon pointer'larını doğrudan bağlıyoruz
+    symb->Create = (Create_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_Tunnel_Create");
+    symb->Receive = (Receive_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_Tunnel_ReceiveFromFriend");
+    symb->Send = (Send_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_Tunnel_Send_Msg");
+
+    symb->TotalRAM = (GetTotalRAM_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_GetTotRAM_MB");
+    symb->FreeRAM = (GetFreeRAM_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_GetFrRam_MB");
+    symb->GetProc = (GetProcess_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_GetProc");
+    symb->CheckStat = (CheckProcessStat_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_CheckProcess");
+
+    symb->Action = (SystemAction_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_Reboot");
+    symb->EmergencyShutdown = (EmergencyButton_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_PowerOff");
+    symb->BatPercent = (GetPSupplyPercent_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_GetBatPercent");
+
+    symb->DrawLine = (DrawLine_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_DrawLine");
+    symb->DrawImage = (DrawImage_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_DrawImg");
+    symb->DrawTriangle = (DrawTriangle_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_DrawTriangle");
+    symb->DrawButton = (DrawButton_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_DrawButton");
+    symb->InitFb = (InitFb_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_Init");
+    symb->RefreshScreen = (RefreshScreen_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_FbRefresh");
+    symb->EyeShield = (EyeSh_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_EyeShield");
+    symb->DrawGif = (DrawGif_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_DrawGifAni");
+    symb->Clear = (Clear_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_ClearFb");
+    symb->Text = (Text_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_DrawString");
+    symb->DrawRectangle = (DrawRectangle_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_DrawRect");
+    symb->DrawWindow = (DrawWindow_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_DrawWindowBody");
+    symb->GetStrWidth = (GetStringWidth_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_GetStringWidth");
+    symb->DrawTextbox = (DrawTextbox_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_DrawTextbox");
+
+    symb->ApplyGrad = (GetGradientColor_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_GetGradientColor");
+    symb->Blend = (AlphaBlend_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_AlBlend");
+    symb->AddShadow = (AddShadow_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_AddShadow");
+
+    symb->LdGif = (LdGif_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_LoadGif");
+    symb->LdImg = (LdImg_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_LoadImg");
+    symb->CountGif = (CountGif_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_GetFrameCount");
+
+    symb->OpenMouse = (MouseOpen_t)resolve_symbol(mouse_handle, "/usr/lib/hal/libmshal.so", "hal_msdevinit");
+    symb->ReadMouse = (MouseRead_t)resolve_symbol(mouse_handle, "/usr/lib/hal/libmshal.so", "hal_msdevread");
+    symb->CloseMouse = (MouseClose_t)resolve_symbol(mouse_handle, "/usr/lib/hal/libmshal.so", "hal_msdevclose");
+
+    symb->InitSound = (SoundInit_t)resolve_symbol(sound_handle, "/usr/lib/hal/libsndhal.so", "hal_sndinit");
+    symb->WritePCM = (SoundWrite_t)resolve_symbol(sound_handle, "/usr/lib/hal/libsndhal.so", "hal_sndwrite");
+    symb->CloseSound = (SoundClose_t)resolve_symbol(sound_handle, "/usr/lib/hal/libsndhal.so", "hal_sndcls");
+    symb->CompSndInit = (CompatibleSubsInit_t)resolve_symbol(sound_handle, "/usr/lib/hal/libsndhal.so", "hal_compsndinit");
+    symb->CompSndWrite = (CompatibleSubsWrite_t)resolve_symbol(sound_handle, "/usr/lib/hal/libsndhal.so", "hal_compsndwrite");
+    symb->CompSndCls = (CompatibleSubsCls_t)resolve_symbol(sound_handle, "/usr/lib/hal/libsndhal.so", "hal_compsndcls");
+    symb->SetVol = (SoundVol_t)resolve_symbol(sound_handle, "/usr/lib/hal/libsndhal.so", "hal_setvol");
+
+    symb->RefreshFbCard = (ScreenDev_Refresh_t)resolve_symbol(scr_handle, "/usr/lib/hal/libfbdhal.so", "hal_fbrefresh");
+    symb->ResetFbCard = (ScreenDev_Reset_t)resolve_symbol(scr_handle, "/usr/lib/hal/libfbdhal.so", "hal_fbreset");
+    symb->InitFbCard = (ScreenInit_t)resolve_symbol(scr_handle, "/usr/lib/hal/libfbdhal.so", "hal_fbinit");
+    symb->FreeFbMem = (ScreenFree_t)resolve_symbol(scr_handle, "/usr/lib/hal/libfbdhal.so", "hal_fbfree");
+    symb->FbFlip = (PageFlip_t)resolve_symbol(scr_handle, "/usr/lib/hal/libfbdhal.so", "hal_fbflip");
+
+    symb->SetBtnEnv = (Button_Set_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_SetBtnEnv");
+    symb->SpawnButton = (CreateButton_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_SpawnButton");
+    symb->IsTouchEvent = (ChkTouchEv_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_IsTouchEvent");
+    symb->SpawnElTimer = (CreateElapsedTimer_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_SpawnElTimer");
+
+    symb->MessageBox = (DrawMsgBox_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_DrawWindow");
+    symb->FadeIn = (Anim_FadeIn_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_Anim_FadeIn");
+    symb->FadeOut = (Anim_FadeOut_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_Anim_FadeOut");
+    symb->SetFont = (SetFont_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_SetFont");
+
+    symb->LoadMp3 = (LoadFile_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_LoadMp3");
+    symb->GetFileTime = (PlayTime_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_PlayTime");
+    symb->Play = (PlayAudio_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_PlayAudio");
+    symb->Stop = (Stop_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_StopAudio");
+    symb->Pause = (Pause_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_Pause");
+    symb->Resume = (Resume_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_Resume");
+    symb->Replay = (Replay_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_Replay");
+    symb->CleanPcmMemory = (PCMCleanup_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_CleanPcmMemory");
+    symb->Volume = (SetVolume_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_SetVolume");
+    symb->Status = (GetPlayingStatus_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_GetPlayingStatus");
+
+    symb->EthOn = (EthOn_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_EthOn");
+    symb->EthOff = (EthOff_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_EthOff");
+
+    symb->SpawnLayer = (SpawnLayer_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_SpawnLayer");
+
+    symb->TLS = (EnableTLS_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_TLSSec");
+    symb->ConfigureHostname = (HostnameConf_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_HostnameConf");
+
+    symb->CreateRequest = (CreateRequest_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_JSONCreateRequest");
+    symb->ParseResp = (ParseResponse_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_JSONParseResp");
+
+    symb->InterfaceSetup = (EthernetIntCtl_t)resolve_symbol(eth_handle, "/usr/lib/hal/libethal.so", "hal_ethinterfacectl");
+    symb->SetGateway = (EthernetSetGateway_t)resolve_symbol(eth_handle, "/usr/lib/hal/libethal.so", "hal_setgateway");
+
+    symb->ModemTest = (ModemTest_t)resolve_symbol(modem_handle, "/usr/lib/hal/libsimhal.so", "hal_modemok");
+    symb->ModemInit = (ModemInit_t)resolve_symbol(modem_handle, "/usr/lib/hal/libsimhal.so", "hal_modeminit");
+    symb->SendMsg = (SendMsg_t)resolve_symbol(modem_handle, "/usr/lib/hal/libsimhal.so", "hal_sendsms");
+    symb->Dial = (Dial_t)resolve_symbol(modem_handle, "/usr/lib/hal/libsimhal.so", "hal_modemcall");
+    symb->Answer = (Answer_t)resolve_symbol(modem_handle, "/usr/lib/hal/libsimhal.so", "hal_callanswer");
+    symb->Decline = (Decline_t)resolve_symbol(modem_handle, "/usr/lib/hal/libsimhal.so", "hal_callreject");
+    symb->IsPin = (IsPin_t)resolve_symbol(modem_handle, "/usr/lib/hal/libsimhal.so", "hal_modemcheckpin");
+
+    symb->UartConnect = (UartInit_t)resolve_symbol(uart_handle, "/usr/lib/hal/libuarthal.so", "hal_uartconnect");
+    symb->UartSend = (UartSendCmd_t)resolve_symbol(uart_handle, "/usr/lib/hal/libuarthal.so", "hal_uartsend");
+    symb->UartRead = (UartReadBuf_t)resolve_symbol(uart_handle, "/usr/lib/hal/libuarthal.so", "hal_uartrd");
+
+    symb->Reboot = (Reboot_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_Reboot");
+    symb->Shutdown = (PowerOff_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_PowerOff");
+    symb->Sleep = (SleepMode_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_SleepMode");
+    symb->GetBatPercent = (GetBPercent_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_GetBatPercent");
+
+    symb->ConvertToUTF = (UnicodeTF8_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_UnicodeTF8");
+    symb->HarfbuzzShape = (ShapeCompx_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_ShapeCompx");
+
+    symb->ListRF = (RfkillList_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_RfkillList");
+    symb->SetBlocked = (RfkillSetBlk_t)resolve_symbol(core_handle, "/usr/lib/api/libatmcore.so", "AutumnAPI_RfkillSetBlk");
+}
 
 extern bool is_alsa;
 
-__attribute__((visibility("default"))) GFX_API* gfx = NULL;
-__attribute__((visibility("default"))) IMG_API* img = NULL;
-__attribute__((visibility("default"))) WIDGET_API* wid = NULL;
-__attribute__((visibility("default"))) MOUSE_HAL* mshal = NULL;
-__attribute__((visibility("default"))) SOUND_HAL* snd = NULL;
-__attribute__((visibility("default"))) FBDEV_HAL* fbd = NULL;
-__attribute__((visibility("default"))) MP3_PLAYER_API* mp3p = NULL;
-__attribute__((visibility("default"))) SYSPOWER_HAL* pwr = NULL;
-__attribute__((visibility("default"))) ETHERNET_HAL* eth = NULL;
-__attribute__((visibility("default"))) CONNECTION_API* conn = NULL;
-__attribute__((visibility("default"))) UART_HAL* uart = NULL;
-__attribute__((visibility("default"))) MODEM_HAL* modem = NULL;
-__attribute__((visibility("default"))) ADV_WIDGET_API* uiw = NULL;
-__attribute__((visibility("default"))) PALETTE_API* plt = NULL;
+__attribute__((visibility("default"))) SYM_TAB* symb = NULL;
 
-static void *fb_handle = NULL;
-static void *io_handle = NULL;
-static void *mshal_handle = NULL;
-static void *wid_handle = NULL;
-static void *snd_handle = NULL;
-static void *ply_handle = NULL;
-static void *screen_handle = NULL;
-static void *power_handle = NULL;
-static void *ethernet_handle = NULL;
-static void *connection_handle = NULL;
-static void *uart_handle = NULL;
-static void *modem_handle = NULL;
-static void *adv_widg_handle = NULL;
-static void *plt_handle = NULL;
+#define MAX_HANDLES 128
+static void* loaded_handles[MAX_HANDLES];
+static int handle_count = 0;
+void ins_lib(int tab_fd, const char *base_path);
 
-void check_align(void* ptr, const char* name) {
-	if (ptr == NULL) {
-		fprintf(stderr, "Error while loading %s\n", name);
-		exit(1);
-	}
+void ins_lib(int tab_fd, const char *base_path) {
+    DIR *dir = opendir(base_path);
+    if (!dir) {
+        return;
+    }
 
-	if (((uintptr_t)ptr % 8) != 0) {
-		fprintf(stderr, "%s alignment is corrupted - address: %p", name, ptr);
-		abort();
-	}
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+            continue;
+        }
+
+        char full_path[1024];
+        snprintf(full_path, sizeof(full_path), "%s/%s", base_path, entry->d_name);
+
+        struct stat st;
+        int is_dir = 0;
+        int is_regl = 0;
+
+        if (entry->d_type == DT_DIR) is_dir = 1;
+        else if (entry->d_type == DT_REG) is_regl = 1;
+        else {
+            if (stat(full_path, &st) == 0) {
+                if (S_ISDIR(st.st_mode)) is_dir = 1;
+                else if (S_ISREG(st.st_mode)) is_regl = 1;
+            }
+        }
+        
+        if (is_dir) {
+            ins_lib(tab_fd, full_path);
+        }
+        else if (is_regl) {
+            size_t len = strlen(entry->d_name);
+            if (len > 3 && strcmp(entry->d_name + len - 3, ".so") == 0) {
+                void *handle = dlopen(full_path, RTLD_GLOBAL | RTLD_NOW);
+                if (!handle) {
+                    printf("loader: Error: Could not load [%s]: %s\n", full_path, dlerror());
+                }
+                else {
+                    printf("loader: Notify: Successfully loaded: %s\n", full_path);
+                    if (handle_count < MAX_HANDLES) {
+                        loaded_handles[handle_count++] = handle;
+                    }
+                }
+            }
+        }
+    }
+    closedir(dir);
 }
 
 void cleanup() {
-        if (io_handle) dlclose(io_handle);
-        if (fb_handle) dlclose(fb_handle);
-	if (mshal_handle) dlclose(mshal_handle);
-	if (wid_handle) dlclose(wid_handle);
-	if (snd_handle) dlclose(snd_handle);
-	if (ply_handle) dlclose(ply_handle);
-	if (screen_handle) dlclose(screen_handle);
-	if (power_handle) dlclose(power_handle);
-	if (ethernet_handle) dlclose(ethernet_handle);
-	if (connection_handle) dlclose(connection_handle);
-	if (uart_handle) dlclose(uart_handle);
-	if (modem_handle) dlclose(modem_handle);
-	if (adv_widg_handle) dlclose(adv_widg_handle);
-	if (plt_handle) dlclose(plt_handle);
-
-        if (gfx) { free(gfx); gfx = NULL; }
-        if (img) { free(img); img = NULL; }
-	if (mshal) { free(mshal); mshal = NULL; }
-	if (wid) { free(wid); wid = NULL; }
-	if (snd) { free(snd); snd = NULL; }
-	if (mp3p) { free(mp3p); mp3p = NULL; }
-	if (fbd) { free(fbd); fbd = NULL; }
-	if (pwr) { free(pwr); pwr = NULL; }
-	if (eth) { free(eth); eth = NULL; }
-	if (conn) { free(conn); conn = NULL; }
-	if (uart) { free(uart); uart = NULL; }
-	if (modem) { free(modem); modem = NULL; }
-	if (uiw) { free(modem); uiw = NULL; }
-	if (plt) { free(plt); plt = NULL; }
-}
-
-void ins_lib() {
-	fb_handle = dlopen("/usr/lib/api/ui/libfbdev.so", RTLD_GLOBAL | RTLD_NOW);
-        if (!fb_handle) {
-                printf("libfbdev.so - Could not load library: %s\n", dlerror());
-                cleanup();
-		exit(1);
+    for (int i = handle_count - 1; i >= 0; i--) {
+        if (loaded_handles[i]) {
+            dlclose(loaded_handles[i]);
+            loaded_handles[i] = NULL;
         }
+    }
+    handle_count = 0;
 
-	adv_widg_handle = dlopen("/usr/lib/api/ui/libatmui.so", RTLD_GLOBAL | RTLD_NOW);
-        if (!adv_widg_handle) {
-                printf("libatmui.so - Could not load library: %s\n", dlerror());
-                cleanup();
-                exit(1);
-        }
-
-	io_handle = dlopen("/usr/lib/api/io/libatmio.so", RTLD_GLOBAL | RTLD_NOW);
-        if (!io_handle) {
-                printf("libatmio.so - Could not load library: %s\n", dlerror());
-                cleanup();
-		exit(1);
-        }
-
-	modem_handle = dlopen("/usr/lib/hal/ethernet/libsimhal.so", RTLD_GLOBAL | RTLD_NOW);
-        if (!modem_handle) {
-                printf("libsimhal.so - Could not load library: %s\n", dlerror());
-                cleanup();
-                exit(1);
-        }
-
-	uart_handle = dlopen("/usr/lib/hal/con/libuarthal.so", RTLD_GLOBAL | RTLD_NOW);
-        if (!uart_handle) {
-                printf("libuarthal.so - Could not load library: %s\n", dlerror());
-                cleanup();
-                exit(1);
-        }
-
-	mshal_handle = dlopen("/usr/lib/hal/mouse/libmshal.so", RTLD_GLOBAL | RTLD_NOW);
-        if (!mshal_handle) {
-                printf("libmshal.so - Could not load library: %s\n", dlerror());
-                cleanup();
-		exit(1);
-        }
-
-	screen_handle = dlopen("/usr/lib/hal/screen/libfbdhal.so", RTLD_GLOBAL | RTLD_NOW);
-        if (!screen_handle) {
-                printf("libfbdhal.so - Could not load library: %s\n", dlerror());
-                cleanup();
-                exit(1);
-        }
-
-	power_handle = dlopen("/usr/lib/hal/system/libpwrhal.so", RTLD_GLOBAL | RTLD_NOW);
-        if (!power_handle) {
-                printf("libpwrhal.so - Could not load library: %s\n", dlerror());
-                cleanup();
-                exit(1);
-        }
-
-	ethernet_handle = dlopen("/usr/lib/hal/ethernet/libethal.so", RTLD_GLOBAL | RTLD_NOW);
-        if (!ethernet_handle) {
-                printf("libethal.so - Could not load library: %s\n", dlerror());
-                cleanup();
-                exit(1);
-        }
-
-	wid_handle = dlopen("/usr/lib/api/ui/libwidget.so", RTLD_GLOBAL | RTLD_NOW);
-        if (!wid_handle) {
-                printf("libwidget.so - Could not load library: %s\n", dlerror());
-                cleanup();
-                exit(1);
-        }
-	
-	snd_handle = dlopen("/usr/lib/hal/sound/libsndhal.so", RTLD_GLOBAL | RTLD_NOW);
-	if (!snd_handle) {
-                printf("libsndhal.so - Could not load library: %s\n", dlerror());
-                cleanup();
-                exit(1);
-        }
-
-	ply_handle = dlopen("/usr/lib/api/media/libatmsndec.so", RTLD_GLOBAL | RTLD_NOW);
-        if (!ply_handle) {
-                printf("libatmsndec.so - Could not load library: %s\n", dlerror());
-                cleanup();
-                exit(1);
-        }
-
-	connection_handle = dlopen("/usr/lib/api/ui/libatmeth.so", RTLD_GLOBAL | RTLD_NOW);
-        if (!connection_handle) {
-                printf("libatmeth.so - Could not load library: %s\n", dlerror());
-                cleanup();
-                exit(1);
-        }
-
-	plt_handle = dlopen("/usr/lib/api/ui/libpalette.so", RTLD_GLOBAL | RTLD_NOW);
-        if (!plt_handle) {
-                printf("libpalette.so - Could not load library: %s\n", dlerror());
-                cleanup();
-                exit(1);
-        }
-}
-
-void modalloc() {
-	gfx = (GFX_API*)calloc(1, sizeof(GFX_API));
-        img = (IMG_API*)calloc(1, sizeof(IMG_API));
-	mshal = (MOUSE_HAL*)calloc(1, sizeof(MOUSE_HAL));
-	wid = (WIDGET_API*)calloc(1, sizeof(WIDGET_API));
-	snd = (SOUND_HAL*)calloc(1, sizeof(SOUND_HAL));
-	fbd = (FBDEV_HAL*)calloc(1, sizeof(FBDEV_HAL));
-	mp3p = (MP3_PLAYER_API*)calloc(1, sizeof(MP3_PLAYER_API));
-	eth = (ETHERNET_HAL*)calloc(1, sizeof(ETHERNET_HAL));
-	pwr = (SYSPOWER_HAL*)calloc(1, sizeof(SYSPOWER_HAL));
-	conn = (CONNECTION_API*)calloc(1, sizeof(CONNECTION_API));
-	uart = (UART_HAL*)calloc(1, sizeof(UART_HAL));
-	modem = (MODEM_HAL*)calloc(1, sizeof(MODEM_HAL));
-	uiw = (ADV_WIDGET_API*)calloc(1, sizeof(ADV_WIDGET_API));
-	plt = (PALETTE_API*)calloc(1, sizeof(PALETTE_API));
-}
-
-void get_hal() {
-	mshal->OpenMouse = (MouseOpen_t)dlsym(mshal_handle, "hal_msdevinit");
-	mshal->ReadMouse = (MouseRead_t)dlsym(mshal_handle, "hal_msdevread");
-	mshal->CloseMouse = (MouseClose_t)dlsym(mshal_handle, "hal_msdevclose");
-	check_align(mshal, "MOUSE_HAL");
-
-	if (!mshal->OpenMouse || !mshal->ReadMouse || !mshal->CloseMouse) {
-		cleanup();
-		exit(1);
-	}
-
-	snd->InitSound = (SoundInit_t)dlsym(snd_handle, "hal_sndinit");
-        snd->WritePCM = (SoundWrite_t)dlsym(snd_handle, "hal_sndwrite");
-        snd->CloseSound = (SoundClose_t)dlsym(snd_handle, "hal_sndcls");
-	        snd->CompSndInit = (CompatibleSubsInit_t)dlsym(snd_handle, "hal_compsndinit");
-        snd->CompSndWrite = (CompatibleSubsWrite_t)dlsym(snd_handle, "hal_compsndwrite");
-        snd->CompSndCls = (CompatibleSubsCls_t)dlsym(snd_handle, "hal_compsndcls");
-        snd->SetVol = (SoundVol_t)dlsym(snd_handle, "hal_setvol");
-        check_align(snd, "SOUND_HAL");
-
-        if (!snd->InitSound || !snd->WritePCM || !snd->CloseSound || !snd->SetVol || !snd->CompSndInit || !snd->CompSndWrite || !snd->CompSndCls) {
-                cleanup();
-                exit(1);
-        } //added modern sound subsystem functions
-	
-
-	fbd->RefreshFbCard = (ScreenDev_Refresh_t)dlsym(screen_handle, "hal_fbrefresh");
-        fbd->ResetFbCard = (ScreenDev_Reset_t)dlsym(screen_handle, "hal_fbreset");
-        fbd->InitFbCard = (ScreenInit_t)dlsym(screen_handle, "hal_fbinit");
-	fbd->FreeFbMem = (ScreenFree_t)dlsym(screen_handle, "hal_fbexit");
-	fbd->FbFlip = (PageFlip_t)dlsym(screen_handle, "hal_drmpgflip");
-	check_align(fbd, "FBDEV_HAL");
-
-	if (!fbd->RefreshFbCard || !fbd->ResetFbCard || !fbd->InitFbCard || !fbd->FreeFbMem || !fbd->FbFlip) {
-                cleanup();
-                exit(1);
-        }
-
-	pwr->Reboot = (Reboot_t)dlsym(power_handle, "hal_reboot");
-	pwr->Shutdown = (PowerOff_t)dlsym(power_handle, "hal_pwroff");
-	pwr->EmergencyShutdown = (EmergencyButton_t)dlsym(power_handle, "hal_emergency_pwroff");
-	pwr->BatPercent = (GetPSupplyPercent_t)dlsym(power_handle, "hal_getcpc");
-	check_align(pwr, "SYSPOWER_HAL");
-
-	if (!pwr->Reboot || !pwr->Shutdown || !pwr->EmergencyShutdown || !pwr->BatPercent) {
-                cleanup();
-                exit(1);
-        }
-
-	eth->InterfaceSetup = (EthernetIntCtl_t)dlsym(ethernet_handle, "hal_ethinterfacectl");
-	eth->SetGateway = (EthernetSetGateway_t)dlsym(ethernet_handle, "hal_setgateway");
-
-	if (!eth->InterfaceSetup || !eth->SetGateway) {
-                cleanup();
-                exit(1);
-        }
-
-	uart->Connect = (UartInit_t)dlsym(uart_handle, "hal_uartconnect");
-	uart->Send = (UartSendCmd_t)dlsym(uart_handle, "hal_uartsend");
-        uart->Read = (UartReadBuf_t)dlsym(uart_handle, "hal_uartrd");
-
-	if (!uart->Connect || !uart->Send || !uart->Read) {
-                cleanup();
-                exit(1);
-        }
-	
-	modem->Test = (ModemTest_t)dlsym(modem_handle, "hal_modemok");
-	modem->Init = (ModemInit_t)dlsym(modem_handle, "hal_modeminit");
-	modem->SendM = (SendMsg_t)dlsym(modem_handle, "hal_sendsms");
-	modem->Dial = (Dial_t)dlsym(modem_handle, "hal_modemcall");
-	modem->Answer = (Answer_t)dlsym(modem_handle, "hal_callanswer");
-	modem->Decline = (Decline_t)dlsym(modem_handle, "hal_callreject");
-	modem->PinCheck = (IsPin_t)dlsym(modem_handle, "hal_modemcheckpin");
-	
-	if (!modem->Test || !modem->Init || !modem->SendM || !modem->Dial || !modem->Answer || !modem->Decline || !modem->PinCheck) {
-                cleanup();
-                exit(1);
-        }
-}
-
-void get_mod() {
-        gfx->DrawImage = (DrawImage_t)dlsym(fb_handle, "AutumnAPI_DrawImg");
-        gfx->DrawButton = (DrawButton_t)dlsym(fb_handle, "AutumnAPI_DrawButton");
-        gfx->InitFb = (InitFb_t)dlsym(fb_handle, "AutumnAPI_Init");
-        gfx->RefreshScreen = (RefreshScreen_t)dlsym(fb_handle, "AutumnAPI_FbRefresh");
-	gfx->EyeShield = (EyeSh_t)dlsym(fb_handle, "AutumnAPI_EyeShield");
-        gfx->DrawGif = (DrawGif_t)dlsym(fb_handle, "AutumnAPI_DrawGifAni");
-        gfx->Clear = (Clear_t)dlsym(fb_handle, "AutumnAPI_ClearFb");
-        gfx->Text = (Text_t)dlsym(fb_handle, "AutumnAPI_DrawString");
-        gfx->DrawRectangle = (DrawRectangle_t)dlsym(fb_handle, "AutumnAPI_DrawRect");
-	gfx->DrawLine = (DrawLine_t)dlsym(fb_handle, "AutumnAPI_DrawLine");
-	gfx->GetStrWidth = (GetStringWidth_t)dlsym(fb_handle, "AutumnAPI_GetStringWidth");
-	gfx->DrawWindow = (DrawWindow_t)dlsym(fb_handle, "AutumnAPI_DrawWindowBody");
-	gfx->DrawTextbox = (DrawTextbox_t)dlsym(fb_handle, "AutumnAPI_DrawTextbox");
-	check_align(gfx, "GFX_API");
-	
-        if (!gfx->DrawImage || !gfx->DrawButton || !gfx->InitFb || !gfx->RefreshScreen ||
-            !gfx->DrawGif || !gfx->Clear || !gfx->Text || !gfx->DrawRectangle || !gfx->DrawLine || !gfx->DrawWindow) {
-                perror("dlsym - libfbdev.so");
-                cleanup();
-		exit(1);
-        }
-
-	plt->ApplyGrad = (GetGradientColor_t)dlsym(plt_handle, "AutumnAPI_GetGradientColor");
-	if (!plt->ApplyGrad) {
-                perror("dlsym - libpalette.so");
-                cleanup();
-                exit(1);
-        }
-
-        img->LdGif = (LdGif_t)dlsym(io_handle, "AutumnAPI_LoadGif");
-        img->LdImg = (LdImg_t)dlsym(io_handle, "AutumnAPI_LoadImg");
-        img->CountGif = (CountGif_t)dlsym(io_handle, "AutumnAPI_GetFrameCount");
-	check_align(img, "IMG_API");
-
-        if (!img->LdGif || !img->LdImg || !img->CountGif) {
-                perror("dlsym - libatmio.so");
-		cleanup();
-		exit(1);
-        }
-
-	wid->SetBtnEnv = (Button_Set_t)dlsym(wid_handle, "Button_Set");
-        wid->SpawnButton = (CreateButton_t)dlsym(wid_handle, "CreateButton");
-	wid->SpawnElTimer = (CreateElapsedTimer_t)dlsym(wid_handle, "CreateElapsedTimer");
-	wid->IsTouchEvent = (ChkTouchEv_t)dlsym(wid_handle, "ChkTouchEv");
-	check_align(wid, "WIDGET_API");
-
-	if (!wid->SetBtnEnv || !wid->SpawnButton || !wid->SpawnElTimer || !wid->IsTouchEvent) {
-                perror("dlsym - libwidget.so");
-                cleanup();
-                exit(1);
-        }
-
-	mp3p->LoadMp3 = (LoadFile_t)dlsym(ply_handle, "AutumnAPI_LoadMp3");
-	mp3p->GetFileTime = (PlayTime_t)dlsym(ply_handle, "AutumnAPI_PlayTime");
-	mp3p->Play = (PlayAudio_t)dlsym(ply_handle, "AutumnAPI_PlayAudio");
-	mp3p->Stop = (Stop_t)dlsym(ply_handle, "AutumnAPI_StopAudio");
-	mp3p->Pause = (Pause_t)dlsym(ply_handle, "AutumnAPI_Pause");
-	mp3p->Status = (GetPlayingStatus_t)dlsym(ply_handle, "AutumnAPI_GetPlayingStatus");
-	mp3p->Resume = (Resume_t)dlsym(ply_handle, "AutumnAPI_Resume");
-	mp3p->Replay = (Replay_t)dlsym(ply_handle, "AutumnAPI_Replay");
-	mp3p->CleanPcmMemory = (PCMCleanup_t)dlsym(ply_handle, "AutumnAPI_PCMCleanup");
-	mp3p->Volume = (SetVolume_t)dlsym(ply_handle, "AutumnAPI_SetVolume");
-	check_align(mp3p, "MP3_PLAYER_API");
-
-	if (!mp3p->LoadMp3 || !mp3p->GetFileTime || !mp3p->Play || !mp3p->Pause || !mp3p->Status || !mp3p->Resume || !mp3p->Replay || !mp3p->CleanPcmMemory || !mp3p->Volume) {
-                cleanup();
-                exit(1);
-        }
-
-	conn->On = (EthOn_t)dlsym(connection_handle, "AutumnAPI_EthOn");
-	conn->Off = (EthOff_t)dlsym(connection_handle, "AutumnAPI_EthOff");
-	
-	if (!conn->On || !conn->Off) {
-                perror("dlsym - libatmeth.so");
-                cleanup();
-                exit(1);
-        }
-	
-	uiw->MessageBox = (DrawMsgBox_t)dlsym(adv_widg_handle, "AutumnAPI_DrawWindow");
-
-	return;
+    if (symb) {
+        memset(symb, 0, sizeof(SYM_TAB));
+    }
 }
         
 void ldinit() {
-        ins_lib();
-        modalloc();
-        get_hal();
-        get_mod();
+    memset(loaded_handles, 0, sizeof(loaded_handles));
+    handle_count = 0;
+
+    int tab_fd = _AutumnSys_ioOpen("/dev/tabldev", A_RDWR, 0);
+    if (tab_fd < 0) {
+        a_perror("loader -> tabldev: Error");
+        exit(1);
+    }
+
+    extern SYM_TAB *sym;
+    symb = sym;
+
+    if (!symb) {
+        printf("loader: Error: NULL Global Symbol Table. Allocating now.\n");
+        symb = (SYM_TAB*)calloc(1, sizeof(SYM_TAB));
+    }
+
+    printf("loader: Notify: Scanning for shared objects...\n");
+
+    ins_lib(tab_fd, "/usr/lib/hal");
+    ins_lib(tab_fd, "/usr/lib/api");
+
+    printf("loader: Notify: Binding runtime symbols...\n");
+    
+    bind_runtime_apis();
+
+    unsigned long glob_tab_ptr = (unsigned long)symb;
+    if (ioctl(tab_fd, IOCTBLREGSRV, glob_tab_ptr) == 0) {
+        printf("SYM_TAB Address mapped to Tabloader device: %p\n", (void*)glob_tab_ptr);
+    }
+    else {
+        perror("loader: Error: ");
+    }
 }
