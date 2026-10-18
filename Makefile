@@ -64,11 +64,8 @@ modemd:
 AutumnGenericLowLMgr:
 	$(CC) $(CFLAGS) -Wl,-undefined,dynamic_lookup $(SRC)/AutumnGenericLowLMgr.c -o AutumnGenericLowLMgr $(LDFLAGS) -ldrm -lfreetype
 
-sysui:
-	$(CC) $(CFLAGS) -Wl,-undefined,dynamic_lookup $(SRC)/loader.c $(SRC)/tabldioctl.c $(SRC)/pscrfont.c $(SRC)/sysui.c -o sysui $(LDFLAGS) -lpthread -ldrm
-
 libconhal.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/console.c -o libconhal.so
+	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/external_arch/console.c -o libconhal.so
 
 libfbdhal.so:
 	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/fb_dev.c $(HAL)/drm.c -o libfbdhal.so -ldrm
