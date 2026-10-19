@@ -1,5 +1,7 @@
 #include <stdint.h>
 #include <stddef.h>
+#include "../include/HAL/FramebufferStruct.h"
+#include "../include/libfbdev.h"
 
 //UPDATE: moved color format functions from FBDEV API to Color Format API.
 uint32_t AutumnAPI_GetGradientColor(uint32_t base_color, int y, int start_y, int height) {

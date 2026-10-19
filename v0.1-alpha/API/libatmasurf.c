@@ -26,32 +26,6 @@
 #define AS_LAYER_APP 1
 #endif
 
-typedef struct {
-    int id;
-    int memfd;
-
-    uint32_t *pixels;
-
-    int x;
-    int y;
-    int w;
-    int h;
-
-    int z_order;
-    int type;
-
-    bool active;
-} Layer;
-
-typedef struct {
-    int width;
-    int height;
-
-    uint32_t *comp_buf;
-
-    Layer layers[MAX_SURFACES];
-} AS_CTX_t;
-
 static AS_CTX_t *g_ctx = NULL;
 static int g_width = 1024;
 static int g_height = 768;

@@ -1,13 +1,13 @@
 #include <linux/if.h>
 #include "../include/SymbolTable/table.h"
 
-extern ETHERNET_HAL* eth;
+extern SYM_TAB* symb;
 
 int AutumnAPI_EthOn(const char *ifname) {
-	return eth->InterfaceSetup(ifname, IFF_UP, 1);
+	return symb->InterfaceSetup(ifname, IFF_UP, 1);
 }
 
 int AutumnAPI_EthOff(const char *ifname) {
-	return eth->InterfaceSetup(ifname, IFF_UP, 0);
+	return symb->InterfaceSetup(ifname, IFF_UP, 0);
 }
 

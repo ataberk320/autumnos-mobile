@@ -1,23 +1,23 @@
 #include "../include/SymbolTable/table.h"
 
-extern MODEM_HAL* modem;
+extern SYM_TAB* symb;
 
 void AutumnAPI_SetModem() {
-	modem->Init();
+	symb->ModemInit();
 }
 
 void AutumnAPI_Dial(const char* number) {
-	modem->Dial(number);
+	symb->Dial(number);
 }
 
 void AutumnAPI_SendMsg(const char* number, const char* msg) {
-	modem->SendM(number, msg);
+	symb->SendMsg(number, msg);
 }
 
 void AutumnAPI_Answer() {
-	modem->Answer();
+	symb->Answer();
 }
 
 void AutumnAPI_Decline() {
-	modem->Decline();
+	symb->Decline();
 }

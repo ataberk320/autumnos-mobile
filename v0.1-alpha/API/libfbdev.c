@@ -17,8 +17,7 @@
 #include "../include/libfbdev.h"
 #include "../include/SymbolTable/table.h"
 
-extern FBDEV_HAL* fbd;
-extern PALETTE_API* plt; //added missing API table.
+extern SYM_TAB* symb;
 void* handle = NULL;
 void* font_h = NULL;
 bool eye_shield = false;
@@ -283,7 +282,7 @@ int AutumnAPI_Init(FbDev* fb, const char *path) {
     fb->hal_ctx = malloc(sizeof(DRMStruct));
     if (!fb->hal_ctx) return -1;
 
-    if (fbd->InitFbCard(fb->hal_ctx, "/dev/dri/card0") != 0) {
+    if (symb->InitFbCard(fb->hal_ctx, "/dev/dri/card0") != 0) {
         printf("Turning to terminal.");
 	free(fb->hal_ctx);
 	return -1;
@@ -386,5 +385,5 @@ bool AutumnAPI_InvertColors(FbDev* fb) {
 } //NEW FEATURE TOGGLE!
 
 void AutumnAPI_FbReset(DRMStruct* fb) {
-        	fbd->ResetFbCard(fb, 1); 
+        	symb->ResetFbCard(fb, 1); 
 }
