@@ -1,101 +1,82 @@
-
 #define _DEFAULT_SOURCE
 
 #include <sys/reboot.h>
 #include <unistd.h>
 #include <errno.h>
-#include <dirent.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include "../../../include/libatmchtn.h"
 
-#define POWER_ROOT "/sys/class/power_supply"
-#define REQUEST_TUNNEL "power_req"
-#define RESPONSE_TUNNEL "power_resp"
+#define REQUEST_TUNNEL "action_req"
+#define RESPONSE_TUNNEL "action_resp"
 
-int hal_reboot(void)
+extern int _AutumnSys_getbatcpc(void);
+
+int _AutumnSys_reboot(void)
 {
     sync();
     return reboot(RB_AUTOBOOT) == 0 ? 0 : -errno;
 }
 
-int hal_pwroff(void)
+int _AutumnSys_pwroff(void)
 {
     sync();
     return reboot(RB_POWER_OFF) == 0 ? 0 : -errno;
 }
 
-int hal_getcpc(void)
-{
-    DIR *dir = opendir(POWER_ROOT);
-    if (!dir)
-        return -1;
+void daemonize_actionmgrd(void) {
+    pid_t pid = fork();
+    
+    if (pid < 0) exit(EXIT_FAILURE);
+    if (pid > 0) exit(EXIT_SUCCESS);
 
-    struct dirent *entry;
-    char path[256];
-    int capacity = -1;
+    if (setsid() < 0) exit(EXIT_FAILURE);
 
-    while ((entry = readdir(dir)) != NULL) {
-        if (entry->d_name[0] == '.')
-            continue;
+    chdir("/");
+    umask(0);
 
-        int n = snprintf(path, sizeof(path),
-                         "%s/%s/capacity",
-                         POWER_ROOT, entry->d_name);
-
-        if (n < 0 || (size_t)n >= sizeof(path))
-            continue;
-
-        FILE *fp = fopen(path, "r");
-        if (!fp)
-            continue;
-
-        int value;
-        int ok = fscanf(fp, "%d", &value) == 1;
-        fclose(fp);
-
-        if (ok && value >= 0 && value <= 100) {
-            capacity = value;
-            break;
-        }
-    }
-
-    closedir(dir);
-    return capacity;
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO);
+    close(STDERR_FILENO);
 }
 
-int main(void)
-{
-    ChatTunnel *request =
-        AutumnAPI_Tunnel_Connect(REQUEST_TUNNEL);
-    ChatTunnel *response =
-        AutumnAPI_Tunnel_Connect(RESPONSE_TUNNEL);
+int main(void) {
+	daemonize_actionmgrd();
 
-    if (!request || !response)
-        return 1;
+	ChatTunnel *request = AutumnAPI_Tunnel_Connect(REQUEST_TUNNEL);
+    	ChatTunnel *response = AutumnAPI_Tunnel_Connect(RESPONSE_TUNNEL);
 
-    char command[MSG_LEN];
-    char result[MSG_LEN];
+	if (!request || !response) return 1;
 
-    for (;;) {
-        if (!AutumnAPI_Tunnel_ReceiveFromFriend(request, command)) {
-            usleep(1000);
-            continue;
-        }
+	char command[256];
+	char result[256];
 
-        if (strcmp(command, "GET_CAPACITY") == 0) {
-            snprintf(result, sizeof(result), "%d", hal_getcpc());
-            AutumnAPI_Tunnel_Send_Msg(response, result);
-        } else if (strcmp(command, "REBOOT") == 0) {
-            snprintf(result, sizeof(result), "%d", hal_reboot());
-            AutumnAPI_Tunnel_Send_Msg(response, result);
-        } else if (strcmp(command, "POWEROFF") == 0) {
-            snprintf(result, sizeof(result), "%d", hal_pwroff());
-            AutumnAPI_Tunnel_Send_Msg(response, result);
-        } else {
-            AutumnAPI_Tunnel_Send_Msg(response, "UNKNOWN_COMMAND");
-        }
-    }
+	for (;;) {
+		if (!AutumnAPI_Tunnel_ReceiveFromFriend(request, command)) {
+            		usleep(10000);
+            		continue;
+        	}
 
-    return 0;
+		if (strcmp(command, "GETCPC") == 0) {
+			int cap = _AutumnSys_getbatcpc();
+			snprintf(result, sizeof(result), "%d", cap);
+			AutumnAPI_Tunnel_Send_Msg(response, result);
+		}
+		else if (strcmp(command, "RBT") == 0) {
+			snprintf(result, sizeof(result), "%d", _AutumnSys_reboot());
+            		AutumnAPI_Tunnel_Send_Msg(response, result);
+		}
+		else if (strcmp(command, "POWEROFF") == 0) {
+            		snprintf(result, sizeof(result), "%d", _AutumnSys_pwroff());
+            		AutumnAPI_Tunnel_Send_Msg(response, result);
+        	}
+		else {
+			AutumnAPI_Tunnel_Send_Msg(response, "UNKNOWN_COMMAND");
+		}
+	}
+
+	return 0;
 }
