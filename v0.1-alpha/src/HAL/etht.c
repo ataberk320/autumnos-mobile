@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,6 +10,7 @@
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
 #include <arpa/inet.h>
+#include "../../include/HAL/HAL_Symb.h"
 
 #define ADD_RTA(req, attr_type, data, len) \
     do { \
@@ -18,7 +20,6 @@
         memcpy(RTA_DATA(rta), data, len); \
         (*req).n.nlmsg_len = NLMSG_ALIGN((*req).n.nlmsg_len) + RTA_ALIGN(rta->rta_len); \
     } while(0)
-
 
 int hal_ethinterfacectl(const char *ifname, unsigned int flag_mask, int set) {
 	int sock = socket(AF_INET, SOCK_DGRAM, 0);
@@ -43,9 +44,9 @@ int hal_ethinterfacectl(const char *ifname, unsigned int flag_mask, int set) {
 	return ret;
 }
 
-
 void hal_setgateway(int ifindex, const char *ip_addr, const char *gw) {
 	int fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
+    if (fd < 0) return;
 
 	struct {
 		struct nlmsghdr n;
@@ -54,40 +55,64 @@ void hal_setgateway(int ifindex, const char *ip_addr, const char *gw) {
 	} addr_req;
 
 	memset(&addr_req, 0, sizeof(addr_req));
-    	addr_req.n.nlmsg_len = NLMSG_LENGTH(sizeof(struct ifaddrmsg));
-    	addr_req.n.nlmsg_flags = NLM_F_REQUEST | NLM_F_CREATE | NLM_F_EXCL;
-    	addr_req.n.nlmsg_type = RTM_NEWADDR;
-    	addr_req.i.ifa_family = AF_INET;
-    	addr_req.i.ifa_prefixlen = 24;
-    	addr_req.i.ifa_index = ifindex;
+    addr_req.n.nlmsg_len = NLMSG_LENGTH(sizeof(struct ifaddrmsg));
+    addr_req.n.nlmsg_flags = NLM_F_REQUEST | NLM_F_CREATE | NLM_F_EXCL;
+    addr_req.n.nlmsg_type = RTM_NEWADDR;
+    addr_req.i.ifa_family = AF_INET;
+    addr_req.i.ifa_prefixlen = 24;
+    addr_req.i.ifa_index = ifindex;
 
-    	uint32_t ip;
-    	inet_pton(AF_INET, ip_addr, &ip);
-    	ADD_RTA(&addr_req, IFA_LOCAL, &ip, 4);
-    	ADD_RTA(&addr_req, IFA_ADDRESS, &ip, 4);
-    	send(fd, &addr_req, addr_req.n.nlmsg_len, 0);
+    uint32_t ip;
+    inet_pton(AF_INET, ip_addr, &ip);
+    ADD_RTA(&addr_req, IFA_LOCAL, &ip, 4);
+    ADD_RTA(&addr_req, IFA_ADDRESS, &ip, 4);
+    send(fd, &addr_req, addr_req.n.nlmsg_len, 0);
 
-    	struct {
-        	struct nlmsghdr n;
-        	struct rtmsg r;
-        	char buf[256];
-    	} route_req;
+    struct {
+        struct nlmsghdr n;
+        struct rtmsg r;
+        char buf[256];
+    } route_req;
 
-    	memset(&route_req, 0, sizeof(route_req));
-    	route_req.n.nlmsg_len = NLMSG_LENGTH(sizeof(struct rtmsg));
-    	route_req.n.nlmsg_flags = NLM_F_REQUEST | NLM_F_CREATE;
-    	route_req.n.nlmsg_type = RTM_NEWROUTE;
-    	route_req.r.rtm_family = AF_INET;
-    	route_req.r.rtm_table = RT_TABLE_MAIN;
-    	route_req.r.rtm_scope = RT_SCOPE_UNIVERSE;
-    	route_req.r.rtm_type = RTN_UNICAST;
-    	route_req.r.rtm_dst_len = 0;
+    memset(&route_req, 0, sizeof(route_req));
+    route_req.n.nlmsg_len = NLMSG_LENGTH(sizeof(struct rtmsg));
+    route_req.n.nlmsg_flags = NLM_F_REQUEST | NLM_F_CREATE;
+    route_req.n.nlmsg_type = RTM_NEWROUTE;
+    route_req.r.rtm_family = AF_INET;
+    route_req.r.rtm_table = RT_TABLE_MAIN;
+    route_req.r.rtm_scope = RT_SCOPE_UNIVERSE;
+    route_req.r.rtm_type = RTN_UNICAST;
+    route_req.r.rtm_dst_len = 0;
 
-    	uint32_t gateway;
-    	inet_pton(AF_INET, gw, &gateway);
-    	ADD_RTA(&route_req, RTA_GATEWAY, &gateway, 4);
-    	ADD_RTA(&route_req, RTA_OIF, &ifindex, 4);
-    	send(fd, &route_req, route_req.n.nlmsg_len, 0);
+    uint32_t gateway;
+    inet_pton(AF_INET, gw, &gateway);
+    ADD_RTA(&route_req, RTA_GATEWAY, &gateway, 4);
+    ADD_RTA(&route_req, RTA_OIF, &ifindex, 4);
+    send(fd, &route_req, route_req.n.nlmsg_len, 0);
 
-    	close(fd);
+    close(fd);
 }
+
+typedef struct {
+    hal_dev_t base;
+    int (*InterfaceCtl)(const char *ifname, unsigned int flag_mask, int set);
+    void (*SetGateway)(int ifindex, const char *ip_addr, const char *gw);
+} net_dev_t;
+
+static int net_bind_dev(const struct hal_mod_t* module, const char* name, struct hal_dev_t** device) {
+    net_dev_t* dev = malloc(sizeof(net_dev_t));
+    if (!dev) return -1;
+    
+    dev->base.common = (hal_mod_t*)module;
+    dev->InterfaceCtl = hal_ethinterfacectl;
+    dev->SetGateway = hal_setgateway;
+    
+    *device = (hal_dev_t*)dev;
+    return 0;
+}
+
+hal_mod_t HAL_MODULE_INFO_SYM = {
+    .id = "net",
+    .version = 1,
+    .open = net_bind_dev
+};

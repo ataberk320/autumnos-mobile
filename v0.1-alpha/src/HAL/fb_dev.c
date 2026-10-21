@@ -13,7 +13,7 @@
 #include <sys/select.h> // FD_ZERO, FD_SET, select()
 #include <sys/time.h>   // struct timeval
 #include <unistd.h>     // select()
-
+#include "../../include/HAL/HAL_Symb.h"
 
 int screen_width = 0;
 int screen_height = 0;
@@ -108,3 +108,37 @@ uint32_t hal_tofbcolor(uint32_t r_off, uint32_t g_off, uint32_t b_off, uint32_t 
 	uint32_t b = color & 0xFF;
 	return (r << r_off) | (g << g_off) | (b << b_off);
 }
+
+typedef struct {
+    hal_dev_t base;
+    int (*Init)(DRMStruct* ctx, const char* dev_p);
+    void (*Exit)(DRMStruct* ctx);
+    void (*Refresh)(DRMStruct* ctx);
+    void (*Reset)(DRMStruct* ctx, int mode);
+    void (*PageFlip)(DRMStruct* ctx);
+    uint32_t (*ToColor)(uint32_t r_off, uint32_t g_off, uint32_t b_off, uint32_t color);
+    void (*Res)(int fd);
+} fb_dev_t;
+
+static int fb_bind_dev(const struct hal_mod_t* module, const char* name, struct hal_dev_t** device) {
+    fb_dev_t* dev = malloc(sizeof(fb_dev_t));
+    if (!dev) return -1;
+    
+    dev->base.common = (hal_mod_t*)module;
+    dev->Init = hal_fbinit;
+    dev->Exit = hal_fbexit;
+    dev->Refresh = hal_fbrefresh;
+    dev->Reset = hal_fbreset;
+    dev->PageFlip = hal_drmpgflip;
+    dev->ToColor = hal_tofbcolor;
+    dev->Res = hal_drmres;
+    
+    *device = (hal_dev_t*)dev;
+    return 0;
+}
+
+hal_mod_t HAL_MODULE_INFO_SYM = {
+    .id = "fb",
+    .version = 1,
+    .open = fb_bind_dev
+};

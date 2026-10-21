@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include "../../include/HAL/autumn_ioctl.h"
 #include "../../include/HAL/io.h"
+#include "../../include/HAL/HAL_Symb.h"
+
 //Implementing AutumnOS local driver ioctl commands instead of UART HAL table.
 
 static int modem_fd = -1;
@@ -78,3 +80,40 @@ int hal_modemcheckpin() {
     	ioctl(modem_fd, IOCMODRDRESP, buf);
     	return (strstr(buf, "READY") != NULL);
 }
+
+
+typedef struct {
+	hal_dev_t base;
+	int (*IsOk)(void);
+	void(*Init)(void);
+	void (*Dial)(const char* num);
+	void(*Answer)(void);
+	void (*Reject)(void);
+	void (*SendSMS)(const char* num, const char* msg);
+	int (*CheckPin)(void);
+    	void (*Close)(void);
+} mod_dev_t;
+
+static int mod_bind_dev(const struct hal_mod_t* mod, const char* name, struct hal_dev_t** device) {
+	mod_dev_t* dev = malloc(sizeof(mod_dev_t));
+	if (!dev) return -1;
+
+	dev->base.common = (hal_mod_t*)mod;
+	dev->IsOk = hal_modemok;
+    	dev->Init = hal_modeminit;
+    	dev->Dial = hal_modemcall;
+    	dev->Answer = hal_callanswer;
+    	dev->Reject = hal_callreject;
+    	dev->SendSMS = hal_sendsms;
+    	dev->CheckPin = hal_modemcheckpin;
+    	dev->Close = hal_modemcls;
+    
+    	*device = (hal_dev_t*)dev;
+    	return 0;
+}
+
+hal_mod_t HAL_MODULE_INFO_SYM = {
+	.id = "modem",
+	.version = 1,
+	.open = mod_bind_dev
+};

@@ -5,6 +5,8 @@
 #include <errno.h>
 #include "../../include/HAL/sound.h"
 #include <stdio.h>
+#include "../../include/HAL/HAL_Symb.h"
+#include <stdlib.h>
 
 int hal_sndinit(shw* hw, int channels, int samp_r) {
 	hw->fd = open("/dev/dsp", O_WRONLY);
@@ -80,3 +82,36 @@ void hal_compsndcls(shw* hw) {
 }
 
 
+typedef struct {
+    hal_dev_t base;
+    int (*Init)(shw* hw, int channels, int samp_r);
+    int (*Write)(shw* hw, const short* buffer, int samples);
+    void (*SetVol)(shw* hw, int volume);
+    void (*Close)(shw* hw);
+    int (*CompInit)(shw* hw, int channels, int samp_r);
+    int (*CompWrite)(shw* hw, const short* buf, int samples);
+    void (*CompClose)(shw* hw);
+} snd_dev_t;
+
+static int snd_bind_dev(const struct hal_mod_t* module, const char* name, struct hal_dev_t** device) {
+    snd_dev_t* dev = malloc(sizeof(snd_dev_t));
+    if (!dev) return -1;
+    
+    dev->base.common = (hal_mod_t*)module;
+    dev->Init = hal_sndinit;
+    dev->Write = hal_sndwrite;
+    dev->SetVol = hal_setvol;
+    dev->Close = hal_sndcls;
+    dev->CompInit = hal_compsndinit;
+    dev->CompWrite = hal_compsndwrite;
+    dev->CompClose = hal_compsndcls;
+    
+    *device = (hal_dev_t*)dev;
+    return 0;
+}
+
+hal_mod_t HAL_MODULE_INFO_SYM = {
+    .id = "sound",
+    .version = 1,
+    .open = snd_bind_dev
+};
