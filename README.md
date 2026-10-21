@@ -17,25 +17,28 @@ AutumnOS is an Linux-based operating system project developed for RV64 (RISC-V)/
 * **Coder**: A kernel driver which generates a status code for trigger an event on userspace / like IPC communicating but in kernel-space. (ON WORK)
 * **Symbol loader**: An installer for API and HAL libraries before SysUI process.
 * **Autumn Virtual Machine**: A memfd based virtual machine for handling heavy processes.
-* **Whike**: AutumnOS's own C standard like library (includes math and
+* **Whike**: AutumnOS's own C standard like library (includes math and time functions)
 --------------------------------------------------------
 # Tested Hardwares 
 * Allwinner D1 - MangoPi MQ-Pro (Pink Variation/ v1.4): RSOD driver and session working successfully.
 * QEMU: Worked perfectly.
+* **Casper Nirvana NB S100* - **To be tested.**
 --------------------------------------------------------
 Working drivers on QEMU VM test:
 
 - DRM
 - Dual Audio Subsystem (I tested only OSS)
 - Ethernet (No exception but not sure)
+- **Rfkill (WiFi, Bluetooth)* - **To be tested**
+- **Backlight* - **To be tested**
 ---------------------
 # Linux Source Code:
 This system is based on Linux 6.1 now, To pull original tarball:<br>
 <br>
 ```bash
-wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.87.tar.xz
-tar -xf linux-6.1.87.tar.xz
-cd linux-6.1.87
+wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.84.tar.xz
+tar -xf linux-6.1.84.tar.xz
+cd linux-6.1.84
 ```
 --------------------
 **Licensing:** AutumnOS original components, Sooraavali User Interface, theme icons are licensed under GPL-3.0. The Linux kernel (6.1.x) and kernel-derived components retain their respective original licenses, including GPL-2.0-only where applicable.
