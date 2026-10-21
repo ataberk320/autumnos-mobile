@@ -7,13 +7,13 @@ Repairing missing and spaghetti codes.<br>
  
 # **The AutumnOS Project**
 
-AutumnOS is an Linux-based operating system project developed for RV64 (RISC-V) architectures.
+AutumnOS is an Linux-based operating system project developed for RV64 (RISC-V)/X64/AArch64 architectures.
 
 # Interesting Features
 * **Dual Audio Subsystem**: An audio subsystem which supports OSS and ALSA
 * **ChatTunnel**: A SHM based IPC communication mechanism.
-* **AutixSurf**: Layer manager for window manager. (ON WORK)
-* **Tabloader**: A kernel driver which loads HAL and API tables globally. (ON WORK)
+* **AutixSurf**: Layer manager for window manager.
+* **Tabloader**: A kernel driver which loads HAL and API tables globally.
 * **Coder**: A kernel driver which generates a status code for trigger an event on userspace / like IPC communicating but in kernel-space. (ON WORK)
 * **Symbol loader**: An installer for API and HAL libraries before SysUI process.
 * **Autumn Virtual Machine**: A memfd based virtual machine for handling heavy processes.
@@ -33,12 +33,12 @@ Working drivers on QEMU VM test:
 This system is based on Linux 6.1 now, To pull original tarball:<br>
 <br>
 ```bash
-wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.tar.xz
-tar -xf linux-6.1.tar.xz
-cd linux-6.1
+wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.87.tar.xz
+tar -xf linux-6.1.87.tar.xz
+cd linux-6.1.87
 ```
 --------------------
-**Licensing:** AutumnOS original components are licensed under GPL-3.0. The Linux kernel (6.1.x) and kernel-derived components retain their respective original licenses, including GPL-2.0-only where applicable.
+**Licensing:** AutumnOS original components, Sooraavali User Interface, theme icons are licensed under GPL-3.0. The Linux kernel (6.1.x) and kernel-derived components retain their respective original licenses, including GPL-2.0-only where applicable.
 
 # Third party:
 * **libdrm** — MIT
