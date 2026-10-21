@@ -1,12 +1,13 @@
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
+#include <stdio.h>
 #define MINIMP3_IMPLEMENTATION
 #include "../include/minimp3_ex.h"
 #include "../include/HAL/sound.h"
 #include "../include/SymbolTable/table.h"
-#include <tinyalsa/mixer.h>
 
-static struct mixer *mixer = NULL;
+extern SYM_TAB* symb;
 
 static struct {
 	mp3dec_file_info_t info;
@@ -24,8 +25,8 @@ int AutumnAPI_LoadMp3(const char* path) {
 
 	if (mp3dec_load(&mp3d, path, &new_info, NULL, NULL) != 0) return -1;
 
-        if (snd->InitSound(&hw, new_info.channels, new_info.hz) != 0) {
-		perror("HAL - InitSound");
+        if (!symb || !symb->InitSound || symb->InitSound(&hw, new_info.channels, new_info.hz) != 0) {
+		perror("API - InitSound");
 		return -2;
 	}
 	ctx.info = new_info;
@@ -38,7 +39,9 @@ int AutumnAPI_LoadMp3(const char* path) {
         printf("channels: %d\n", ctx.info.channels);
         printf("supported total sample: %d\n", (int)ctx.info.samples);
 
-	snd->SetVol(&hw, 70);
+	if (symb && symb->SetVol) {
+		symb->SetVol(&hw, 70);
+	}
 	return 0;
 }
 
@@ -55,6 +58,7 @@ void AutumnAPI_PlayTime(int* elapsed, int* total) {
         	*total = 0;
     	}
 }
+
 //Integrated *sndev parameter for double-compatible audio playing :)
 int AutumnAPI_PlayAudio(const char *sndev) {
     if (!ctx.playing || ctx.paused) return 0;
@@ -63,10 +67,14 @@ int AutumnAPI_PlayAudio(const char *sndev) {
                 int written = 0;
 
                 if (sndev && strstr(sndev, "dsp") != NULL) {
-                        written = snd->WritePCM(&hw, ctx.pcm_cursor, ctx.samples_left);
+                        if (symb && symb->WritePCM) {
+                                written = symb->WritePCM(&hw, ctx.pcm_cursor, ctx.samples_left);
+                        }
                 }
                 else {
-                        written = snd->CompSndWrite(&hw, ctx.pcm_cursor, ctx.samples_left);
+                        if (symb && symb->CompSndWrite) {
+                                written = symb->CompSndWrite(&hw, ctx.pcm_cursor, ctx.samples_left);
+                        }
                 }
 
                 if (written > 0) {
@@ -116,7 +124,9 @@ int AutumnAPI_Replay(void) {
 }
 
 void AutumnAPI_PCMCleanup(void) {
-    snd->CloseSound(&hw);
+    if (symb && symb->CloseSound) {
+        symb->CloseSound(&hw);
+    }
     ctx.playing = 0;
 }	
 
@@ -125,5 +135,7 @@ int AutumnAPI_GetPlayingStatus(void) {
 }
 
 void AutumnAPI_SetVolume(int volume) {
-	snd->SetVol(&hw, volume);
+	if (symb && symb->SetVol) {
+		symb->SetVol(&hw, volume);
+	}
 }

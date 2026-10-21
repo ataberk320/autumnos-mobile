@@ -32,7 +32,7 @@ int AutumnAPI_JSONParseResp(const char *str, char *out_stat, int max_len) {
 
 	else {
   //destroyed string leak.
-		snprintf(out_stat, "UNKNOWN", max_len);
+		snprintf(out_stat, max_len, "UNKNOWN");
 	}
 
 	cJSON *code = cJSON_GetObjectItemCaseSensitive(root, "code");

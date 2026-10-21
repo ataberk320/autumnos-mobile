@@ -15,7 +15,7 @@ void Button_Set(ButtonWidget* btn, int x, int y, int w, int h, unsigned int n_co
 	btn->height = h;
 	btn->normal_color = n_color;
 	btn->press_color = p_color;
-	btn->isPressed = 0;
+	btn->is_pressed = 0;
 	strncpy(btn->text, txt, sizeof(btn->text) - 1);
 }
 
@@ -24,8 +24,8 @@ int ChkTouchEv(ButtonWidget* btn, int touch_x, int touch_y, int is_touched) {
                   touch_y >= btn->y && touch_y <= (btn->y + btn->height));
 
     if (is_touched && inside) {
-        if (btn->isPressed == 0) {
-            btn->isPressed = 1;
+        if (btn->is_pressed == 0) {
+            btn->is_pressed = 1;
             
             if (btn->OnClick != NULL) {
                 btn->OnClick(btn);
@@ -37,8 +37,8 @@ int ChkTouchEv(ButtonWidget* btn, int touch_x, int touch_y, int is_touched) {
     }
 
     if (!is_touched || !inside) {
-        if (btn->isPressed == 1) {
-            btn->isPressed = 0;
+        if (btn->is_pressed == 1) {
+            btn->is_pressed = 0;
         }
     }
 
@@ -47,6 +47,6 @@ int ChkTouchEv(ButtonWidget* btn, int touch_x, int touch_y, int is_touched) {
 
 void CreateButton(FbDev* screen, FT_Face face, ButtonWidget* btn) {
     	unsigned int current_color = btn->is_pressed ? btn->press_color : btn->normal_color;
-    	symb->DrawButton(screen, face, btn->x, btn->y, btn->width, btn->height, 15, current_color, btn->text, 0x00000000);
+    	symb->DrawButton(screen, face, btn->x, btn->y, btn->width, btn->height, 15, current_color, btn->text, 0x00000000, NULL);
 }
 

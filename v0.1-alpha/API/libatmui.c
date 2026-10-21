@@ -6,9 +6,7 @@
 #include "../include/item_ui/window.h"
 #include "../include/libfbdev.h"
 #include <math.h>
-extern GFX_API* gfx;
-extern WIDGET_API* wid;
-extern PALETTE_API* plt;
+extern SYM_TAB* symb;
 
 void AutumnAPI_DrawWindow(FbDev *fb, Window *win, FT_Face face, int an_speed) {
     if (win->anim != NULL) {
@@ -39,12 +37,12 @@ void AutumnAPI_DrawWindow(FbDev *fb, Window *win, FT_Face face, int an_speed) {
             start_offset = dx; end_offset = win->w - dx;
         }
 		//gradient
-        uint32_t grad_color = plt->ApplyGrad(dark_green_bg, py, 0, win->h);
+        uint32_t grad_color = symb->ApplyGrad(dark_green_bg, py, 0, win->h);
 
         for (int px = start_offset; px < end_offset; px++) {
             int target_x = win->x + px;
             if (target_x >= 0 && target_x < fb->w && current_y >= 0 && current_y < fb->h) {
-                uint32_t final_color = plt->Blend(fb, target_x, current_y, grad_color, alpha);
+                uint32_t final_color = symb->Blend(fb, target_x, current_y, grad_color, alpha);
                 if (fb->bk_bf) fb->bk_bf[current_y * (fb->stride / 4) + target_x] = final_color;
             }
         }
@@ -65,7 +63,7 @@ void AutumnAPI_DrawWindow(FbDev *fb, Window *win, FT_Face face, int an_speed) {
         for (int px = start_offset; px < end_offset; px++) {
             int target_x = panel_x + px;
             if (target_x >= 0 && target_x < fb->w && current_y >= 0 && current_y < fb->h) {
-                uint32_t final_color = plt->Blend(fb, target_x, current_y, 0xFF808080, alpha);
+                uint32_t final_color = symb->Blend(fb, target_x, current_y, 0xFF808080, alpha);
                 if (fb->bk_bf) fb->bk_bf[current_y * (fb->stride / 4) + target_x] = final_color;
             }
         }
@@ -79,14 +77,14 @@ void AutumnAPI_DrawWindow(FbDev *fb, Window *win, FT_Face face, int an_speed) {
         int btn_x = start_x + (i * (btn_w + spacing));
         int btn_y = panel_y + (panel_h - btn_h) / 2;
         
-        wid->SetBtnEnv(&win->buttons[i], btn_x, btn_y, btn_w, btn_h, 0xFFD3D3D3, 0xFFE6A23C, win->labels[i]);
+        symb->SetBtnEnv(&win->buttons[i], btn_x, btn_y, btn_w, btn_h, 0xFFD3D3D3, 0xFFE6A23C, win->labels[i]);
 
         for (int by = 0; by < btn_h; by++) {
             for (int bx = 0; bx < btn_w; bx++) {
                 int target_x = btn_x + bx;
                 int current_y = btn_y + by;
                 if (target_x >= 0 && target_x < fb->w && current_y >= 0 && current_y < fb->h) {
-                    uint32_t final_btn_color = plt->Blend(fb, target_x, current_y, 0xFFD3D3D3, alpha);
+                    uint32_t final_btn_color = symb->Blend(fb, target_x, current_y, 0xFFD3D3D3, alpha);
                     if (fb->bk_bf) fb->bk_bf[current_y * (fb->stride / 4) + target_x] = final_btn_color;
                 }
             }
@@ -96,8 +94,8 @@ void AutumnAPI_DrawWindow(FbDev *fb, Window *win, FT_Face face, int an_speed) {
     uint32_t text_color = (0xFF << 24) | ((255 * alpha / 255) << 16) | ((255 * alpha / 255) << 8) | (255 * alpha / 255);
     uint32_t green_line = (0xFF << 24) | (0 << 16) | ((255 * alpha / 255) << 8) | (0);
 
-    gfx->Text(fb, face, win->title, win->x + 15, win->y + 25, text_color);
-    gfx->DrawLine(fb, win->x + 10, win->y + 40, win->x + win->w - 10, win->y + 40, green_line);	
+    symb->Text(fb, face, win->title, win->x + 15, win->y + 25, text_color);
+    symb->DrawLine(fb, win->x + 10, win->y + 40, win->x + win->w - 10, win->y + 40, green_line);	
 
     int cur_x = win->x + 10, cur_y = win->y + 60;
     char buffer[256];
@@ -105,9 +103,9 @@ void AutumnAPI_DrawWindow(FbDev *fb, Window *win, FT_Face face, int an_speed) {
     char *token = strtok(buffer, " ");
 
     while (token != NULL) {
-        int tw = gfx->GetStrWidth(face, token);
+        int tw = symb->GetStrWidth(face, token);
         if (cur_x + tw > win->x + win->w - 10) { cur_x = win->x + 10; cur_y += 25; }
-        gfx->Text(fb, face, token, cur_x, cur_y, text_color);
+        symb->Text(fb, face, token, cur_x, cur_y, text_color);
         cur_x += tw + 10;
         token = strtok(NULL, " ");
     }
@@ -115,10 +113,10 @@ void AutumnAPI_DrawWindow(FbDev *fb, Window *win, FT_Face face, int an_speed) {
     for (int i = 0; i < win->btn_count; i++) {
         int btn_x = start_x + (i * (btn_w + spacing));
         int btn_y = panel_y + (panel_h - btn_h) / 2;
-        int tw = gfx->GetStrWidth(face, win->labels[i]);
+        int tw = symb->GetStrWidth(face, win->labels[i]);
         
         uint32_t btn_text_c = (0xFF << 24) | ((30 * alpha / 255) << 16) | ((30 * alpha / 255) << 8) | (30 * alpha / 255);
-        gfx->Text(fb, face, win->labels[i], btn_x + (btn_w - tw) / 2, btn_y + (btn_h / 2) - 6, btn_text_c);
+        symb->Text(fb, face, win->labels[i], btn_x + (btn_w - tw) / 2, btn_y + (btn_h / 2) - 6, btn_text_c);
     }
 }
 //speed supported fade animations!

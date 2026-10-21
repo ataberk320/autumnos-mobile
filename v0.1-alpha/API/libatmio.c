@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
-#include "AutumnImage.h"
+#include "../include/item_ui/AutumnImage.h"
 #include "../include/HAL/io.h" //added missing headers
 #include <string.h>
 
@@ -52,9 +52,6 @@ int AutumnAPI_FCp(const char* src_p, const char* dst_p) {
 int AutumnAPI_FRename(const char* old_n, const char* new_n) {
         return _AutumnSys_ioRename(old_n, new_n);
 }
-int AutumnAPI_FRename(const char* old_n, const char* new_n) {
-        return _AutumnSys_ioRename(old_n, new_n);
-}
 
 int AutumnAPI_FMv(const char* src_p, const char* dst_p) {
         char full_dst_p[512];
@@ -81,7 +78,6 @@ GifFileType* AutumnAPI_LoadGif(const char* path) {
         return gif;
 }
 
-AutumnImage* AutumnAPI_LoadImg(const char* path) {
         
 AutumnImage* AutumnAPI_LoadImg(const char* path) {
     int fp = _AutumnSys_ioOpen(path, 0, 0); //AutumnIO implementation

@@ -5,7 +5,7 @@
 #include "../include/HAL/io.h"
 
 #define MINIMP4_IMPLEMENTATION
-#include "minimp4.h"
+#include "../include/minimp4.h"
 
 extern int _mp4_RdCallback(int64_t offset, void *buffer, size_t size, void *token);
 
@@ -67,6 +67,7 @@ int AutumnAPI_LoadVid(const char *path) {
 
     	printf("Video Resolution: %dx%d\n", vctx.width, vctx.height);
     	printf("Total Frames: %u\n", vctx.tot_frm);
+	return 0;
 }
 
 void AutumnAPI_GetVidPlayTime(int* elapsed, int* total) {
