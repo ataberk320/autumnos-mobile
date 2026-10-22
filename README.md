@@ -38,9 +38,9 @@ Working drivers on QEMU VM test:
 This system is based on Linux 6.1 now, To pull original tarball:<br>
 <br>
 ```bash
-wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.84.tar.xz
-tar -xf linux-6.1.84.tar.xz
-cd linux-6.1.84
+wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.176.tar.xz
+tar -xf linux-6.1.176.tar.xz
+cd linux-6.1.176
 ```
 --------------------
 **Licensing:** AutumnOS original components, Sooraavali User Interface, theme icons are licensed under GPL-3.0. The Linux kernel (6.1.x) and kernel-derived components retain their respective original licenses, including GPL-2.0-only where applicable.
