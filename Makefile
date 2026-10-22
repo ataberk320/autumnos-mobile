@@ -1,188 +1,358 @@
-BR_ROOT := /home/ataberk/mangopi-mqpro-br
-OUTPUT := $(BR_ROOT)/output/mqpro
+SHELL := /bin/bash
+.ONESHELL:
+.SHELLFLAGS := -eu -o pipefail -c
+.DEFAULT_GOAL := all
+.DELETE_ON_ERROR:
 
-CROSS_COMPILE := $(OUTPUT)/host/bin/riscv64-buildroot-linux-gnu-
-CC := $(CROSS_COMPILE)gcc
-SYSROOT := $(OUTPUT)/host/riscv64-buildroot-linux-gnu/sysroot
-MOD_CC := $(CROSS_COMPILE)
+ifeq ($(IN_GENTOO),1)
 
-KDIR ?= $(OUTPUT)/build/linux-custom
+PROJECT_NAME := AutumnOS
+PROJECT_VERSION := v0.1-alpha
+TARGET_PROFILE := casper-nirvana-sb-s100
+TARGET_ARCH := x86_64
 
-PROJECT := $(CURDIR)/v0.1-alpha
+ROOT_DIR := $(abspath $(CURDIR))
+PROJECT := $(ROOT_DIR)/v0.1-alpha
 SRC := $(PROJECT)/src
-API := $(PROJECT)/API
-HAL := $(SRC)/HAL
-PTHREAD := $(HAL)/pthread
-ALLWINNER := $(HAL)/allwinner
-MODULE := $(PROJECT)/kernel/module
+API_SRC := $(PROJECT)/API
+HAL_SRC := $(SRC)/HAL
+SERVICE_SRC := $(HAL_SRC)/Service
+SYSFS_SRC := $(HAL_SRC)/SysFS_Node
+MODULE_SRC := $(PROJECT)/kernel/module
 
-OVERLAY := $(BR_ROOT)/br-external/board/mqpro/overlay
+BUILD_DIR := $(ROOT_DIR)/build
+SOURCES_DIR := $(BUILD_DIR)/sources
+OBJ_DIR := $(BUILD_DIR)/obj
+BIN_BUILD := $(BUILD_DIR)/bin
+LIB_BUILD := $(BUILD_DIR)/lib
+OUTPUT_DIR := $(BUILD_DIR)/output
+PROFILE_OUTPUT := $(OUTPUT_DIR)/$(TARGET_PROFILE)
+STAGING_ROOT := $(PROFILE_OUTPUT)/rootfs
 
-CFLAGS := -O2 -Wall -fPIC --sysroot=$(SYSROOT) \
-          -I$(SYSROOT)/usr/include/freetype2 \
-          -I$(SYSROOT)/usr/include/libpng16 \
-          -I$(SYSROOT)/usr/include \
-          -I$(SYSROOT)/usr/include/libdrm \
-          -I$(SYSROOT)/usr/include/harfbuzz \
-          -I$(SYSROOT)/usr/include/cjson \
-          -rdynamic
+ROOTFS_DIR ?= /
+JOBS ?= 4
+CC := gcc
+MAKE := make
+CURL ?= curl
+TAR ?= tar
+INSTALL := install
 
-LDFLAGS := -shared --sysroot=$(SYSROOT) -L$(SYSROOT)/usr/lib -rdynamic -Wl,-E
+CPPFLAGS += -I$(PROJECT)/include -I$(PROJECT)/include/HAL -I$(API_SRC) -I$(HAL_SRC) -I$(SYSFS_SRC)
+CFLAGS += -O2 -Wall -Wextra -fPIC
+LDFLAGS +=
+LDLIBS += -ldl -lpthread -lm
 
-API_DIR := $(OVERLAY)/usr/lib/api
-HAL_DIR := $(OVERLAY)/usr/lib/hal
+GRAPHICS_LIBS := -ldrm -lfreetype -lpng -lharfbuzz -lgif
+JSON_LIBS := -lcjson
+AUDIO_LIBS := -lasound
 
-AUTUMN_LIB := $(OVERLAY)/usr/lib/autumn
-BIN := $(OVERLAY)/bin
-SBIN := $(OVERLAY)/sbin
-TOOLS := $(OVERLAY)/sbin/autumn-tools
-USR_BIN := $(OVERLAY)/usr/bin
-MODULES := $(OVERLAY)/lib/modules
-FONTS := $(OVERLAY)/usr/share/autumncfonts
+API_NAMES := libatmasurf libatmchtn libatmdial libatmeth \
+             libatmio libatmjson libatmnls libatmsndec \
+             libatmtask libatmtls libatmui libatmvidec \
+             libfbdev libmp4sysc libpalette widget
 
-.PHONY: all prepare session init libs hal api daemons tools sysui modules install br_build clean
+API_LIBS := $(addprefix $(LIB_BUILD)/api/,$(addsuffix .so,$(API_NAMES)))
+WHIKE_LIB := $(LIB_BUILD)/libwhike.so
 
-all: prepare session init libs hal api daemons tools sysui modules install
+HAL_NAMES := console drm etht fb_dev hdmi input modem \
+             sound uart usb v4l2
+
+HAL_LIBS := $(addprefix $(LIB_BUILD)/hal/lib,$(addsuffix .so,$(HAL_NAMES)))
+
+PROGRAMS := init session asurfd powerd tempsecd
+DAEMON_BINS := $(addprefix $(BIN_BUILD)/,$(PROGRAMS))
+
+TOOLS := autumn-atxdb autumn-kexec autumn-sudo
+TOOL_BINS := $(addprefix $(BIN_BUILD)/,$(TOOLS))
+
+KERNEL_VERSION := 6.1.176
+KERNEL_NAME := linux-$(KERNEL_VERSION)
+KERNEL_ARCHIVE := $(SOURCES_DIR)/$(KERNEL_NAME).tar.xz
+KERNEL_SRC := $(SOURCES_DIR)/$(KERNEL_NAME)
+KERNEL_URL := https://cdn.kernel.org/pub/linux/kernel/v6.x/$(KERNEL_NAME).tar.xz
+
+KERNEL_OUT := $(BUILD_DIR)/kernel-build/$(TARGET_PROFILE)
+KERNEL_IMAGE := $(KERNEL_OUT)/arch/x86/boot/bzImage
+KERNEL_ARCH := x86
+KERNEL_DEFCONFIG := x86_64_defconfig
+
+.PHONY: all help check-tools check-gentoo prepare \
+        userspace apis hal daemons tools \
+        download-kernel extract-kernel configure-kernel \
+        build-kernel modules kernel install install-deps \
+        sync-portage info clean distclean
+
+all: check-tools prepare install-deps kernel userspace install info
+
+help:
+	@echo "AutumnOS $(PROJECT_VERSION)"
+	@echo "Targets: all userspace apis hal daemons tools kernel install install-deps"
+	@echo "Maintenance: check-tools check-gentoo info clean distclean"
+
+check-tools:
+	@for tool in make gcc curl tar emerge; do \
+		command -v "$$tool" >/dev/null 2>&1 || { echo "Missing tool: $$tool"; exit 1; }; \
+	done
+	@test -x /bin/bash
+	@echo "[OK] Gentoo build environment is available."
+
+check-gentoo:
+	@test -x /bin/bash
+	@command -v emerge >/dev/null 2>&1
+	@echo "[OK] Running inside Gentoo."
 
 prepare:
-	mkdir -p $(API_DIR)
-	mkdir -p $(HAL_DIR)
-	mkdir -p $(AUTUMN_LIB) $(BIN) $(SBIN) $(TOOLS) $(USR_BIN) $(MODULES) $(FONTS)
+	@mkdir -p "$(SOURCES_DIR)" "$(OBJ_DIR)" "$(BIN_BUILD)" \
+		"$(LIB_BUILD)/api" "$(LIB_BUILD)/hal" \
+		"$(KERNEL_OUT)" "$(PROFILE_OUTPUT)" "$(STAGING_ROOT)"
 
-session:
-	$(CC) $(CFLAGS) $(SRC)/loader.c $(SRC)/tabldioctl.c $(SRC)/sigf.c $(SRC)/session.c $(SRC)/pthread/inputd.c $(SRC)/pthread/avm.c $(API)/libatmchtn.c -o session $(LDFLAGS) -lpthread -lgif -lfreetype -ldl
+install-deps: check-gentoo
+	emerge --noreplace --ask=n \
+		dev-vcs/git \
+		dev-libs/cJSON \
+		dev-libs/libxml2 \
+		dev-libs/mxml \
+		dev-libs/openssl \
+		media-libs/freetype \
+		media-libs/harfbuzz \
+		media-libs/fontconfig \
+		media-libs/giflib \
+		x11-libs/libdrm \
+		media-libs/libpng \
+		media-libs/alsa-lib \
+		sys-devel/bc \
+		sys-devel/bison \
+		sys-devel/flex
 
-init:
-	$(CC) $(SRC)/sigf.c $(SRC)/init.c -static -o init
+sync-portage: check-gentoo
+	emerge --sync
 
-asurfd:
-	$(CC) $(CFLAGS) $(SRC)/asurfd.c -o asurfd $(LDFLAGS) -ldrm
+userspace: kernel apis hal daemons tools
 
-modemd:
-	$(CC) $(CFLAGS) $(SRC)/modemd.c -o modemd $(LDFLAGS) -ldrm
+apis hal daemons tools: kernel install-deps
 
-AutumnGenericLowLMgr:
-	$(CC) $(CFLAGS) -Wl,-undefined,dynamic_lookup $(SRC)/AutumnGenericLowLMgr.c -o AutumnGenericLowLMgr $(LDFLAGS) -ldrm -lfreetype
+apis: $(API_LIBS) $(WHIKE_LIB)
 
-libconhal.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/external_arch/console.c -o libconhal.so
+$(LIB_BUILD)/api/%.so: $(API_SRC)/%.c | prepare
+	$(CC) $(CPPFLAGS) $(CFLAGS) -shared "$<" -o "$@" \
+		$(LDFLAGS) $(GRAPHICS_LIBS) $(JSON_LIBS) $(LDLIBS)
 
-libfbdhal.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/fb_dev.c $(HAL)/drm.c -o libfbdhal.so -ldrm
+$(WHIKE_LIB): $(API_SRC)/libwhike.c | prepare
+	$(CC) $(CPPFLAGS) $(CFLAGS) -shared "$<" -o "$@" \
+		$(LDFLAGS) $(LDLIBS)
 
-libmshal.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/input.c -o libmshal.so
+hal: $(HAL_LIBS)
 
-libsndhal.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/sound.c -o libsndhal.so
+$(LIB_BUILD)/hal/lib%.so: $(HAL_SRC)/%.c | prepare
+	$(CC) $(CPPFLAGS) $(CFLAGS) -shared "$<" -o "$@" \
+		$(LDFLAGS) $(GRAPHICS_LIBS) $(AUDIO_LIBS) $(LDLIBS)
 
-libethal.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/etht.c -o libethal.so
+daemons: $(DAEMON_BINS)
 
-libpwrhal.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/power.c -o libpwrhal.so
+$(BIN_BUILD)/init: $(SRC)/init.c $(SRC)/sigf.c | prepare
+	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o "$@" $(LDFLAGS) $(LDLIBS)
 
-libuarthal.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/uart.c -o libuarthal.so
+$(BIN_BUILD)/session: $(SRC)/loader.c $(SRC)/tabldioctl.c \
+	$(SRC)/sigf.c $(SRC)/session.c $(SRC)/pthread/inputd.c \
+	$(SRC)/pthread/avm.c $(API_SRC)/libatmchtn.c | prepare
+	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o "$@" $(LDFLAGS) $(LDLIBS)
 
-libsimhal.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/modem.c -o libsimhal.so
+$(BIN_BUILD)/asurfd: $(SRC)/asurfd.c | prepare
+	$(CC) $(CPPFLAGS) $(CFLAGS) "$<" -o "$@" $(LDFLAGS) $(LDLIBS)
 
-libhdmihal.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) $(HAL)/hdmi.c -o libhdmihal.so -lrt -lm -ldrm
+$(BIN_BUILD)/powerd: $(SERVICE_SRC)/power.c $(SYSFS_SRC)/bat.c | prepare
+	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o "$@" $(LDFLAGS) $(LDLIBS)
 
-libatmcore.so:
-	$(CC) $(CFLAGS) $(LDFLAGS) -Wl,-undefined,dynamic_lookup \
-		$(API)/libatmnls.c \
-		$(API)/lpngsysc.c \
-		$(API)/libfbdev.c \
-		$(API)/libmp4sysc.c \
-		$(API)/libatmvidec.c \
-		$(API)/widget.c \
-		$(API)/libatmio.c \
-		$(API)/libatmsndec.c \
-		$(API)/libatmeth.c \
-		$(API)/libatmdial.c \
-		$(API)/libatmui.c \
-		$(API)/libatmchtn.c \
-		$(API)/libatmjson.c \
-		$(API)/libpalette.c \
-		$(API)/libatmasurf.c \
-		$(API)/libatmtls.c \
-		$(API)/libaction.c \
-		$(API)/libatmtask.c \
-		-o libatmcore.so -lfreetype -lpng -ldl -lgif -ldrm -lharfbuzz -lm -lcjson
+$(BIN_BUILD)/tempsecd: $(SRC)/tempsecd.c $(SRC)/sysrqcmd.c \
+	$(SYSFS_SRC)/bat.c | prepare
+	$(CC) $(CPPFLAGS) $(CFLAGS) $^ -o "$@" $(LDFLAGS) $(LDLIBS)
 
-libs: libwhike.so
+tools: $(TOOL_BINS)
 
-hal: libconhal.so libfbdhal.so libmshal.so libsndhal.so libethal.so libpwrhal.so libuarthal.so libsimhal.so libhdmihal.so
+$(BIN_BUILD)/autumn-atxdb: $(SRC)/autumn-atxdb.c | prepare
+	$(CC) $(CPPFLAGS) $(CFLAGS) "$<" -o "$@" \
+		$(LDFLAGS) -lutil $(LDLIBS)
 
-api: libatmcore.so
+$(BIN_BUILD)/autumn-kexec: $(SRC)/autumn-kexec.c | prepare
+	$(CC) $(CPPFLAGS) $(CFLAGS) "$<" -o "$@" $(LDFLAGS) $(LDLIBS)
 
-daemons: asurfd modemd AutumnGenericLowLMgr
+$(BIN_BUILD)/autumn-sudo: $(SRC)/autumn-sudo.c | prepare
+	$(CC) $(CPPFLAGS) $(CFLAGS) "$<" -o "$@" $(LDFLAGS) $(LDLIBS)
 
-tools:
-	$(CC) $(CFLAGS) $(SRC)/autumn-kexec.c -o autumn-kexec $(LDFLAGS)
-	$(CC) $(CFLAGS) $(SRC)/autumn-atxdb.c -o autumn-atxdb $(LDFLAGS) -lutil
-	$(CC) $(CFLAGS) $(SRC)/autumn-sudo.c -o autumn-sudo $(LDFLAGS)
+download-kernel: prepare
+	@if [ ! -s "$(KERNEL_ARCHIVE)" ]; then
+		$(CURL) -fL --retry 3 "$(KERNEL_URL)" -o "$(KERNEL_ARCHIVE)"
+	else
+		echo "[SKIP] Kernel archive already exists."
+	fi
 
-modules:
-	@set -e; \
-	trap 'rm -f "$(MODULE)/Kbuild"' EXIT INT TERM; \
-	printf '%s\n' \
-		'obj-m += s800modem.o' \
-		'obj-m += avinput.o' \
-		'obj-m += a_panicsod.o' \
-		'obj-m += tabloader.o' \
-		'obj-m += coder.o' \
-		> "$(MODULE)/Kbuild"; \
-	$(MAKE) -C "$(KDIR)" \
-		ARCH=riscv \
-		CROSS_COMPILE="$(MOD_CC)" \
-		M="$(MODULE)" \
-		modules
+extract-kernel: download-kernel
+	@if [ ! -f "$(KERNEL_SRC)/.autumnos-extracted" ]; then
+		mkdir -p "$(KERNEL_SRC)"
+		$(TAR) -xf "$(KERNEL_ARCHIVE)" \
+			--strip-components=1 -C "$(KERNEL_SRC)"
+		touch "$(KERNEL_SRC)/.autumnos-extracted"
+	else
+		echo "[SKIP] Kernel sources already extracted."
+	fi
 
-install:
-	cp -f init $(SBIN)/
-	cp -f session $(BIN)/
-	cp -f asurfd $(BIN)/
-	cp -f modemd $(BIN)/
-	cp -f AutumnGenericLowLMgr $(BIN)/
-	cp -f sysui $(USR_BIN)/
+configure-kernel: install-deps extract-kernel
+	@mkdir -p "$(KERNEL_OUT)"
+	@if [ ! -s "$(KERNEL_OUT)/.config" ]; then
+		$(MAKE) -C "$(KERNEL_SRC)" O="$(KERNEL_OUT)" \
+			ARCH="$(KERNEL_ARCH)" "$(KERNEL_DEFCONFIG)"
+	fi
+	@"$(KERNEL_SRC)/scripts/config" --file "$(KERNEL_OUT)/.config" \
+		-e MODULES \
+		-e GPIOLIB \
+		-e MAGIC_SYSRQ \
+		--set-val MAGIC_SYSRQ_DEFAULT_ENABLE 0x1f6 \
+		-e SERIAL_CORE \
+		-e SERIAL_DEV_BUS
+	$(MAKE) -C "$(KERNEL_SRC)" O="$(KERNEL_OUT)" \
+		ARCH="$(KERNEL_ARCH)" olddefconfig
+	@grep -E '^(CONFIG_MODULES|CONFIG_GPIOLIB|CONFIG_MAGIC_SYSRQ|CONFIG_MAGIC_SYSRQ_DEFAULT_ENABLE|CONFIG_SERIAL_CORE|CONFIG_SERIAL_DEV_BUS)=' \
+		"$(KERNEL_OUT)/.config" || true
 
-	cp -f autumn-kexec $(TOOLS)/
-	cp -f autumn-atxdb $(TOOLS)/
-	cp -f autumn-sudo $(TOOLS)/
+build-kernel: configure-kernel
+	$(MAKE) -C "$(KERNEL_SRC)" O="$(KERNEL_OUT)" \
+		ARCH="$(KERNEL_ARCH)" -j"$(JOBS)" bzImage modules
+	@test -f "$(MODULE_SRC)/Kbuild" -o -f "$(MODULE_SRC)/Makefile"
+	$(MAKE) -C "$(KERNEL_SRC)" O="$(KERNEL_OUT)" \
+		M="$(MODULE_SRC)" ARCH="$(KERNEL_ARCH)" -j"$(JOBS)" modules
+	@mkdir -p "$(OUTPUT_DIR)"
+	$(INSTALL) -D "$(KERNEL_IMAGE)" \
+		"$(OUTPUT_DIR)/vmlinuz-$(KERNEL_VERSION)"
+	$(INSTALL) -D "$(KERNEL_OUT)/.config" \
+		"$(OUTPUT_DIR)/kernel-$(KERNEL_VERSION).config"
 
-	cp -f libatmcore.so $(API_DIR)/
+modules: build-kernel
 
-	cp -f libconhal.so $(HAL_DIR)/
-	cp -f libuarthal.so $(HAL_DIR)/
-	cp -f libfbdhal.so $(HAL_DIR)/
-	cp -f libhdmihal.so $(HAL_DIR)/
-	cp -f libmshal.so $(HAL_DIR)/
-	cp -f libsndhal.so $(HAL_DIR)/
-	cp -f libethal.so $(HAL_DIR)/
-	cp -f libsimhal.so $(HAL_DIR)/
-	cp -f libpwrhal.so $(HAL_DIR)/
+kernel: build-kernel
 
-	cp -f libwhike.so $(AUTUMN_LIB)/
+install: userspace kernel
+	@mkdir -p "$(STAGING_ROOT)/usr/lib/api" \
+		"$(STAGING_ROOT)/usr/lib/hal" \
+		"$(STAGING_ROOT)/usr/sbin" \
+		"$(STAGING_ROOT)/usr/bin" \
+		"$(STAGING_ROOT)/boot"
+	cp -a $(API_LIBS) "$(STAGING_ROOT)/usr/lib/api/"
+	$(INSTALL) -m 0644 "$(WHIKE_LIB)" "$(STAGING_ROOT)/usr/lib/"
+	cp -a $(HAL_LIBS) "$(STAGING_ROOT)/usr/lib/hal/"
+	$(INSTALL) -m 0755 $(DAEMON_BINS) "$(STAGING_ROOT)/usr/sbin/"
+	$(INSTALL) -m 0755 $(TOOL_BINS) "$(STAGING_ROOT)/usr/bin/"
+	$(INSTALL) -m 0644 "$(OUTPUT_DIR)/vmlinuz-$(KERNEL_VERSION)" \
+		"$(STAGING_ROOT)/boot/"
+	@mkdir -p "$(STAGING_ROOT)/lib/modules/$(KERNEL_VERSION)/extra"
+	@find "$(MODULE_SRC)" -type f -name '*.ko' -print0 | \
+		while IFS= read -r -d '' module; do \
+			$(INSTALL) -m 0644 "$$module" \
+				"$(STAGING_ROOT)/lib/modules/$(KERNEL_VERSION)/extra/$$(basename "$$module")"; \
+		done
+	@echo "[OK] Staged files: $(STAGING_ROOT)"
 
-	find $(MODULE) -maxdepth 1 -type f -name '*.ko' -exec cp -f {} $(MODULES)/ \;
-
-	@if [ -f Lat38-VGA32x16.psf ]; then cp -f Lat38-VGA32x16.psf $(FONTS)/; fi
-
-br_build:
-	bash -c 'cd $(BR_ROOT)/br-external && source envsetup.sh && set_target mqpro && m all'
+info:
+	@echo "Project: $(PROJECT)"
+	@echo "Profile: $(TARGET_PROFILE)"
+	@echo "Kernel: $(KERNEL_VERSION)"
+	@echo "Build jobs: $(JOBS)"
+	@echo "Staging root: $(STAGING_ROOT)"
 
 clean:
-	rm -f session init sysui asurfd modemd AutumnGenericLowLMgr
-	rm -f *.so
-	rm -f autumn-kexec autumn-atxdb autumn-sudo
-	rm -f $(MODULE)/*.ko
-	rm -f $(MODULE)/*.o
-	rm -f $(MODULE)/*.mod
-	rm -f $(MODULE)/*.mod.c
-	rm -f $(MODULE)/modules.order
-	rm -f $(MODULE)/Module.symvers
-	rm -f $(MODULE)/Kbuild
+	rm -rf "$(OBJ_DIR)" "$(BIN_BUILD)" "$(LIB_BUILD)" "$(KERNEL_OUT)"
+
+distclean: clean
+	@echo "Removing downloaded sources; preserving Gentoo rootfs."
+	rm -rf "$(SOURCES_DIR)"
+
+else
+
+ROOTFS_DIR ?= $(HOME)/gentoo-autix/rootfs
+GENTOO_WORK_DIR ?= $(HOME)/gentoo-autix
+PROJECT_HOST_DIR := $(abspath $(CURDIR))
+JOBS ?= 4
+CURL ?= curl
+TAR ?= tar
+
+STAGE_BASE_URL := https://distfiles.gentoo.org/releases/amd64/autobuilds
+STAGE_LIST := $(GENTOO_WORK_DIR)/latest-stage3-amd64-systemd.txt
+STAGE_ARCHIVE := $(GENTOO_WORK_DIR)/stage3-amd64-systemd.tar.xz
+GOALS := $(if $(strip $(MAKECMDGOALS)),$(MAKECMDGOALS),all)
+SUDO := $(shell if [ "$$(id -u)" -eq 0 ]; then echo ""; else echo "sudo"; fi)
+
+.PHONY: all help check-tools check-gentoo prepare-gentoo userspace apis hal daemons tools download-kernel extract-kernel configure-kernel build-kernel modules kernel install install-deps sync-portage info clean distclean dispatch
+
+all help check-tools check-gentoo prepare-gentoo userspace apis hal daemons tools download-kernel extract-kernel configure-kernel build-kernel modules kernel install install-deps sync-portage info clean distclean: dispatch
+
+dispatch:
+	@set -eu
+	rootfs="$(ROOTFS_DIR)"
+	work="$(GENTOO_WORK_DIR)"
+	project="$(PROJECT_HOST_DIR)"
+	mnt="$$rootfs/work/autumnos-mobile-main"
+
+	mounted_dev=0
+	mounted_proc=0
+	mounted_sys=0
+	mounted_run=0
+	mounted_project=0
+
+	cleanup() {
+		if [ "$$mounted_project" -eq 1 ]; then $(SUDO) umount "$$mnt" || true; fi
+		if [ "$$mounted_run" -eq 1 ]; then $(SUDO) umount -R "$$rootfs/run" || true; fi
+		if [ "$$mounted_sys" -eq 1 ]; then $(SUDO) umount -R "$$rootfs/sys" || true; fi
+		if [ "$$mounted_proc" -eq 1 ]; then $(SUDO) umount -R "$$rootfs/proc" || true; fi
+		if [ "$$mounted_dev" -eq 1 ]; then $(SUDO) umount -R "$$rootfs/dev" || true; fi
+	}
+	trap cleanup EXIT
+
+	command -v "$(CURL)" >/dev/null 2>&1 || { echo "Missing host tool: $(CURL)"; exit 1; }
+	command -v "$(TAR)" >/dev/null 2>&1 || { echo "Missing host tool: $(TAR)"; exit 1; }
+	$(SUDO) mkdir -p "$$work" "$$rootfs"
+
+	if [ ! -x "$$rootfs/bin/bash" ]; then
+		echo "[INFO] Fetching the latest official Gentoo amd64 systemd stage3."
+		$(CURL) -fL --retry 3 "$(STAGE_BASE_URL)/latest-stage3-amd64-systemd.txt" -o "$(STAGE_LIST)"
+		stage_path="$$(awk '!/^#/ && NF {print $$1; exit}' "$(STAGE_LIST)")"
+		test -n "$$stage_path" || { echo "Could not determine the Gentoo stage3 archive path."; exit 1; }
+		$(CURL) -fL --retry 3 "$(STAGE_BASE_URL)/$$stage_path" -o "$(STAGE_ARCHIVE)"
+		$(SUDO) tar --xattrs-include='*.*' --numeric-owner -xpf "$(STAGE_ARCHIVE)" -C "$$rootfs"
+		$(SUDO) cp -L /etc/resolv.conf "$$rootfs/etc/resolv.conf"
+	fi
+
+	test -x "$$rootfs/bin/bash" || { echo "Gentoo stage3 extraction failed."; exit 1; }
+
+	$(SUDO) mkdir -p "$$rootfs/dev" "$$rootfs/proc" "$$rootfs/sys" "$$rootfs/run" "$$mnt"
+
+	if ! mountpoint -q "$$rootfs/dev"; then
+		$(SUDO) mount --rbind /dev "$$rootfs/dev"
+		$(SUDO) mount --make-rslave "$$rootfs/dev"
+		mounted_dev=1
+	fi
+
+	if ! mountpoint -q "$$rootfs/proc"; then
+		$(SUDO) mount -t proc proc "$$rootfs/proc"
+		mounted_proc=1
+	fi
+
+	if ! mountpoint -q "$$rootfs/sys"; then
+		$(SUDO) mount --rbind /sys "$$rootfs/sys"
+		$(SUDO) mount --make-rslave "$$rootfs/sys"
+		mounted_sys=1
+	fi
+
+	if ! mountpoint -q "$$rootfs/run"; then
+		$(SUDO) mount --rbind /run "$$rootfs/run"
+		$(SUDO) mount --make-rslave "$$rootfs/run"
+		mounted_run=1
+	fi
+
+	if ! mountpoint -q "$$mnt"; then
+		$(SUDO) mount --bind "$$project" "$$mnt"
+		mounted_project=1
+	fi
+
+	$(SUDO) chroot "$$rootfs" /bin/bash -lc \
+		'cd /work/autumnos-mobile-main && make IN_GENTOO=1 ROOTFS_DIR=/ JOBS=$(JOBS) $(GOALS)'
+
+endif
