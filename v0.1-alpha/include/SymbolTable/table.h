@@ -1,15 +1,15 @@
 #ifndef API_H
 #define API_H
 
-#include "../libfbdev.h"
+#include "libfbdev.h"
 #include <gif_lib.h>
-#include "../item_ui/AutumnImage.h"
-#include "../libatmchtn.h"
+#include "AutumnImage.h"
+#include "libatmchtn.h"
 #include <linux/input.h>
-#include "../item_ui/button.h"
-#include "../HAL/sound.h"
-#include "../item_ui/timer.h"
-#include "../item_ui/window.h"
+#include "button.h"
+#include "sound.h"
+#include "timer.h"
+#include "window.h"
 #include <hb.h>
 #include <openssl/ssl.h>
 
@@ -29,7 +29,6 @@ typedef void (*DrawWindow_t)(FbDev*, int, int, int, int, int, uint32_t, uint32_t
 typedef int (*GetStringWidth_t)(FT_Face, const char*);
 typedef GifFileType* (*LdGif_t)(const char*);
 typedef AutumnImage* (*LdImg_t)(const char*);
-typedef uint32_t (*utf8_t)(const char** s);
 typedef ChatTunnel* (*Create_t)(const char*, int);
 typedef bool (*Receive_t)(ChatTunnel *, char *, int);
 typedef bool (*Send_t)(ChatTunnel *, const char *, int);
@@ -62,10 +61,7 @@ typedef void (*ScreenFree_t)(int, void*, size_t);
 typedef void (*PageFlip_t)(DRMStruct*);
 typedef int (*EthernetIntCtl_t)(const char *, unsigned int, int);
 typedef void (*EthernetSetGateway_t)(int, const char *, const char *);
-typedef void (*Reboot_t)(void);
-typedef void (*PowerOff_t)(void);
-typedef void (*EmergencyButton_t)(void);
-typedef int (*GetPSupplyPercent_t)(void);
+typedef char* (*GetPSupplyPercent_t)(void);
 typedef int (*EthOn_t)(const char *);
 typedef int (*EthOff_t)(const char *);
 typedef void (*UartSendCmd_t)(const char *);
@@ -85,7 +81,7 @@ typedef void (*ShapeCompx_t)(hb_font_t *, const char *);
 typedef uint32_t (*AlphaBlend_t)(FbDev *, int, int, uint32_t, int);
 typedef void (*Anim_FadeIn_t)(void*, void*, int);
 typedef void (*Anim_FadeOut_t)(void*, void*, int);
-typedef int (*SpawnLayer_t)(int *, uint32_t **, int, int, int, int, int, int);
+typedef int (*SpawnLayer_t)(int *, uint32_t **, int, int, int, int, int);
 typedef int (*EnableTLS_t)();
 typedef void (*HostnameConf_t)(SSL *, const char *);
 typedef char* (*CreateRequest_t)(const char *, const char *, int);
@@ -93,15 +89,33 @@ typedef int (*ParseResponse_t)(const char *, char *, int);
 typedef int (*CompatibleSubsInit_t)(shw* hw, int channels, int samp_r);
 typedef int (*CompatibleSubsWrite_t)(shw* hw, const short* buf, int samples);
 typedef void (*CompatibleSubsCls_t)(shw* hw);
-typedef void (*Icon_Set_t)(IconWidget*, int, int, int, int, AutumnImage*, const char*);
-typedef int (*ChkIcTouchEv_t)(IconWidget* icon, int touch_x, int touch_y, int is_touched);
-typedef void (*CreateIcon_t)(FbDev* screen, FT_Face face, IconWidget* icon);
-typedef void (*Grid_Set_t)(GridWidget*, int, int, int, int, int);
-typedef int (*AddGrid_t)( GridWidget* grid, IconWidget* icon ); 
-typedef void (*Grid_Layout_t)(GridWidget*);
-typedef void (*CreateGrid_t)(FbDev*, FT_Face, GridWidget*);
-typedef int (*ChkGridTouchEv_t)(GridWidget*, int, int, int);
+typedef void (*Reboot_t)(void);
+typedef void (*PowerOff_t)(void);
+typedef void (*SleepMode_t)(void);
+typedef void (*EmergencyButton_t)(void);
+typedef void (*SystemAction_t)(int);
+typedef int (*SetFont_t)(FT_Library *, FT_Face *, const char *, int);
+typedef int (*GetBPercent_t)(void);
+typedef unsigned long (*GetTotalRAM_t)(void);
+typedef unsigned long (*GetFreeRAM_t)(void);
+typedef int (*GetProcess_t)(void);
+typedef int (*CheckProcessStat_t)(const char *);
+typedef void (*AddShadow_t)(FbDev*, int, int, int, int, int, uint32_t);
+typedef void (*DrawTriangle_t)(FbDev*, int, int, int, int, int, int, uint32_t, int);
+typedef int (*RfkillList_t)(rfkillDev *, size_t, size_t *);
+typedef int (*RfkillSetBlk_t)(uint32_t, int);
 
+typedef struct {
+	RfkillList_t ListRF;
+	RfkillSetBlk_t SetBlocked;
+} RFKILL_HAL;
+
+typedef struct {
+	GetTotalRAM_t TotalRAM;
+	GetFreeRAM_t FreeRAM;
+	GetProcess_t GetProc;
+	CheckProcessStat_t CheckStat;
+} __attribute__((aligned(8))) TASK_API;
 
 typedef struct {
 	UartInit_t Connect;
@@ -125,8 +139,7 @@ typedef struct {
 } __attribute__((aligned(8))) NATIVELS_API;
 
 typedef struct {
-	Reboot_t Reboot;
-	PowerOff_t Shutdown;
+	SystemAction_t Action;
 	EmergencyButton_t EmergencyShutdown;
 	GetPSupplyPercent_t BatPercent;
 } __attribute__((aligned(8))) SYSPOWER_HAL;
@@ -137,8 +150,16 @@ typedef struct {
 } __attribute__((aligned(8))) ETHERNET_HAL;
 
 typedef struct {
+	Reboot_t Reboot;
+	PowerOff_t Shutdown;
+	SleepMode_t Sleep;
+	GetBPercent_t GetBatPercent;
+} __attribute__((aligned(8))) ACTION_API;
+
+typedef struct {
 	DrawLine_t DrawLine;
 	DrawImage_t DrawImage;
+	DrawTriangle_t DrawTriangle;
 	DrawButton_t DrawButton;
 	InitFb_t InitFb;
 	RefreshScreen_t RefreshScreen;
@@ -155,6 +176,7 @@ typedef struct {
 typedef struct {
 	GetGradientColor_t ApplyGrad;
 	AlphaBlend_t Blend;
+	AddShadow_t AddShadow;
 } __attribute__((aligned(8))) PALETTE_API;
 
 typedef struct {
@@ -198,20 +220,13 @@ typedef struct {
 	CreateButton_t SpawnButton;
 	ChkTouchEv_t IsTouchEvent;
 	CreateElapsedTimer_t SpawnElTimer;
-	Icon_Set_t SetIconEnv;
-	ChkIcTouchEv IsTouchEvent_Icon;
-	CreateIcon_t SpawnIcon;
-	Grid_Set_t SetGridEnv;
-	AddGrid_t AddGrid;
-	Grid_Layout_t SetGLayout;
-	CreateGrid_t SpawnGrid;
-	ChkGridTouchEv_t IsTouchEvent_Grid;
 } __attribute__((aligned(8))) WIDGET_API;
 
 typedef struct {
 	DrawMsgBox_t MessageBox;
 	Anim_FadeIn_t FadeIn;
 	Anim_FadeOut_t FadeOut;
+	SetFont_t SetFont;
 } __attribute__((aligned(8))) ADV_WIDGET_API;
 
 typedef struct {
@@ -246,6 +261,30 @@ typedef struct {
 	ParseResponse_t ParseResp;
 } __attribute__((aligned(8))) JSON_API;
 
+typedef struct {
+    GFX_API* gfx;
+    IMG_API* img;
+    CHAT_TUN_API* tun;
+    MOUSE_HAL* mshal;
+    WIDGET_API* wid;
+    SOUND_HAL* snd;
+    FBDEV_HAL* fbd;
+    MP3_PLAYER_API* mp3p;
+    CONNECTION_API* conn;
+    SYSPOWER_HAL* pwr;
+    ETHERNET_HAL* eth;
+    MODEM_HAL* modem;
+    UART_HAL* uart;
+    ADV_WIDGET_API* uiw;
+    PALETTE_API* plt;
+    NATIVELS_API* nls;
+    ASURF_API* asf;
+    SSL_API* ssl;
+    JSON_API* json;
+    ACTION_API* act;
+    TASK_API* task;
+} __attribute__((aligned(8))) SYM_TAB;
+
 extern GFX_API* gfx;
 extern IMG_API* img;
 extern CHAT_TUN_API* tun;
@@ -264,6 +303,9 @@ extern NATIVELS_API* nls;
 extern ASURF_API* asf;
 extern SSL_API* ssl;
 extern JSON_API* json;
+extern ACTION_API* act;
+extern TASK_API *task;
+extern CONNECTION_API* conn;
 
 void ldinit();
 
