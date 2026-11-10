@@ -1,7 +1,7 @@
 #ifndef API_H
 #define API_H
 
-#include "../../libfbdev.h"
+#include "../libfbdev.h"
 #include <gif_lib.h>
 #include "../item_ui/AutumnImage.h"
 #include "../../libatmchtn.h"
