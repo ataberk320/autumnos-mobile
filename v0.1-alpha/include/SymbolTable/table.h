@@ -4,7 +4,7 @@
 #include "../libfbdev.h"
 #include <gif_lib.h>
 #include "../item_ui/AutumnImage.h"
-#include "../../libatmchtn.h"
+#include "../libatmchtn.h"
 #include <linux/input.h>
 #include "../HAL/rfkill.h"
 #include "../item_ui/button.h"
