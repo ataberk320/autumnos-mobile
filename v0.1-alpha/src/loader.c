@@ -151,11 +151,12 @@ void ldinit() {
         exit(1);
     }
 
-    extern SYM_TAB *sym;
-    symb = sym;
+    symb = (SYM_TAB*)calloc(1, sizeof(SYM_TAB));
+
     if (!symb) {
-        printf("loader: Error: NULL Global Symbol Table. Allocating now.\n");
-        symb = (SYM_TAB*)calloc(1, sizeof(SYM_TAB));
+        perror("loader: Cannot allocate SYM_TAB");
+        close(tab_fd);
+        exit(EXIT_FAILURE);
     }
 
     printf("loader: Notify: Scanning and loading hardware layers from /usr/lib/hal...\n");

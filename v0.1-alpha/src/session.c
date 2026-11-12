@@ -81,25 +81,25 @@ int main(int argc, char *argv[]) {
                 return 1;
         }
 
-	if (symb->InitFb(&screen, drmcard) != 0) { //using dynamic parameter
+	if (symb->gfx->InitFb(&screen, drmcard) != 0) { //using dynamic parameter
         	perror("FbInit");
         	return 1;
     	}
 
-	load = symb->LdGif("/usr/share/loading.gif");
+	load = symb->img->LdGif("/usr/share/loading.gif");
         if (!load) {
                 perror("LoadGif");
                 return 1;
         }
 	
-        int load_count = symb->CountGif(load);
+        int load_count = symb->img->CountGif(load);
 	
         _userspace_StartSrv();
 	
 	while (!is_ui) {
-                symb->Clear(&screen, 0x00000000); //DARK
+                symb->gfx->Clear(&screen, 0x00000000); //DARK
                 //symb->DrawGif(&screen, load, (screen.w - 256) / 2, (screen.h - 256) / 2, loadanim_frame); //boot animation
-                symb->RefreshScreen(&screen); // to write
+                symb->gfx->RefreshScreen(&screen); // to write
                 loadanim_frame++;
                 
 		if (loadanim_frame >= load_count) {
