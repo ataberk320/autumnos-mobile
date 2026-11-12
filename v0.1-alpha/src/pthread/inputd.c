@@ -21,7 +21,7 @@ void* inputd_main(void* arg) {
         	printf("waiting for tunnel...\n"); //for prevent to sigsegv
     	}
 
-    	int fd = symb->OpenMouse();
+    	int fd = symb->mshal->OpenMouse();
     	if (fd < 0) {
         	perror("inputd - OpenMouse");
         	return NULL;
@@ -36,7 +36,7 @@ void* inputd_main(void* arg) {
 		char buffer[128];
 
 		while (1) {
-    		if (symb->ReadMouse(fd, &ev) == sizeof(struct input_event)) {
+    		if (symb->mshal->ReadMouse(fd, &ev) == sizeof(struct input_event)) {
 
         		if (ev.type == EV_ABS) {
             			if (ev.code == ABS_X) {
