@@ -4,8 +4,6 @@
 #include FT_FREETYPE_H
 #include "../include/SymbolTable/table.h"
 #include "../include/item_ui/timer.h"
-#include "../include/item_ui/grid.h"
-#include "../include/item_ui/icon.h"
 extern SYM_TAB* symb;
 
 void Button_Set(ButtonWidget* btn, int x, int y, int w, int h, unsigned int n_color, unsigned int p_color, const char* txt) {
@@ -47,6 +45,6 @@ int ChkTouchEv(ButtonWidget* btn, int touch_x, int touch_y, int is_touched) {
 
 void CreateButton(FbDev* screen, FT_Face face, ButtonWidget* btn) {
     	unsigned int current_color = btn->is_pressed ? btn->press_color : btn->normal_color;
-    	symb->DrawButton(screen, face, btn->x, btn->y, btn->width, btn->height, 15, current_color, btn->text, 0x00000000, NULL);
+    	symb->gfx->DrawButton(screen, face, btn->x, btn->y, btn->width, btn->height, 15, current_color, btn->text, 0x00000000, NULL);
 }
 

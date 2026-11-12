@@ -25,7 +25,7 @@ int AutumnAPI_LoadMp3(const char* path) {
 
 	if (mp3dec_load(&mp3d, path, &new_info, NULL, NULL) != 0) return -1;
 
-        if (!symb || !symb->InitSound || symb->InitSound(&hw, new_info.channels, new_info.hz) != 0) {
+        if (!symb || !symb->snd->InitSound || symb->snd->InitSound(&hw, new_info.channels, new_info.hz) != 0) {
 		perror("API - InitSound");
 		return -2;
 	}
@@ -39,8 +39,8 @@ int AutumnAPI_LoadMp3(const char* path) {
         printf("channels: %d\n", ctx.info.channels);
         printf("supported total sample: %d\n", (int)ctx.info.samples);
 
-	if (symb && symb->SetVol) {
-		symb->SetVol(&hw, 70);
+	if (symb && symb->snd->SetVol) {
+		symb->snd->SetVol(&hw, 70);
 	}
 	return 0;
 }
@@ -67,13 +67,13 @@ int AutumnAPI_PlayAudio(const char *sndev) {
                 int written = 0;
 
                 if (sndev && strstr(sndev, "dsp") != NULL) {
-                        if (symb && symb->WritePCM) {
-                                written = symb->WritePCM(&hw, ctx.pcm_cursor, ctx.samples_left);
+                        if (symb && symb->snd->WritePCM) {
+                                written = symb->snd->WritePCM(&hw, ctx.pcm_cursor, ctx.samples_left);
                         }
                 }
                 else {
-                        if (symb && symb->CompSndWrite) {
-                                written = symb->CompSndWrite(&hw, ctx.pcm_cursor, ctx.samples_left);
+                        if (symb && symb->snd->CompSndWrite) {
+                                written = symb->snd->CompSndWrite(&hw, ctx.pcm_cursor, ctx.samples_left);
                         }
                 }
 
@@ -124,8 +124,8 @@ int AutumnAPI_Replay(void) {
 }
 
 void AutumnAPI_PCMCleanup(void) {
-    if (symb && symb->CloseSound) {
-        symb->CloseSound(&hw);
+    if (symb && symb->snd->CloseSound) {
+        symb->snd->CloseSound(&hw);
     }
     ctx.playing = 0;
 }	
@@ -135,7 +135,7 @@ int AutumnAPI_GetPlayingStatus(void) {
 }
 
 void AutumnAPI_SetVolume(int volume) {
-	if (symb && symb->SetVol) {
-		symb->SetVol(&hw, volume);
+	if (symb && symb->snd->SetVol) {
+		symb->snd->SetVol(&hw, volume);
 	}
 }

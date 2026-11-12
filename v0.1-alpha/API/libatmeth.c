@@ -4,10 +4,10 @@
 extern SYM_TAB* symb;
 
 int AutumnAPI_EthOn(const char *ifname) {
-	return symb->InterfaceSetup(ifname, IFF_UP, 1);
+	return symb->eth->InterfaceSetup(ifname, IFF_UP, 1);
 }
 
 int AutumnAPI_EthOff(const char *ifname) {
-	return symb->InterfaceSetup(ifname, IFF_UP, 0);
+	return symb->eth->InterfaceSetup(ifname, IFF_UP, 0);
 }
 

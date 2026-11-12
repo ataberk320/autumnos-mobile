@@ -26,7 +26,6 @@ void* font_h = NULL;
 bool eye_shield = false;
 static bool invert_colors = false;
 extern void _png_RdCallback(png_structp png_ptr, png_bytep outBytes, png_size_t byteCountToRead);
-
 void AutumnAPI_DrawPix(FbDev* fb, int x, int y, uint32_t color) {
 	if (x >= 0 && x < fb->w && y >= 0 && y < fb->h) {
         	uint8_t* row_start = ((uint8_t*)fb->bk_bf) + (y * fb->stride);
@@ -294,7 +293,9 @@ void AutumnAPI_DrawButton(FbDev* fb, FT_Face face, int x, int y, int w, int h, i
             int dy = (i < r) ? (r - i) : ((i > h - 1 - r) ? (i - (h - 1 - r)) : 0);
             
             if (dx * dx + dy * dy < r * r) {
-                uint32_t color = (symb && symb->ApplyGrad) ? symb->ApplyGrad(bg_color, i, 0, h) : bg_color;
+		uint32_t color = (symb && symb->plt && symb->plt->ApplyGrad)
+    			 ? symb->plt->ApplyGrad(bg_color, i, 0, h)
+                         : bg_color;
                 AutumnAPI_DrawRect(fb, x + j, y + i, 1, 1, color, 1);
                 
                 int dist_sq = dx * dx + dy * dy;
@@ -418,32 +419,46 @@ void AutumnAPI_DrawGifAni(FbDev* fb, GifFileType* gif, int x, int y, int idx) {
 }
 
 
-int AutumnAPI_Init(FbDev* fb, const char *path) {
-    fb->hal_ctx = malloc(sizeof(DRMStruct));
-    if (!fb->hal_ctx) return -1;
+int AutumnAPI_Init(FbDev* fb, const char *path)
+{
+    if (!fb || !symb || !symb->fbd || !symb->fbd->InitFbCard)
+        return -1;
 
-    if (!symb || !symb->InitFbCard || symb->InitFbCard(fb->hal_ctx, path) != 0) {
-        printf("Turning to terminal.");
-	free(fb->hal_ctx);
-	return -1;
+    fb->hal_ctx = calloc(1, sizeof(DRMStruct));
+    if (!fb->hal_ctx)
+        return -1;
+
+    if (symb->fbd->InitFbCard(fb->hal_ctx, path) != 0) {
+        printf("Turning to terminal.\n");
+        free(fb->hal_ctx);
+        fb->hal_ctx = NULL;
+        return -1;
     }
 
-    fb->fd     = fb->hal_ctx->fd;
-    fb->w      = fb->hal_ctx->width;
-    fb->h      = fb->hal_ctx->height;
+    fb->fd = fb->hal_ctx->fd;
+    fb->w = fb->hal_ctx->width;
+    fb->h = fb->hal_ctx->height;
     fb->fb_ptr = (uint32_t*)fb->hal_ctx->ptr;
     fb->stride = fb->hal_ctx->stride;
-    fb->r_off    = fb->hal_ctx->r_off;
-    fb->g_off    = fb->hal_ctx->g_off;
-    fb->b_off    = fb->hal_ctx->b_off;
+    fb->r_off = fb->hal_ctx->r_off;
+    fb->g_off = fb->hal_ctx->g_off;
+    fb->b_off = fb->hal_ctx->b_off;
 
     printf("R:%d, G:%d, B:%d\n", fb->r_off, fb->g_off, fb->b_off);
-    printf("height: %d, stride: %d, malloc size: %lu\n", fb->h, fb->stride, (size_t)fb->h * fb->stride);    
-    fb->bk_bf = malloc((size_t)fb->h * fb->stride);
+    printf("height: %d, stride: %d, malloc size: %lu\n",
+           fb->h, fb->stride, (unsigned long)((size_t)fb->h * fb->stride));
+
+    fb->bk_bf = calloc(1, (size_t)fb->h * fb->stride);
+
     if (!fb->bk_bf) {
-    	free(fb->hal_ctx);
-    	return -1;
+        if (symb->fbd->ResetFbCard)
+            symb->fbd->ResetFbCard(fb->hal_ctx, 1);
+
+        free(fb->hal_ctx);
+        fb->hal_ctx = NULL;
+        return -1;
     }
+
     return 0;
 }
 
@@ -469,8 +484,10 @@ void AutumnAPI_ClearFb(FbDev* fb, uint32_t color) {
 	}
 }
 
-int AutumnAPI_FbRefresh(FbDev* fb) {
-    if (!fb || !fb->hal_ctx || !fb->bk_bf || !fb->hal_ctx->ptr) return -1;
+int AutumnAPI_FbRefresh(FbDev* fb)
+{
+    if (!fb || !fb->hal_ctx || !fb->bk_bf || !fb->hal_ctx->ptr)
+        return -1;
 
     uint32_t* src = fb->bk_bf;
     uint32_t* dst = (uint32_t*)fb->hal_ctx->ptr;
@@ -479,37 +496,38 @@ int AutumnAPI_FbRefresh(FbDev* fb) {
         for (int x = 0; x < fb->w; x++) {
             int i = y * (fb->stride / 4) + x;
             uint32_t p = src[i];
-		
-	    uint8_t r = (p >> fb->r_off) & 0xFF;
+
+            uint8_t r = (p >> fb->r_off) & 0xFF;
             uint8_t g = (p >> fb->g_off) & 0xFF;
             uint8_t b = (p >> fb->b_off) & 0xFF;
 
-	    if (invert_colors) {
+            if (invert_colors) {
                 r = 255 - r;
                 g = 255 - g;
                 b = 255 - b;
             }
 
             if (eye_shield) {
-                int alpha = 30; 
+                int alpha = 30;
                 r = (r * (255 - alpha) + 255 * alpha) / 255;
                 g = (g * (255 - alpha) + 180 * alpha) / 255;
                 b = (b * (255 - alpha) + 100 * alpha) / 255;
             }
 
-            dst[i] = (r << fb->r_off) | (g << fb->g_off) | (b << fb->b_off);
+            dst[i] = (r << fb->r_off) |
+                     (g << fb->g_off) |
+                     (b << fb->b_off);
         }
     }
 
-    if (symb && symb->FbFlip) {
-        symb->FbFlip(fb->hal_ctx);
-    }
+    if (symb && symb->fbd && symb->fbd->FbFlip)
+        symb->fbd->FbFlip(fb->hal_ctx);
+
     return 0;
 }
 
-
-void AutumnAPI_FbReset(DRMStruct* fb) {
-    if (symb && symb->ResetFbCard) {
-        symb->ResetFbCard(fb, 1); 
-    }
+void AutumnAPI_FbReset(DRMStruct* fb)
+{
+    if (fb && symb && symb->fbd && symb->fbd->ResetFbCard)
+        symb->fbd->ResetFbCard(fb, 1);
 }
